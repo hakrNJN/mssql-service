@@ -1,0 +1,34 @@
+```
+└── 📁src
+    └── 📁config
+        └── config.ts
+    └── 📁controllers
+        └── example.ts
+    └── 📁entity
+        └── company.entity.ts
+        └── SaleTransaction.ts
+        └── years.entity.ts
+    └── 📁exceptions
+        └── httpException.ts
+    └── 📁interface
+        └── sqlInstance.ts
+    └── 📁middleware
+        └── errorHandler.ts
+    └── 📁migration
+    └── 📁providers
+        └── data_access.provider.ts
+        └── data-source.provider.ts
+        └── express.provider.ts
+    └── 📁routes
+        └── index.ts
+    └── 📁services
+        └── example2.ts
+        └── serviceExample.ts
+    └── 📁tests
+    └── 📁utils
+        └── logger.ts
+        └── queryTypes.ts
+    └── 📁validators
+    └── App.ts
+    └── index.ts
+```

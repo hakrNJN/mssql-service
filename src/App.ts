@@ -1,7 +1,7 @@
 import { Application } from 'express';
-import ExpressApp from './providers/express.provider';
-// import { UserRoutes } from './routes';
 import { errorHandler } from './middleware/errorHandler';
+import ExpressApp from './providers/express.provider';
+import apiRoutes from './routes';
 import { Logger } from './utils/logger';
 
 class App {
@@ -17,7 +17,9 @@ class App {
   }
 
   private initializeRoutes(): void {
-    // this.app.use('/api/users', new UserRoutes().router); // Example route mounting
+    
+    this.app.use('/api', apiRoutes);
+    // this.app.use('/api/test', new testRoutes().router); // Example route mounting
   }
 
   public listen(port: string | number, callback?: () => void): void {
@@ -27,6 +29,10 @@ class App {
   private initializeErrorHandling(): void {
     this.app.use(errorHandler); // Assuming errorHandler is a function defined elsewhere
   }
+
+  public getServer(): Application {
+    return this.app;
+}
 }
 
 export { App };

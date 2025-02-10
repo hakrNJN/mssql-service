@@ -24,7 +24,7 @@ export class AppConfig {
         username: process.env.DB_USER || "sa",
         password: process.env.DB_PASS || "password",
         database: process.env.DB_NAME || "test",
-        synchronize: true,
+        synchronize: false,
         logging: true,
         entities: [],
         subscribers: [],

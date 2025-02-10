@@ -3,7 +3,7 @@ import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 @Entity("YearMst")
 export class YearMst {
     @PrimaryGeneratedColumn()
-    Id!: number;
+    id!: number;
 
     @Column()
     Name!: string;
@@ -32,6 +32,6 @@ export class YearMst {
     @Column()
     DbName!: string;
 
-    @Column({ nullable: true })
-    Code!: string | null; //this is how to make a column nullable.
+    // @Column({ nullable: true })
+    // Code!: string | null; //this is how to make a column nullable.
 }

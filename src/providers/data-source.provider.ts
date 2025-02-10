@@ -1,5 +1,6 @@
 import { DataSource } from "typeorm";
 import { AppConfig } from "../config/config";
+import { YearMst } from "../entity/years.entity";
 
 const DB_CONFIG = AppConfig.DB_CONFIG
 
@@ -18,10 +19,16 @@ export class AppDataSource {
                 database: DB_CONFIG.database,
                 synchronize: DB_CONFIG.synchronize, // Use config from AppConfig
                 logging: DB_CONFIG.logging,         // Use config from AppConfig
-                entities: [],//DB_CONFIG.entities,       // Use config from AppConfig
+                entities: [YearMst],//DB_CONFIG.entities,       // Use config from AppConfig
                 subscribers: [],//DB_CONFIG.subscribers, // Use config from AppConfig
                 migrations: [],//DB_CONFIG.migrations,   // Use config from AppConfig
-                connectionTimeout:1500000,
+                connectionTimeout: 1500000,
+                options: {
+                    encrypt: false, // Ensure encryption is enabled (if desired and configured on server)
+                    // cryptoCredentialsDetails: {
+                    //     minVersion: 'TLSv1.2' // Or 'TLSv1' if 1.2 doesn't work, but prefer 1.2 or higher
+                    // }
+                },
             });
 
             try {
@@ -54,4 +61,4 @@ export class AppDataSource {
     getDataSource(): DataSource | null { // Getter to access the DataSource instance (optional)
         return this._dataSource;
     }
-} 
+}
