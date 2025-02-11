@@ -14,24 +14,24 @@ export class YearMst {
     @Column({ type: "date" })
     ATDat!: Date;
 
-    @Column()
-    AllowComp!: string;
+    @Column({nullable:true})
+    AllowComp?: string;
 
-    @Column()
-    Status!: string;
+    @Column({nullable:true})
+    Status?: string;
 
-    @Column()
-    UserId!: string;
+    @Column({nullable:true})
+    UserId?: string;
 
-    @Column()
-    UpdDate!: string;
+    @Column({nullable:true})
+    UpdDate?: string;
 
-    @Column()
-    AuditLock!: string; //is it equivalent to CHAR(1) in SQL Server?
+    @Column({nullable:true})
+    AuditLock?: string; //is it equivalent to CHAR(1) in SQL Server?
 
-    @Column()
-    DbName!: string;
+    @Column({nullable:true})
+    DbName?: string;
 
     @Column({ nullable: true })
-    Code!: string; //this is how to make a column nullable.
+    Code?: string; //this is how to make a column nullable.
 }

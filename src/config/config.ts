@@ -32,4 +32,7 @@ export class AppConfig {
     } as const
 
     public static readonly logLevel = process.env.LOG_LEVEL || "info";
+
+    public static readonly allowedFormsForSaleSeries = ['frmSalBill/frmsalentry', 'frmSalRet/frmSalRetEntry', 'frmGreySale', 'frmGreySaleReturn', 'frmDebitNote'];
+
 }

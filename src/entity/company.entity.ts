@@ -8,87 +8,87 @@ export class CompMst {
     @Column()
     Name!: string;
 
-    @Column()
-    Type!: string;
-
-    @Column()
-    Owner!: string;
-
-    @Column()
-    Short!: string;
+    @Column({ nullable: true })
+    Type?: string;
 
     @Column({ nullable: true })
-    CompGrp!: string ;
-
-    @Column()
-    Add1!: string;
-
-    @Column()
-    Add2!: string;
-
-    @Column()
-    Add3!: string;
-
-    @Column()
-    City!: string;
+    Owner?: string;
 
     @Column({ nullable: true })
-    Phone!: string ;
+    Short?: string;
 
     @Column({ nullable: true })
-    Mobile!: string;
+    CompGrp?: string;
 
     @Column({ nullable: true })
-    Fax!: string ;
+    Add1?: string;
 
     @Column({ nullable: true })
-    Email!: string ;
+    Add2?: string;
 
     @Column({ nullable: true })
-    WebSite!: string ;
+    Add3?: string;
 
     @Column({ nullable: true })
-    PanNo!: string ;
+    City?: string;
 
     @Column({ nullable: true })
-    TanNo!:  string ;
+    Phone?: string;
 
     @Column({ nullable: true })
-    TinNo!: string ;
+    Mobile?: string;
 
     @Column({ nullable: true })
-    CST!: string ;
+    Fax?: string;
 
     @Column({ nullable: true })
-    GST!: string ;
-
-    @Column()
-    Acc_year!: string;
-
-    @Column({type: "date"})
-    AF_Date!: Date; //is it equivalent to DATE in SQL Server!
-
-    @Column({type: "date"})
-    AT_Date!: Date;
-
-    @Column()
-    Status!: string;
+    Email?: string;
 
     @Column({ nullable: true })
-    Bank!: string ;
+    WebSite?: string;
 
     @Column({ nullable: true })
-    AcNo!: string ;
+    PanNo?: string;
 
     @Column({ nullable: true })
-    Branch!: string ;
+    TanNo?:  string;
 
     @Column({ nullable: true })
-    IFSCCode!: string ;
+    TinNo?: string;
 
-    @Column()
-    State!: string;
+    @Column({ nullable: true })
+    CST?: string;
 
-    @Column()
-    PinCode!: string;
+    @Column({ nullable: true })
+    GST?: string;
+
+    @Column({ nullable: true })
+    Acc_year?: string;
+
+    @Column({type: "date",nullable:true})
+    AF_Date?: Date; //is it equivalent to DATE in SQL Server!
+
+    @Column({type: "date", nullable:true})
+    AT_Date?: Date;
+
+    @Column({ nullable: true })
+    Status?: string;
+
+    @Column({ nullable: true })
+    Bank?: string;
+
+    @Column({ nullable: true })
+    AcNo?: string;
+
+    @Column({ nullable: true })
+    Branch?: string;
+
+    @Column({ nullable: true })
+    IFSCCode?: string;
+
+    @Column({ nullable: true })
+    State?: string;
+
+    @Column({ nullable: true })
+    PinCode?: string;
 }

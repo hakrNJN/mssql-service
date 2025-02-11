@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import { CompMst } from '../entity/company.entity';
 import { HttpException } from '../exceptions/httpException';
 import { CompanyService } from '../services/company.service';
-import { Filters } from '../types/filter.types';
+import { EqualFilter, Filters } from '../types/filter.types';
 import { ApiResponse } from '../utils/api-response';
 
 export class CompanyController { 
@@ -26,7 +26,7 @@ export class CompanyController {
                 ApiResponse.success({
                     res,
                     data: result,
-                    message: `All Avalable Year Retrived`// Include pagination metadata
+                    message: `All Avalable Company Retrived`// Include pagination metadata
                 });
             } else {
                 throw HttpException.NotFound(`Companies not found`);
@@ -67,7 +67,7 @@ export class CompanyController {
         const GSTIN = req.params.gstin as string
 
         const filters: Filters<CompMst> = {
-            GST:{equal:GSTIN}
+            GST:{equal:GSTIN} as EqualFilter<string>
         }
 
         try {

@@ -46,13 +46,13 @@ export class CompanyProvider {
 
     // Aditional CRUD Methods
     // async createCompany(companyData: Partial<CompMst>): Promise<CompMst> {
-    //     const year = this._getRepository().create(companyData);
-    //     return this._getRepository().save(year);
+    //     const company = this._getRepository().create(companyData);
+    //     return this._getRepository().save(company);
     // }
 
     // async updateCompany(id: number, companyData: Partial<CompMst>): Promise<CompMst | null> {
     //     await this._getRepository().update(id, companyData);
-    //     return this.getCompanyById(id); // Return the updated year
+    //     return this.getCompanyById(id); // Return the updated company
     // }
 
     // async deleteCompany(id: number): Promise<boolean> {

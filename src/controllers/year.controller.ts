@@ -13,8 +13,6 @@ export class YearController {
          this.yearService.initialize()
     }
 
-
-
     public getYears = async (req: Request, res: Response): Promise<void> => {
         const page = parseInt(req.query.page as string) || 1;
         const limit = parseInt(req.query.limit as string) || 10;
