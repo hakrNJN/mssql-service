@@ -44,18 +44,19 @@ export class YearsProvider { // Export the class
         return this._getRepository().findOneBy({ id });
     }
 
-    async createYear(yearData: Partial<YearMst>): Promise<YearMst> {
-        const year = this._getRepository().create(yearData);
-        return this._getRepository().save(year);
-    }
+    // Aditional CRUD Methods
+    // async createYear(yearData: Partial<YearMst>): Promise<YearMst> {
+    //     const year = this._getRepository().create(yearData);
+    //     return this._getRepository().save(year);
+    // }
 
-    async updateYear(id: number, yearData: Partial<YearMst>): Promise<YearMst | null> {
-        await this._getRepository().update(id, yearData);
-        return this.getYearById(id); // Return the updated year
-    }
+    // async updateYear(id: number, yearData: Partial<YearMst>): Promise<YearMst | null> {
+    //     await this._getRepository().update(id, yearData);
+    //     return this.getYearById(id); // Return the updated year
+    // }
 
-    async deleteYear(id: number): Promise<boolean> {
-        const deleteResult = await this._getRepository().delete(id);
-        return (deleteResult.affected ?? 0) > 0;; // Return true if deletion was successful
-    }
+    // async deleteYear(id: number): Promise<boolean> {
+    //     const deleteResult = await this._getRepository().delete(id);
+    //     return (deleteResult.affected ?? 0) > 0;; // Return true if deletion was successful
+    // }
 }

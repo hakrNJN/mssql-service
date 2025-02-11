@@ -3,7 +3,7 @@ import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 @Entity("CompMst")  // Map the entity to the table name
 export class CompMst {
     @PrimaryGeneratedColumn()
-    Id!: number;
+    id!: number;
 
     @Column()
     Name!: string;
@@ -18,7 +18,7 @@ export class CompMst {
     Short!: string;
 
     @Column({ nullable: true })
-    CompGrp?: string | null;
+    CompGrp!: string ;
 
     @Column()
     Add1!: string;
@@ -33,40 +33,40 @@ export class CompMst {
     City!: string;
 
     @Column({ nullable: true })
-    Phone?: string | null;
+    Phone!: string ;
 
     @Column({ nullable: true })
-    Mobile?: string | null;
+    Mobile!: string;
 
     @Column({ nullable: true })
-    Fax?: string | null;
+    Fax!: string ;
 
     @Column({ nullable: true })
-    Email?: string | null;
+    Email!: string ;
 
     @Column({ nullable: true })
-    WebSite?: string | null;
+    WebSite!: string ;
 
     @Column({ nullable: true })
-    PanNo?: string | null;
+    PanNo!: string ;
 
     @Column({ nullable: true })
-    TanNo?:  string | null;
+    TanNo!:  string ;
 
     @Column({ nullable: true })
-    TinNo?: string | null;
+    TinNo!: string ;
 
     @Column({ nullable: true })
-    CST?: string | null;
+    CST!: string ;
 
     @Column({ nullable: true })
-    GST?: string | null;
+    GST!: string ;
 
     @Column()
     Acc_year!: string;
 
     @Column({type: "date"})
-    AF_Date!: Date; //is it equivalent to DATE in SQL Server?
+    AF_Date!: Date; //is it equivalent to DATE in SQL Server!
 
     @Column({type: "date"})
     AT_Date!: Date;
@@ -75,16 +75,16 @@ export class CompMst {
     Status!: string;
 
     @Column({ nullable: true })
-    Bank?: string | null;
+    Bank!: string ;
 
     @Column({ nullable: true })
-    AcNo?: string | null;
+    AcNo!: string ;
 
     @Column({ nullable: true })
-    Branch?: string | null;
+    Branch!: string ;
 
     @Column({ nullable: true })
-    IFSCCode?: string | null;;
+    IFSCCode!: string ;
 
     @Column()
     State!: string;

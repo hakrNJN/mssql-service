@@ -1,6 +1,5 @@
 import { DataSource } from "typeorm";
 import { AppConfig } from "../config/config";
-import { YearMst } from "../entity/years.entity";
 
 const DB_CONFIG = AppConfig.DB_CONFIG
 
@@ -17,11 +16,11 @@ export class AppDataSource {
                 username: DB_CONFIG.username,
                 password: DB_CONFIG.password,
                 database: DB_CONFIG.database,
-                synchronize: DB_CONFIG.synchronize, // Use config from AppConfig
-                logging: DB_CONFIG.logging,         // Use config from AppConfig
-                entities: [YearMst],//DB_CONFIG.entities,       // Use config from AppConfig
-                subscribers: [],//DB_CONFIG.subscribers, // Use config from AppConfig
-                migrations: [],//DB_CONFIG.migrations,   // Use config from AppConfig
+                synchronize: DB_CONFIG.synchronize,
+                logging: DB_CONFIG.logging,        
+                entities: ["src/entity/*.ts" ],//[YearMst, CompMst],
+                subscribers: [],
+                migrations: [],
                 connectionTimeout: 1500000,
                 options: {
                     encrypt: false, // Ensure encryption is enabled (if desired and configured on server)
@@ -36,7 +35,7 @@ export class AppDataSource {
                 console.log("Data Source has been initialized!");
             } catch (err) {
                 console.error("Error during Data Source initialization", err);
-                this._dataSource = null; // Reset instance on error
+                this._dataSource = null; // Clear the instance after initialization error
                 throw err; // Re-throw to propagate the error
             }
         }

@@ -6,34 +6,62 @@ import { YearService } from '../services/years.service';
 
 // Adjust path if needed
 
-class TestRoutes {
-  public router: Router;
-  private yearController: YearController; // Instantiate the controller
+const yearRoute = (dataSource: AppDataSource): Router => { // Accept dataSource as argument
+  const router: Router = Router();
 
-  constructor() {
-    this.router = Router();
+  // Initialize YearService with dataSource
+  const yearService = new YearService(dataSource);
+  yearService.initialize(); // Initialize YearService (repository)
 
-    // Initialize AppDataSource (Ideally this should be done globally at app startup)
-    const dataSourceInstance = new AppDataSource();
-    dataSourceInstance.init(); // Initialize DataSource
+  // Create YearController instance with the initialized YearService
+  const yearController = new YearController(yearService);
 
-    // Initialize YearService with dataSourceInstance
-    const yearService = new YearService(dataSourceInstance);
-    yearService.initialize(); // Initialize YearService (repository)
+  // Define routes here, calling controller methods
+  router.get('/', yearController.getYears);
+  router.get('/:id', yearController.getYearById);
 
-    // Create YearController instance with the initialized YearService
-    this.yearController = new YearController(yearService);
-    // this.yearController = new YearController();
-    this.initializeRoutes();
-}
+  return router; // Return the router
+};
 
-  private initializeRoutes(): void {
-// Define your routes here, calling controller methods
+export default yearRoute;
+
+//src/routes/year.route.ts
+// import { Router } from 'express';
+// import { YearController } from '../controllers/year.controller';
+// import { AppDataSource } from '../providers/data-source.provider';
+// import { YearService } from '../services/years.service';
+
+// // Adjust path if needed
+
+// class YearRoutes {
+//   public router: Router;
+//   private yearController: YearController; // Instantiate the controller
+
+//   constructor() {
+//     this.router = Router();
+
+//     // Initialize AppDataSource (Ideally this should be done globally at app startup)
+//     const dataSourceInstance = new AppDataSource();
+    
+//     dataSourceInstance.init(); // Initialize DataSource
+
+//     // Initialize YearService with dataSourceInstance
+//     const yearService = new YearService(dataSourceInstance);
+//     yearService.initialize(); // Initialize YearService (repository)
+
+//     // Create YearController instance with the initialized YearService
+//     this.yearController = new YearController(yearService);
+//     // this.yearController = new YearController();
+//     this.initializeRoutes();
+// }
+
+//   private initializeRoutes(): void {
+// // Define your routes here, calling controller methods
       
-      this.router.get('/', this.yearController.getYears);
-      this.router.get('/:id', this.yearController.getYearById);
+//       this.router.get('/', this.yearController.getYears);
+//       this.router.get('/:id', this.yearController.getYearById);
       
-    }
-}
+//     }
+// }
 
-export default new TestRoutes().router; // Export the router instance
+// export default new YearRoutes().router; // Export the router instance

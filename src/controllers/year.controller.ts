@@ -10,8 +10,7 @@ export class YearController {
 
     constructor(yearService: YearService) {
         this.yearService = yearService;
-        /* The line `this.yearService.initialize()` in the constructor of the `YearController` class is likely calling a method named `initialize` on the `yearService` instance. */
-        this.yearService.initialize()
+         this.yearService.initialize()
     }
 
 
@@ -23,15 +22,14 @@ export class YearController {
         const endIndex = page * limit;
         try {
             const result = await this.yearService.getYears()
-            console.log(result)
             if (result) {
                 ApiResponse.success({
                     res,
                     data: result,
-                    message: `All Avalable Year Retrived`// Include pagination metadata
+                    message: `All Avalable Years Retrived`// Include pagination metadata
                 });
             } else {
-                throw HttpException.NotFound(`Tests not found`);
+                throw HttpException.NotFound(`Years not found`);
             }
         } catch (error) {
             throw HttpException.InternalServerError(`Something Went Wrong`,error);
@@ -51,10 +49,10 @@ export class YearController {
                 ApiResponse.success({
                     res,
                     data: result,
-                    message: `year retrived for ${yearId}`// Include pagination metadata
+                    message: `Year retrived for id ${yearId}`// Include pagination metadata
                 });
             } else {
-                throw HttpException.NotFound(`Tests not found`);
+                throw HttpException.NotFound(`Years not found`);
             }
         } catch (error) {
             throw HttpException.InternalServerError(`Something Went Wrong`);

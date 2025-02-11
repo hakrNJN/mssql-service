@@ -32,6 +32,6 @@ export class YearMst {
     @Column()
     DbName!: string;
 
-    // @Column({ nullable: true })
-    // Code!: string | null; //this is how to make a column nullable.
+    @Column({ nullable: true })
+    Code!: string; //this is how to make a column nullable.
 }
