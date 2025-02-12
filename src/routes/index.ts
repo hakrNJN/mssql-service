@@ -2,6 +2,7 @@
 import { Router } from 'express';
 import { AppDataSource } from '../providers/data-source.provider'; // Import AppDataSource
 import { Logger } from '../utils/logger';
+import accountRoute from './account.route';
 import companyRoute from './company.route';
 import seriesRoute from './series.route';
 import testRoute from './test.route';
@@ -17,6 +18,7 @@ const apiRoutes = (dataSource: AppDataSource): Router => {
         router.use('/year', yearRoute(dataSource)); // Pass dataSource to yearRoute
         router.use('/company', companyRoute(dataSource));
         router.use('/series', seriesRoute(dataSource));
+        router.use('/accounts', accountRoute(dataSource));
     } catch (error) {
         logger.error("Error mounting routes:", error);
     }

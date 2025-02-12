@@ -1,4 +1,4 @@
-//src/routes/year.route.ts
+//src/routes/companu.route.ts
 import { Router } from 'express';
 import { CompanyController } from '../controllers/company.controller';
 import { AppDataSource } from '../providers/data-source.provider';
@@ -9,7 +9,7 @@ import { CompanyService } from '../services/company.service';
 const companyRoute = (dataSource: AppDataSource): Router => {
   const router: Router = Router();
 
-    // Initialize YearService with dataSource
+    // Initialize Company Service with dataSource
   const companyService = new CompanyService(dataSource);
   companyService.initialize(); 
 

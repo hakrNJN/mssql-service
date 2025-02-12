@@ -2,22 +2,24 @@
 
 import { Request, Response } from 'express'
 import { AppConfig } from '../config/config'
+import { stringDecorators } from '../decorators/stringDecorators'
 import { SerMst } from '../entity/series.entity'
 import { HttpException } from '../exceptions/httpException'
 import { SeriesService } from '../services/series.service'
 import { EqualFilter, EqualNullFilter, Filters, InFilter, LikeFilter, NotLikeFilter } from '../types/filter.types'
 import { ApiResponse } from '../utils/api-response'
 
+// Declaration merging to inform TypeScript about the added method
+export interface SeriesController {
+    stringToArray(str: string): number[];
+}
+
+@stringDecorators
 export class SeriesController {
     private seriesService: SeriesService;
-    private stringToArray: Function;
-
     constructor(seriesService: SeriesService) {
         this.seriesService = seriesService;
         this.seriesService.initialize()
-        this.stringToArray = (str: string) => {
-            return str.split(',').map(Number);
-        }
     }
 
     public getAllSeries = async (req: Request, res: Response): Promise<void> => {
@@ -84,7 +86,7 @@ export class SeriesController {
         }
 
         //splitting company string into array
-        const comp :string[] = company!.split(',');
+        const comp :number[] =  this.stringToArray(company)//company!.split(',');
 
         //checking if type is D or C and setting typeCondition accordingly
         const typeCondition:string[] = (type!.toLowerCase() === 'd') ? ["sale", "dr note"] : ["sale return", "cr note"];

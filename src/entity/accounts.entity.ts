@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity("Mast")
 export class Mast {
@@ -64,4 +64,13 @@ export class Mast {
 
     @Column({ nullable: true })
     AgentId?: number;
+    
+    // Define ManyToOne relationship to itself for Agent (Customers to Agent)
+    @ManyToOne(() => Mast, (agent) => agent.customers) // Removed incorrect 'name' from options
+    @JoinColumn({ name: 'AgentId' }) // Correctly specify foreign key column name here
+    agent?: Mast; // Property to access the Agent
+
+    // Define OneToMany relationship from Agent to Customers (Agent to Customers)
+    @OneToMany(() => Mast, (customer) => customer.agent)
+    customers?: Mast[]; // Property to access Customers of an Agent
 }

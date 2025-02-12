@@ -38,6 +38,8 @@
 // sale-transaction.entity.ts
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany, JoinColumn } from 'typeorm';
 import { SaleDetail } from './sale-detail.entity';
+import { Mast } from "./Mast.entity";
+import { Aldet } from "./Aldet.entity";
 
 @Entity('sale_transactions') // Specify your table name if needed
 export class SaleTransaction {
@@ -50,14 +52,18 @@ export class SaleTransaction {
   @Column()
   customerName: string;
 
-  // One-to-Many relationship with SaleDetail
-  @OneToMany(() => SaleDetail, (saleDetail) => saleDetail.saleTransaction, {
-    cascade: true, // Optional: Cascade operations (e.g., save, delete)
-    eager: true,   // Enable eager loading for saleDetails
-  })
-  @JoinColumn({ name: 'saleTrnId' }) // Optional: Explicitly define the foreign key column in SaleTransaction
-  saleDetails: SaleDetail[]; // Property to access related SaleDetails
-}
+ // One-to-Many relationship with SalDet (SalTrn has many SalDet records)
+    @OneToMany(() => SalDet, (salDet) => salDet.salTrn)
+    salDetails?: SalDet[];
+
+    // Many-to-One relationship with Mast (SalTrn belongs to one Mast - Account)
+    @ManyToOne(() => Mast, (mast) => mast.salTrns)
+    @JoinColumn({ name: "accountId" })
+    account?: Mast;
+
+    // One-to-Many relationship with Aldet (SalTrn has many Aldet records, composite key join)
+    @OneToMany(() => Aldet, (alDet) => alDet.lnktrnid)
+    additionalAmounts?: Aldet[];
 
 // sale-detail.entity.ts
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
@@ -78,7 +84,7 @@ export class SaleDetail {
   price: number;
 
   // Many-to-One relationship with SaleTransaction
-  @ManyToOne(() => SaleTransaction, (saleTransaction) => saleTransaction.saleDetails)
+  @ManyToOne(() => SalTrn, (salTrn) => salTrn.salDetails)
   @JoinColumn({ name: 'saleTrnId' }) // Foreign key column in SaleDetail referencing SaleTransaction
   saleTransaction: SaleTransaction;
 
