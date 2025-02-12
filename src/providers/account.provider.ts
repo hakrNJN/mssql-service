@@ -1,16 +1,35 @@
 // src/providers/account.provider.ts
 import { FindManyOptions, Repository, SelectQueryBuilder } from "typeorm";
+import { objectDecorators } from "../decorators/objectDecorators";
 import { Mast } from "../entity/accounts.entity";
 import { Filters } from "../types/filter.types";
 import { applyFilters } from "../utils/query-utils";
 import { AppDataSource } from "./data-source.provider";
 
+export interface AccountProvider {
+    trimWhitespace<T>(obj: T): T;
+}
+
+@objectDecorators
 export class AccountProvider { 
     private accountRepository: Repository<Mast> | null = null;;
     private dataSourceInstance: AppDataSource; 
+    // private trimWhitespace: Function;
 
     constructor(dataSourceInstance: AppDataSource) { // Inject AppDataSource in constructor
         this.dataSourceInstance = dataSourceInstance;
+        // this.trimWhitespace = (obj: any): any => {
+        //     if (typeof obj === 'string') {
+        //         return obj.trim();
+        //     } else if (typeof obj === 'object' && obj !== null) {
+        //         for (const key in obj) {
+        //             if (Object.hasOwnProperty.call(obj, key)) {
+        //                 obj[key] = this.trimWhitespace(obj[key]);
+        //             }
+        //         }
+        //     }
+        //     return obj;
+        // };
     }
 
     private _getRepository(): Repository<Mast> {
@@ -40,7 +59,7 @@ export class AccountProvider {
         filteredQueryBuilder.orderBy('account.id', 'ASC'); // Order by account id in ascending order
 
         const account = await filteredQueryBuilder.getMany();
-        return account;
+        return this.trimWhitespace(account);
     }
 
     async getAllAccounts(offset?: number, limit?: number): Promise<Mast[]> {
@@ -53,7 +72,8 @@ export class AccountProvider {
                 findOptions.take = limit;
             }
             findOptions.order = { id: 'ASC' };
-            return await this._getRepository().find(findOptions);
+            const accounts: Mast[] = await this._getRepository().find(findOptions);
+            return this.trimWhitespace(accounts)
         } catch (error) {
             throw new Error(error as string)
         }
@@ -73,24 +93,10 @@ export class AccountProvider {
                 return { Agent: null }; // Return object with Agent: null when agent not found
             }
 
-            // Trim whitespace (optional, if still needed for agent and customers)
-            const trimWhitespace = (obj: any): any => {
-                if (typeof obj === 'string') {
-                    return obj.trim();
-                } else if (typeof obj === 'object' && obj !== null) {
-                    for (const key in obj) {
-                        if (Object.hasOwnProperty.call(obj, key)) {
-                            obj[key] = trimWhitespace(obj[key]);
-                        }
-                    }
-                }
-                return obj;
-            };
-
-            trimWhitespace(agent); // Trim agent properties
-            if (agent.customers) { // Trim customer properties if customers are loaded
-                agent.customers.forEach(trimWhitespace);
-            }
+            this.trimWhitespace(agent); // Trim agent properties
+            // if (agent.customers) { // Trim customer properties if customers are loaded
+            //     agent.customers.forEach(customer => this.trimWhitespace(customer));
+            // }
 
             return { Agent: agent }; // Return object with Agent property
 
