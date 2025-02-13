@@ -1,11 +1,13 @@
 // src/providers/year.provider.ts
 import { Repository } from "typeorm";
 import { SerMst } from "../entity/series.entity";
+import { BaseProviderInterface } from "../interface/base.provider";
 import { Filters } from "../types/filter.types";
 import { applyFilters } from "../utils/query-utils";
 import { AppDataSource } from "./data-source.provider";
 
-export class SeriesProvider { 
+export interface SeriesProvider extends BaseProviderInterface<SerMst, Filters<SerMst>> {} 
+export class SeriesProvider implements SeriesProvider { 
     private seriesRepository: Repository<SerMst> | null = null;;
     private dataSourceInstance: AppDataSource; 
 
@@ -44,7 +46,7 @@ export class SeriesProvider {
         return this._getRepository().findOneBy({ id });
     }
 
-    // Aditional CRUD Methods
+    // Additional CRUD Methods
     // async createSeries(seriesData: Partial<SerMst>): Promise<SerMst> {
     //     const series = this._getRepository().create(seriesData);
     //     return this._getRepository().save(series);

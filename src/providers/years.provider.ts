@@ -1,12 +1,15 @@
 // src/providers/year.provider.ts
 import { Repository } from "typeorm";
 import { YearMst } from "../entity/years.entity";
+import { BaseProviderInterface } from "../interface/base.provider";
 import { Filters } from "../types/filter.types";
 import { applyFilters } from "../utils/query-utils"; // Import AppDataSource
 import { AppDataSource } from "./data-source.provider";
 
-export class YearsProvider { // Export the class
-    private yearRepository: Repository<YearMst> | null = null;;
+export interface YearsProvider extends BaseProviderInterface<YearMst, Filters<YearMst>> {} 
+
+export class YearsProvider implements YearsProvider{ // Export the class
+    private yearRepository: Repository<YearMst> | null = null;
     private dataSourceInstance: AppDataSource; // Hold an instance of AppDataSource
 
     constructor(dataSourceInstance: AppDataSource) { // Inject AppDataSource in constructor
@@ -31,7 +34,7 @@ export class YearsProvider { // Export the class
         const years = await filteredQueryBuilder.getMany();
         return years;
     }
-    // Example CRUD methods (add more as needed)
+   
     async getAllYears(): Promise<YearMst[]> {
         try {
             return this._getRepository().find();
@@ -44,7 +47,7 @@ export class YearsProvider { // Export the class
         return this._getRepository().findOneBy({ id });
     }
 
-    // Aditional CRUD Methods
+    // Additional CRUD Methods
     // async createYear(yearData: Partial<YearMst>): Promise<YearMst> {
     //     const year = this._getRepository().create(yearData);
     //     return this._getRepository().save(year);

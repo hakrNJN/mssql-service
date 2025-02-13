@@ -2,11 +2,11 @@
 import { FindManyOptions, Repository, SelectQueryBuilder } from "typeorm";
 import { objectDecorators } from "../decorators/objectDecorators";
 import { Mast } from "../entity/accounts.entity";
+import { BaseProviderInterface } from "../interface/base.provider";
 import { Filters } from "../types/filter.types";
 import { applyFilters } from "../utils/query-utils";
 import { AppDataSource } from "./data-source.provider";
-
-export interface AccountProvider {
+export interface AccountProvider extends BaseProviderInterface<Mast, Filters<Mast>>{
     trimWhitespace<T>(obj: T): T;
 }
 
@@ -14,22 +14,9 @@ export interface AccountProvider {
 export class AccountProvider { 
     private accountRepository: Repository<Mast> | null = null;;
     private dataSourceInstance: AppDataSource; 
-    // private trimWhitespace: Function;
-
+    
     constructor(dataSourceInstance: AppDataSource) { // Inject AppDataSource in constructor
         this.dataSourceInstance = dataSourceInstance;
-        // this.trimWhitespace = (obj: any): any => {
-        //     if (typeof obj === 'string') {
-        //         return obj.trim();
-        //     } else if (typeof obj === 'object' && obj !== null) {
-        //         for (const key in obj) {
-        //             if (Object.hasOwnProperty.call(obj, key)) {
-        //                 obj[key] = this.trimWhitespace(obj[key]);
-        //             }
-        //         }
-        //     }
-        //     return obj;
-        // };
     }
 
     private _getRepository(): Repository<Mast> {
@@ -93,12 +80,7 @@ export class AccountProvider {
                 return { Agent: null }; // Return object with Agent: null when agent not found
             }
 
-            this.trimWhitespace(agent); // Trim agent properties
-            // if (agent.customers) { // Trim customer properties if customers are loaded
-            //     agent.customers.forEach(customer => this.trimWhitespace(customer));
-            // }
-
-            return { Agent: agent }; // Return object with Agent property
+            return { Agent: this.trimWhitespace(agent) }; // Return object with Agent property
 
         } catch (error) {
             console.error("Error fetching agent with customers (eager loading):", error);
@@ -110,7 +92,7 @@ export class AccountProvider {
         return this._getRepository().findOneBy({ id });
     }
 
-    // Aditional CRUD Methods
+    // Additional CRUD Methods
     // async createCompany(companyData: Partial<CompMst>): Promise<CompMst> {
     //     const company = this._getRepository().create(companyData);
     //     return this._getRepository().save(company);

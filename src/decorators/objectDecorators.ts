@@ -9,18 +9,18 @@ function deepTrimWhitespace<T>(obj: T): T {
 
     if (obj && typeof obj === 'object') {
         if (Array.isArray(obj)) {
-            // Map each item in the array through deepTrimWhitespace
-            return obj.map(item => deepTrimWhitespace(item)) as unknown as T;
+            return obj.map(item => deepTrimWhitespace(item)) as T; // More direct type assertion
         }
 
-        // For plain objects, iterate over entries
-        return Object.entries(obj).reduce((acc, [key, value]) => {
-            acc[key] = deepTrimWhitespace(value);
-            return acc;
-        }, {} as Record<string, unknown>) as T;
+        const newObj: any = {}; // Use 'any' for accumulation, then cast to T
+        for (const key in obj) {
+            if (Object.prototype.hasOwnProperty.call(obj, key)) { // Safe iteration
+                newObj[key] = deepTrimWhitespace((obj as any)[key]); // Cast to 'any' for property access
+            }
+        }
+        return newObj as T; // Cast the whole new object to T
     }
 
-    // Return primitives and null unchanged
     return obj;
 }
 
