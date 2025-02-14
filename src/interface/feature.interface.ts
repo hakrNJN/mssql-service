@@ -1,3 +1,4 @@
+//src/interface/feature.interface.ts
 export interface FeatureConfig {
     [key: string]: boolean; // Assuming feature flags are boolean for now
   }

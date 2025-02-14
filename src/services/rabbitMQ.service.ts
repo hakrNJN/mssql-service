@@ -1,6 +1,17 @@
+//src/service/rabbitMQ.service.ts
 import * as amqp from 'amqplib';
-import { IRabbitMQClient } from "../interface/rabbitMQ.interface";
+import { EnsureQueueOptions, IRabbitMQClient, SendMessageOptions } from "../interface/rabbitMQ.interface";
 import { MessageCondition, MessageHandler } from "../types/rabbitMq.types";
+
+interface RabbitMQClientOptions {
+    connectionUrl: string;
+    reconnectRetries?: number;
+    reconnectDelayMs?: number;
+    channelRecreateRetries?: number;
+    channelRecreateDelayMs?: number;
+    // ... other options like heartbeat interval, etc.
+}
+
 /**
  * Class representing the RabbitMQ Client service.
  * Implements the IRabbitMQClient interface.
@@ -9,9 +20,18 @@ class RabbitMQClientService implements IRabbitMQClient {
     #connectionUrl: string;
     #connection: amqp.Connection | null = null;
     #channel: amqp.Channel | null = null;
+    #reconnectRetries: number;
+    #reconnectDelayMs: number;
+    #channelRecreateRetries: number;
+    #channelRecreateDelayMs: number;
 
-    constructor(connectionUrl: string) {
-        this.#connectionUrl = connectionUrl;
+
+    constructor(options: RabbitMQClientOptions) {
+        this.#connectionUrl = options.connectionUrl;
+        this.#reconnectRetries = options.reconnectRetries ?? 5; // Default retries
+        this.#reconnectDelayMs = options.reconnectDelayMs ?? 5000; // Default delay
+        this.#channelRecreateRetries = options.channelRecreateRetries ?? 5;
+        this.#channelRecreateDelayMs = options.channelRecreateDelayMs ?? 5000;
     }
 
     /**
@@ -82,14 +102,12 @@ class RabbitMQClientService implements IRabbitMQClient {
 
     /**
      * Private method to attempt reconnection to RabbitMQ.
-     * @param {number} retries - Maximum number of reconnection attempts.
-     * @param {number} delay - Delay in milliseconds between retries.
      * @throws {Error} If reconnection fails after maximum attempts.
      */
-    async #attemptReconnect(retries: number = 5, delay: number = 5000): Promise<void> {
-        for (let attempt = 1; attempt <= retries; attempt++) {
+    async #attemptReconnect(): Promise<void> {
+        for (let attempt = 1; attempt <= this.#reconnectRetries; attempt++) {
             try {
-                console.log(`Attempting to reconnect (Attempt ${attempt}/${retries})...`);
+                console.log(`Attempting to reconnect (Attempt ${attempt}/${this.#reconnectRetries})...`);
                 if (this.#channel) await this.#channel.close();
                 if (this.#connection) await this.#connection.close();
                 await this.init();
@@ -97,8 +115,8 @@ class RabbitMQClientService implements IRabbitMQClient {
                 return;
             } catch (err: any) {
                 console.error(`Reconnection attempt ${attempt} failed:`, err);
-                if (attempt < retries) {
-                    await this.#delay(delay);
+                if (attempt < this.#reconnectRetries) {
+                    await this.#delay(this.#reconnectDelayMs);
                 } else {
                     throw new Error('Failed to reconnect after maximum attempts');
                 }
@@ -108,22 +126,20 @@ class RabbitMQClientService implements IRabbitMQClient {
 
     /**
      * Private method to attempt recreation of a RabbitMQ channel.
-     * @param {number} retries - Maximum number of channel recreation attempts.
-     * @param {number} delay - Delay in milliseconds between retries.
      * @throws {Error} If channel recreation fails after maximum attempts.
      */
-    async #attemptRecreateChannel(retries: number = 5, delay: number = 5000): Promise<void> {
-        for (let attempt = 1; attempt <= retries; attempt++) {
+    async #attemptRecreateChannel(): Promise<void> {
+        for (let attempt = 1; attempt <= this.#reconnectRetries; attempt++) {
             try {
-                console.log(`Attempting to recreate channel (Attempt ${attempt}/${retries})...`);
+                console.log(`Attempting to recreate channel (Attempt ${attempt}/${this.#reconnectRetries})...`);
                 if (this.#channel) await this.#channel.close();
                 await this.#createChannel();
                 console.log('Channel recreated successfully');
                 return;
             } catch (err: any) {
                 console.error(`Channel recreation attempt ${attempt} failed:`, err);
-                if (attempt < retries) {
-                    await this.#delay(delay);
+                if (attempt < this.#reconnectRetries) {
+                    await this.#delay(this.#reconnectDelayMs);
                 } else {
                     throw new Error('Failed to recreate channel after maximum attempts');
                 }
@@ -144,18 +160,19 @@ class RabbitMQClientService implements IRabbitMQClient {
      * Sends a message to a specified RabbitMQ queue.
      * @param {string} queueName - The name of the queue to send the message to.
      * @param {any} message - The message to send. Can be a string, object, or Buffer.
-     * @param {amqp.Options.AssertQueue} [options] - Queue options.
+     * @param {SendMessageOptions} [options] - Send message options, including queue assertion and persistence.
      * @throws {Error} If sending the message fails.
      */
-    async sendMessage(queueName: string, message: any, options: amqp.Options.AssertQueue = { durable: false }): Promise<void> {
+    async sendMessage<T>(queueName: string, message: T, options: SendMessageOptions = {}): Promise<void> { // Generic type for message
         try {
-            await this.ensureQueue(queueName, options);
+            const queueOptions: EnsureQueueOptions = { durable: true };
+            await this.ensureQueue(queueName, queueOptions);
             const bufferMessage = this.#prepareMessage(message);
             if (!this.#channel) {
                 throw new Error('RabbitMQ channel is not initialized.');
             }
-            this.#channel.sendToQueue(queueName, bufferMessage);
-            console.log(`Message sent to queue: ${queueName}`);
+            this.#channel.sendToQueue(queueName, bufferMessage, { persistent: options.persistentMessage === undefined ? true : options.persistentMessage });
+            console.log(`Message sent to queue: ${queueName} (persistent: ${options.persistentMessage !== false})`);
         } catch (err: any) {
             console.error('Failed to send message:', err);
             throw new Error(`Failed to send message to queue ${queueName}: ${err.message}`);
@@ -177,11 +194,11 @@ class RabbitMQClientService implements IRabbitMQClient {
      * Subscribes to a RabbitMQ queue and processes messages with the provided handler.
      * @param {string} queueName - The name of the queue to subscribe to.
      * @param {MessageHandler} handler - The message handler function.
-     * @param {amqp.Options.AssertQueue} [options] - Queue options.
+     * @param {EnsureQueueOptions} [options] - Queue options.
      * @param {MessageCondition} [condition] - Optional condition function to filter messages.
      * @throws {Error} If subscribing to the queue fails.
      */
-    async subscribe(queueName: string, handler: MessageHandler, options: amqp.Options.AssertQueue = { durable: false }, condition?: MessageCondition): Promise<void> {
+    async subscribe<T>(queueName: string, handler: MessageHandler<T>, options: EnsureQueueOptions = { durable: true }, condition?: MessageCondition<T>): Promise<void> { // Generic handler and condition
         try {
             await this.ensureQueue(queueName, options);
             if (!this.#channel) {
@@ -194,20 +211,20 @@ class RabbitMQClientService implements IRabbitMQClient {
                     return;
                 }
                 try {
-                    const messageData = JSON.parse(msg.content.toString());
+                    const messageData: T = JSON.parse(msg.content.toString()); // Type assertion here
                     if (!condition || condition(messageData)) {
-                        await handler(msg);
-                        this.#channel!.ack(msg); // Acknowledge message, non-null assertion as channel is checked above
+                        await handler(msg, messageData); // Pass messageData to handler
+                        this.ack(msg);
                     }
                     else {
                         console.log('Message did not match the condition, requeueing.');
-                        this.#channel!.nack(msg, false, true); // Requeue the message, non-null assertion as channel is checked above
+                        this.nack(msg, false, true);
                     }
                 } catch (err: any) {
-                    console.error('Error processing message:', err);
-                    this.#channel!.nack(msg, false, true); // Requeue the message in case of processing error, non-null assertion as channel is checked above
+                    console.error('Error processing message:', err, { messageContent: msg.content.toString() }); // Log message content on error
+                    this.nack(msg, false, true);
                 }
-            });
+            }, { noAck: false });
             console.log(`Subscribed to queue: ${queueName}`);
         } catch (err: any) {
             console.error('Failed to subscribe to queue:', err);
@@ -216,24 +233,75 @@ class RabbitMQClientService implements IRabbitMQClient {
     }
 
     /**
+     * Acknowledges a message using its delivery tag.
+     * @param {amqp.ConsumeMessage} msg - The message to acknowledge.
+     */
+    ack(msg: amqp.ConsumeMessage | null): void {
+        if (!msg || !this.#channel) {
+            console.warn('Attempted to ack a null message or with no channel.');
+            return;
+        }
+        this.#channel.ack(msg); // Correctly using channel.ack with the message object
+        console.log('Message acknowledged.'); // Added log for acknowledgement
+    }
+
+    /**
+     * Negative acknowledges a message using its delivery tag.
+     * @param {amqp.ConsumeMessage} msg - The message to nack.
+     * @param {boolean} requeue - Whether to requeue the message.
+     * @param {boolean} allUpTo - Whether to nack all messages up to this one (not typically used as false is usually preferred).
+     */
+    nack(msg: amqp.ConsumeMessage | null, requeue: boolean, allUpTo: boolean = false): void {
+        if (!msg || !this.#channel) {
+            console.warn('Attempted to nack a null message or with no channel.');
+            return;
+        }
+        this.#channel.nack(msg, allUpTo, requeue); // Correctly using channel.nack with message object and parameters
+        console.log(`Message nacked (requeue: ${requeue}).`); // Added log for nack
+    }
+
+    /**
      * Ensures that a RabbitMQ queue exists. Creates the queue if it does not exist.
      * @param {string} queueName - The name of the queue to ensure.
-     * @param {amqp.Options.AssertQueue} [options] - Queue options.
+     * @param {EnsureQueueOptions} [options] - Queue options, including durability and DLQ settings.
      * @throws {Error} If ensuring the queue fails.
      */
-    async ensureQueue(queueName: string, options: amqp.Options.AssertQueue = { durable: false }): Promise<void> {
+    async ensureQueue(queueName: string, options: EnsureQueueOptions = { durable: true }): Promise<void> { // Default to durable queues
         try {
             if (!this.#channel) await this.#createChannel();
             if (!this.#channel) { // Double check after attempting to create channel
                 throw new Error('RabbitMQ channel is not initialized after creation attempt.');
             }
-            await this.#channel.assertQueue(queueName, options);
-            console.log(`Queue ensured: ${queueName}`);
+
+            let assertOptions: amqp.Options.AssertQueue = { durable: options.durable === undefined ? true : options.durable, arguments: {} }; // Default durable if not specified
+
+            if (options.enableDeadLettering) {
+                if (!options.deadLetterExchangeName || !options.deadLetterQueueName) {
+                    console.warn('Dead lettering enabled but DLQ exchange or queue name missing. Dead lettering will not be properly configured.');
+                } else {
+                    await this.#assertDeadLetterExchangeAndQueue(options.deadLetterExchangeName, options.deadLetterQueueName);
+                    assertOptions.arguments!['x-dead-letter-exchange'] = options.deadLetterExchangeName;
+                    assertOptions.arguments!['x-dead-letter-routing-key'] = options.deadLetterQueueName; // Route to queue name as routing key for simplicity
+                    console.log(`DLQ configured for queue ${queueName} to exchange ${options.deadLetterExchangeName} and queue ${options.deadLetterQueueName}`);
+                }
+            }
+
+            await this.#channel.assertQueue(queueName, assertOptions);
+            console.log(`Queue ensured: ${queueName} (durable: ${assertOptions.durable})`);
         } catch (err: any) {
             console.error('Failed to ensure queue:', err);
             throw new Error(`Failed to ensure queue ${queueName}: ${err.message}`);
         }
     }
+
+    async #assertDeadLetterExchangeAndQueue(exchangeName: string, queueName: string): Promise<void> {
+        if (!this.#channel) throw new Error('Channel is not initialized');
+        await this.#channel.assertExchange(exchangeName, 'fanout', { durable: true }); // Fanout exchange for DLQ is common
+        await this.#channel.assertQueue(queueName, { durable: true });
+        await this.#channel.bindQueue(queueName, exchangeName, ''); // Bind DLQ to DLQ exchange
+        console.log(`DLQ Exchange and Queue ensured: Exchange=${exchangeName}, Queue=${queueName}`);
+    }
+
 
     /**
      * Closes the RabbitMQ channel and connection.

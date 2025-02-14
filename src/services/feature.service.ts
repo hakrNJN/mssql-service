@@ -8,7 +8,7 @@ class FeaturesService implements IFeaturesService {
     private features: FeatureConfig = {};
 
     constructor(filePath: string) {
-        this.fileService = new FileService(join(__dirname, filePath, 'feature.config.yml'));
+        this.fileService = new FileService(join(filePath, 'feature.config.yml'));
         this.features = {};
     }
 
