@@ -1,6 +1,6 @@
 //src/controllers/company.controller.ts
 import { Request, Response } from 'express';
-import { CompMst } from '../entity/company.entity';
+import { CompMst } from '../entity/anushree/company.entity';
 import { HttpException } from '../exceptions/httpException';
 import { CompanyService } from '../services/company.service';
 import { EqualFilter, Filters } from '../types/filter.types';

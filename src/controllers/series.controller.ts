@@ -3,7 +3,7 @@
 import { Request, Response } from 'express'
 import { AppConfig } from '../config/config'
 import { stringDecorators } from '../decorators/stringDecorators'
-import { SerMst } from '../entity/series.entity'
+import { SerMst } from '../entity/anushree/series.entity'
 import { HttpException } from '../exceptions/httpException'
 import { SeriesService } from '../services/series.service'
 import { EqualFilter, EqualNullFilter, Filters, InFilter, LikeFilter, NotLikeFilter } from '../types/filter.types'

@@ -1,6 +1,6 @@
 //src/services/years.service.ts
 
-import { YearMst } from "../entity/years.entity";
+import { YearMst } from "../entity/anushree/years.entity";
 import { AppDataSource } from "../providers/data-source.provider";
 import { YearsProvider } from "../providers/years.provider";
 import { Filters } from "../types/filter.types";

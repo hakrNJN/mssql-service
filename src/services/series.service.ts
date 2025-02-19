@@ -2,7 +2,7 @@
 
 
 
-import { SerMst } from "../entity/series.entity";
+import { SerMst } from "../entity/anushree/series.entity";
 import { AppDataSource } from "../providers/data-source.provider";
 import { SeriesProvider } from "../providers/series.provider";
 import { Filters } from "../types/filter.types";

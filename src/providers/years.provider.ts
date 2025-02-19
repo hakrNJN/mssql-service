@@ -1,6 +1,6 @@
 // src/providers/year.provider.ts
 import { Repository } from "typeorm";
-import { YearMst } from "../entity/years.entity";
+import { YearMst } from "../entity/anushree/years.entity";
 import { BaseProviderInterface } from "../interface/base.provider";
 import { Filters } from "../types/filter.types";
 import { applyFilters } from "../utils/query-utils"; // Import AppDataSource

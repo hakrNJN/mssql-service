@@ -1,3 +1,4 @@
+//src/providers/data-source.provider.ts
 import { DataSource } from "typeorm";
 import { AppConfig } from "../config/config";
 
@@ -15,10 +16,10 @@ export class AppDataSource {
                 port: Number(DB_CONFIG.port),
                 username: DB_CONFIG.username,
                 password: DB_CONFIG.password,
-                database: DB_CONFIG.database,
+                database: DB_CONFIG.database,//Main Database
                 synchronize: DB_CONFIG.synchronize,
                 logging: DB_CONFIG.logging,        
-                entities: ["src/entity/*.ts" ],//[YearMst, CompMst],
+                entities: ["src/entity/anushree/*.ts" ],//[YearMst, CompMst],
                 subscribers: [],
                 migrations: [],
                 connectionTimeout: 1500000,

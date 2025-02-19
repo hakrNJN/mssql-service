@@ -1,6 +1,6 @@
 // src/providers/year.provider.ts
 import { Repository } from "typeorm";
-import { SerMst } from "../entity/series.entity";
+import { SerMst } from "../entity/anushree/series.entity";
 import { BaseProviderInterface } from "../interface/base.provider";
 import { Filters } from "../types/filter.types";
 import { applyFilters } from "../utils/query-utils";

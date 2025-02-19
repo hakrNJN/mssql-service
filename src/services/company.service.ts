@@ -1,7 +1,7 @@
 //src/services/company.service.ts
 
 
-import { CompMst } from "../entity/company.entity";
+import { CompMst } from "../entity/anushree/company.entity";
 import { CompanyProvider } from "../providers/company.provider";
 import { AppDataSource } from "../providers/data-source.provider";
 import { Filters } from "../types/filter.types";

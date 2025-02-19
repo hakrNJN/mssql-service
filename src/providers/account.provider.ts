@@ -1,7 +1,7 @@
 // src/providers/account.provider.ts
 import { FindManyOptions, Repository, SelectQueryBuilder } from "typeorm";
 import { objectDecorators } from "../decorators/objectDecorators";
-import { Mast } from "../entity/accounts.entity";
+import { Mast } from "../entity/anushree/accounts.entity";
 import { BaseProviderInterface } from "../interface/base.provider";
 import { Filters } from "../types/filter.types";
 import { applyFilters } from "../utils/query-utils";
