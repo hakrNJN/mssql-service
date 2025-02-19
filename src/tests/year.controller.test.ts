@@ -1,12 +1,10 @@
 // __tests__/year.controller.test.ts
-import { YearController } from '../src/controllers/year.controller';
-import { YearService } from '../src/services/years.service';
 import { Request, Response } from 'express';
-import { HttpException } from '../src/exceptions/httpException';
-import { AppDataSource } from '../src/providers/data-source.provider';
-import { YearsProvider } from '../src/providers/years.provider';
+import { YearController } from '../controllers/year.controller';
+import { AppDataSource } from '../providers/data-source.provider';
+import { YearService } from '../services/years.service';
 
-jest.mock('../src/services/years.service', () => {
+jest.mock('../services/years.service', () => {
      return {
          YearService: jest.fn().mockImplementation(() => ({
              getYears: jest.fn(),

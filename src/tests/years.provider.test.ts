@@ -1,8 +1,7 @@
 // __tests__/years.provider.test.ts
-import { YearsProvider } from '../src/providers/year.provider';
-import { AppDataSource } from '../src/providers/data-source.provider';
-import { Repository } from 'typeorm';
-import { YearMst } from '../src/entity/years.entity';
+import { AppDataSource } from '../providers/data-source.provider';
+import { YearsProvider } from '../providers/years.provider';
+import { EqualFilter } from '../types/filter.types';
 
 jest.mock('../src/providers/data-source.provider', () => {
     const mockGetRepository = jest.fn();
@@ -87,7 +86,7 @@ describe('YearsProvider', () => {
          getOne: jest.fn().mockResolvedValue(undefined)
        }));
 
-     const filters = {year: 2023}
+        const filters = { id: { equal:17} as EqualFilter<number> }
      const years = await provider.getAllYearsWithFilters(filters);
 
      expect(mockYearRepository.createQueryBuilder).toHaveBeenCalled();
