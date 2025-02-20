@@ -35,6 +35,7 @@ export class AccountController {
             if (result) {
                 ApiResponse.success({
                     res,
+                    req,
                     data: result,
                     message: `All Avalable Accounts Retrived`,// Include pagination metadata
                     metadata:paginationMetadata,
@@ -63,6 +64,7 @@ export class AccountController {
             if (result) {
                 ApiResponse.success({
                     res,
+                    req,
                     data: result,
                     message: `All Avalable Accounts Retrived`,// Include pagination metadata
                     metadata:paginationMetadata,
@@ -91,6 +93,7 @@ export class AccountController {
             if (result) {
                 ApiResponse.success({
                     res,
+                    req,
                     data: result,
                     message: `All Avalable Accounts Retrived`,// Include pagination metadata
                     metadata:paginationMetadata,
@@ -119,6 +122,7 @@ export class AccountController {
             if (result) {
                 ApiResponse.success({
                     res,
+                    req,
                     data: result,
                     message: `All Avalable Accounts Retrived`,// Include pagination metadata
                     metadata:paginationMetadata,
@@ -142,6 +146,7 @@ export class AccountController {
             if (result) {
                 ApiResponse.success({
                     res,
+                    req,
                     data: result,
                     message:`Account retrived for id ${accountId}`,// Include pagination metadata
                 });
@@ -186,6 +191,7 @@ export class AccountController {
             if (result) {
                 ApiResponse.success({
                     res,
+                    req,
                     data: result,
                     message:`Account retrived for gst id ${gst}`,// Include pagination metadata
                 });
@@ -208,6 +214,7 @@ export class AccountController {
             if (result) {
                 ApiResponse.success({
                     res,
+                    req,
                     data: result,
                     message:`Account retrived for id ${agentId}`,// Include pagination metadata
                 });

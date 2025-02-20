@@ -1,6 +1,7 @@
 //src/app.ts
 import { Application } from 'express';
 import { errorHandler } from './middleware/errorHandler';
+import { timeTrackerMiddleware } from './middleware/TimeTracker.middleware';
 import ExpressApp from './providers/express.provider';
 import apiRoutes from './routes';
 import { DataSourceService } from './services/dataSource.service';
@@ -28,7 +29,7 @@ constructor(dataSourceService: DataSourceService) { // Receive DataSourceService
   }
 
   private initializeRoutes(): void {
-    this.app.use('/api', apiRoutes(this.dataSourceService)); // Pass DataSourceService to routes
+    this.app.use('/api', timeTrackerMiddleware, apiRoutes(this.dataSourceService)); // Pass DataSourceService to routes
     // this.app.use('/api', apiRoutes(this.dataSource, this.pheonixDataSource)); // Pass dataSource to routes
     // this.app.use('/api/test', new testRoutes().router); // Example route mounting
   }

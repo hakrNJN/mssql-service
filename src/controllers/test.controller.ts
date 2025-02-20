@@ -34,6 +34,7 @@ export class TestController {
             if (paginatedTests) {
                 ApiResponse.success({
                     res,
+                    req,
                     data: paginatedTests,
                     message: `Tests retrieved (page ${page})`,
                     metadata: paginationMetadata, // Include pagination metadata

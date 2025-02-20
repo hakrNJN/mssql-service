@@ -2,6 +2,8 @@ export interface StandardMetadata {
     requestId: string;
     apiVersion: string;
     timestamp: string;
+    timeTaken?: number;
+    timeTakenUnit?: string;
 }
 
 export interface PaginationMetadata {

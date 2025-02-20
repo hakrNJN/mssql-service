@@ -32,6 +32,7 @@ export class SeriesController {
             if (result) {
                 ApiResponse.success({
                     res,
+                    req,
                     data: result,
                     message: `All Avalable Series Retrived`// Include pagination metadata
                 });
@@ -55,6 +56,7 @@ export class SeriesController {
             if (result) {
                 ApiResponse.success({
                     res,
+                    req,
                     data: result,
                     message: `Series retrived for id ${seriesId}`// Include pagination metadata
                 });
@@ -137,6 +139,7 @@ export class SeriesController {
             if (result) {
                 ApiResponse.success({
                     res,
+                    req,
                     data: result,
                     message: `IRN Series retrived`// Include pagination metadata
                 });

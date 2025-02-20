@@ -23,6 +23,7 @@ export class YearController {
             if (result) {
                 ApiResponse.success({
                     res,
+                    req,
                     data: result,
                     message: `All Avalable Years Retrived`// Include pagination metadata
                 });
@@ -46,6 +47,7 @@ export class YearController {
             if (result) {
                 ApiResponse.success({
                     res,
+                    req,
                     data: result,
                     message: `Year retrived for id ${yearId}`// Include pagination metadata
                 });

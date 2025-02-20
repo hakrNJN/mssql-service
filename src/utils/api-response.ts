@@ -1,9 +1,10 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { HttpException } from '../exceptions/httpException'; // Adjust path if needed
 import { StandardMetadata } from '../interface/response';
 
 interface ApiResponseOptions<T> {
     res: Response;
+    req: Request;
     statusCode?: number;
     message?: string;
     data?: T;
@@ -13,7 +14,7 @@ interface ApiResponseOptions<T> {
 
 export class ApiResponse {
     public static success<T>(options: ApiResponseOptions<T>): Response<any, Record<string, any>> {
-        const { res,  statusCode = 200, message = 'Success', data, metadata: customMetadata } = options;
+        const { res,req,  statusCode = 200, message = 'Success', data, metadata: customMetadata } = options;
         const requestId = 'req.requestId';
         const apiVersion = process.env.API_VERSION || 'v1';
 
@@ -21,7 +22,15 @@ export class ApiResponse {
             requestId,
             apiVersion,
             timestamp: new Date().toISOString(),
+            // timeTakenUnit: "ms"
         };
+
+        const startTime = (req as any).startTime; // Get startTime from req object
+        if (startTime) {
+            const endTime = Date.now();
+            const timeTaken = endTime - startTime;
+            standardMetadata.timeTaken = timeTaken/1000;
+        }
 
         let metadata: Record<string, any> = standardMetadata; // Start with standard metadata
         if (customMetadata) {

@@ -21,6 +21,7 @@ export class SaleTransactionController {
             if (result) {
                 ApiResponse.success({
                     res,
+                    req,
                     data: result,
                     message: `Transaction retrived for id ${SalTrnId}`// Include pagination metadata
                 });

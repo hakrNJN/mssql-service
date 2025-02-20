@@ -25,6 +25,7 @@ export class CompanyController {
             if (result) {
                 ApiResponse.success({
                     res,
+                    req,
                     data: result,
                     message: `All Avalable Company Retrived`// Include pagination metadata
                 });
@@ -48,6 +49,7 @@ export class CompanyController {
             if (result) {
                 ApiResponse.success({
                     res,
+                    req,
                     data: result,
                     message: `Company retrived for id ${comapnyId}`// Include pagination metadata
                 });
@@ -75,6 +77,7 @@ export class CompanyController {
             if (result) {
                 ApiResponse.success({
                     res,
+                    req,
                     data: result,
                     message: `Company retrived for GSTIN ${GSTIN}`// Include pagination metadata
                 });
