@@ -33,7 +33,7 @@ export class AppDataSource {
 
             try {
                 await this._dataSource.initialize();
-                console.log("Data Source has been initialized!");
+                console.log("App Data Source has been initialized!");
             } catch (err) {
                 console.error("Error during Data Source initialization", err);
                 this._dataSource = null; // Clear the instance after initialization error

@@ -16,15 +16,18 @@ export class PhoenixDataSource {
                 port: Number(DB_CONFIG.port),
                 username: DB_CONFIG.username,
                 password: DB_CONFIG.password,
-                database: "pheonixdb", // The other database!
-                synchronize: false, // Or true temporarily for table creation (then DISABLE!)
-                logging: DB_CONFIG.logging,
-                entities: ["src/entity/pheonix/*.ts" ] ,// Entities for pheonixdb
+                database: 'pheonixDB',//DB_CONFIG.database,//Main Database
+                synchronize: DB_CONFIG.synchronize,
+                logging: DB_CONFIG.logging,        
+                entities: ["src/entity/phoenix/*.ts" ],//[YearMst, CompMst],
                 subscribers: [],
                 migrations: [],
                 connectionTimeout: 1500000,
                 options: {
-                    encrypt: false,
+                    encrypt: false, // Ensure encryption is enabled (if desired and configured on server)
+                    // cryptoCredentialsDetails: {
+                    //     minVersion: 'TLSv1.2' // Or 'TLSv1' if 1.2 doesn't work, but prefer 1.2 or higher
+                    // }
                 },
             });
 

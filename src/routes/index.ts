@@ -1,12 +1,13 @@
 //src/routes/index.ts
 import { Router } from 'express';
 import path from 'path';
-import { AppDataSource } from '../providers/data-source.provider'; // Import AppDataSource
+import { DataSourceService } from '../services/dataSource.service';
 import FeaturesService from '../services/feature.service';
 import { Logger } from '../utils/logger';
 import accountRoute from './account.route';
 import companyRoute from './company.route';
 import featureRoute from './feature.route';
+import saleTransactionRoute from './saleTransaction.route';
 import seriesRoute from './series.route';
 import testRoute from './test.route';
 import yearRoute from './year.route';
@@ -16,13 +17,15 @@ const logger = Logger.getInstance();
 const featuresService = new FeaturesService(path.join(__dirname, '../config'));
 
 // Function to create apiRoutes and accept dataSource
-const apiRoutes = (dataSource: AppDataSource): Router => {
+// const apiRoutes = (dataSource: AppDataSource, dataSource2 : PhoenixDataSource): Router => {
+    const apiRoutes = (dataSourceService: DataSourceService): Router => {
     try {
         router.use('/test', testRoute);
-        router.use('/year', yearRoute(dataSource)); // Pass dataSource to yearRoute
-        router.use('/company', companyRoute(dataSource));
-        router.use('/series', seriesRoute(dataSource));
-        router.use('/accounts', accountRoute(dataSource));
+        router.use('/year', yearRoute(dataSourceService.getAppDataSource())); // Pass dataSource to yearRoute
+        router.use('/company', companyRoute(dataSourceService.getAppDataSource()));
+        router.use('/series', seriesRoute(dataSourceService.getAppDataSource()));
+        router.use('/accounts', accountRoute(dataSourceService.getAppDataSource()));
+        router.use('/transaction/sale/', saleTransactionRoute(dataSourceService.getPhoenixDataSource()));
         
         
         // Load features and then create feature route

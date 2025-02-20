@@ -1,12 +1,11 @@
 //src/providers/saleTransaction.provider.ts
 
-import { BaseProviderInterface } from "../interface/base.provider";
-import { SaleTransaction } from '../entity/phoenix/SaleTransaction';
-import { SaleTransactionDetails } from '../entity/phoenix/saleTransactionDetail'
-import { objectDecorators } from "../decorators/objectDecorators";
 import { Repository } from "typeorm"; // Changed ViewEntity to Repository
-import { PhoenixDataSource } from "./phoenix.data-source.provider";
+import { objectDecorators } from "../decorators/objectDecorators";
+import { SaleTransaction } from '../entity/phoenix/SaleTransaction';
+import { BaseProviderInterface } from "../interface/base.provider";
 import { Filters } from "../types/filter.types";
+import { PhoenixDataSource } from "./phoenix.data-source.provider";
 
 export interface SaleTransactionProvider extends BaseProviderInterface<SaleTransaction, Filters<SaleTransaction>> {
     trimWhitespace<T>(obj: T): T;
@@ -33,19 +32,16 @@ export class SaleTransactionProvider {
         this.SaleTransactionRepository = dataSource.getRepository(SaleTransaction);
     }
 
-    async getTransactionById(id: number): Promise<{ SaleTransaction: SaleTransaction | null }> {
+    async getTransactionById(id: number): Promise<SaleTransaction | null> {
         try {
             const transaction = await this._getRepository().findOne({
-                where: {
-                    SalTrnId: id,
-                },
-                relations: ['saleTransactionDetails'], // Corrected to use 'saleTransactionDetails' and not 'products'
+                where: { SalTrnId: id },
+                relations: ['products'], // Correct relations is specified
             });
-
-            return { SaleTransaction: transaction || null };
+            return this.trimWhitespace(transaction) || null; // Trimming is applied here
         } catch (error) {
             console.error("Error fetching sale transaction:", error);
-            return { SaleTransaction: null }; // or throw error
+            return null; // or throw error
         }
     }
 }

@@ -1,19 +1,26 @@
 //src/app.ts
 import { Application } from 'express';
 import { errorHandler } from './middleware/errorHandler';
-import { AppDataSource } from './providers/data-source.provider'; // Import AppDataSource
 import ExpressApp from './providers/express.provider';
 import apiRoutes from './routes';
+import { DataSourceService } from './services/dataSource.service';
 import { Logger } from './utils/logger';
 
 class App {
   public app: Application;
   private logger = Logger.getInstance();
   private expressAppInstance: ExpressApp;
-  public dataSource: AppDataSource; // Add dataSource property
+  public dataSourceService: DataSourceService; 
+  // public dataSource: AppDataSource; // Add dataSource property
+  // public pheonixDataSource: PhoenixDataSource;
 
-  constructor(dataSourceInstance: AppDataSource) { // Receive dataSourceInstance in constructor
-    this.dataSource = dataSourceInstance; // Assign dataSourceInstance to this.dataSource
+  
+  // constructor(dataSourceInstance: AppDataSource, pheonixDataSourceInstance : PhoenixDataSource) { // Receive dataSourceInstance in constructor
+  //   this.dataSource = dataSourceInstance; // Assign dataSourceInstance to this.dataSource
+  // this.pheonixDataSource = pheonixDataSourceInstance; // Assign dataSourceInstance to this.dataSource
+
+constructor(dataSourceService: DataSourceService) { // Receive DataSourceService in constructor
+  this.dataSourceService = dataSourceService;
     this.expressAppInstance = new ExpressApp();
     this.app = this.expressAppInstance.app;
     this.initializeRoutes();
@@ -21,7 +28,8 @@ class App {
   }
 
   private initializeRoutes(): void {
-    this.app.use('/api', apiRoutes(this.dataSource)); // Pass dataSource to routes
+    this.app.use('/api', apiRoutes(this.dataSourceService)); // Pass DataSourceService to routes
+    // this.app.use('/api', apiRoutes(this.dataSource, this.pheonixDataSource)); // Pass dataSource to routes
     // this.app.use('/api/test', new testRoutes().router); // Example route mounting
   }
 

@@ -1,15 +1,18 @@
-import { Column, Entity } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
+import { SaleTransaction } from "./SaleTransaction";
 
 // @Entity({ name: "SaleTransactionDetail", database: "pheonixdb", schema: "dbo" })  // Map the entity to the view name wit database and schema
 @Entity("SaleTransactionDetails")  // Map the entity to the view name wit database and schema
 export class SaleTransactionDetails {
   // @PrimaryColumn()
   // id: number;
+  // @PrimaryGeneratedColumn() // New auto-incrementing primary key - IMPORTANT CHANGE
+  // id?: number;
 
   @Column()
   SalTrnId!: string
 
-  @Column()
+  @PrimaryColumn()
   Srno!: number;
 
   @Column()
@@ -68,4 +71,8 @@ export class SaleTransactionDetails {
 
   @Column()
   SGSTAmount!: number;
+
+  @ManyToOne(() => SaleTransaction, (saleTransaction) => saleTransaction.products)
+  @JoinColumn({ name: "SalTrnId" })
+  saleTransaction!: SaleTransaction;
 }
