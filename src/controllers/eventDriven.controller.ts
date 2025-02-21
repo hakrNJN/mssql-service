@@ -1,11 +1,9 @@
 // src/controller/eventDriven.controller.ts
-import path from 'path';
-import { FeatureConfig } from '../interface/feature.interface';
+import { inject, injectable } from 'tsyringe';
 import FeaturesService from '../services/feature.service';
 import PublisherRabbitMQService from '../services/publisher.RabbitMQ.service';
 import RabbitMQClientService from '../services/rabbitMQ.service';
 import { MessageHandler } from '../types/rabbitMq.types';
-
 
 // Define message types for queues (example)
 interface FetchDataMessagePayload {
@@ -23,28 +21,51 @@ const fetchRegisterQueueName = 'FetchRegisterQueue';
 const registerValidateQueueName = 'RegisterValidateQueue';
 
 
-const featuresService = new FeaturesService(path.join(__dirname, '../config'));
+// const featuresService = new FeaturesService( '../config');
 
+@injectable()
 class EventDrivenController {
     private rabbitMQClient: RabbitMQClientService;
     private publisherService: PublisherRabbitMQService;
-    private featuresService: FeatureConfig = {};
+    // private featuresService: FeatureConfig = {};
+    private featuresService: FeaturesService;
 
-    constructor(rabbitMQClient: RabbitMQClientService, publisherService: PublisherRabbitMQService) {
+    constructor(
+        rabbitMQClient: RabbitMQClientService,
+        publisherService: PublisherRabbitMQService,
+        @inject(FeaturesService) featuresService: FeaturesService // Inject FeaturesService
+    ) {
         this.rabbitMQClient = rabbitMQClient;
         this.publisherService = publisherService;
+        this.featuresService = featuresService; // Assign injected service
     }
 
     async initialize(): Promise<void> {
         await this.rabbitMQClient.init();
-        featuresService.loadFeatures().then(() => {
-            this.featuresService = featuresService.getFeatures()
-         })
+        await this.featuresService.initialize();
+        // featuresService.loadFeatures().then(() => {
+        //     this.featuresService = featuresService.getFeatures()
+        //  })
     }
 
-    async fetchData() { // always running
+    async startEventListeners(): Promise<void> { // New method to start listeners
+        if (this.featuresService.isFeatureEnabled('fetchDataEnabled')) {
+            await this.fetchData();
+        } else {
+            console.log('FetchData feature is not enabled, skipping fetchData listener.');
+        }
+
+        if (this.featuresService.isFeatureEnabled('fetchRegisterEnabled')) {
+            await this.fetchRegister();
+        } else {
+            console.log('fetchRegister feature is not enabled, skipping fetchRegister listener.');
+        }
+        console.log('Event listeners started based on feature flags.');
+    }
+
+    private async fetchData() { // always running
         
-        if (this.featuresService.fetchDataEnabled) {
+        // if (this.featuresService.isFeatureEnabled('fetchDataEnabled')) {
             console.log('FetchData feature is enabled');
 
             // const messageHandler: MessageHandler<FetchDataMessagePayload> = async (msg: amqp.ConsumeMessage | null) => {
@@ -89,15 +110,15 @@ class EventDrivenController {
                 console.error(`Error setting up fetchData queue or subscription:`, error);
             }
 
-        } else {
-            console.log('FetchData feature is not enabled');
-        }
+        // } else {
+        //     console.log('FetchData feature is not enabled');
+        // }
     }
 
 
-    async fetchRegister() { // similar structure to fetchData
-        if (this.featuresService.fetchRegisterEnabled)  {
-            console.log('fetchRegister feature is enabled');
+    private async fetchRegister() { // similar structure to fetchData
+        // if (this.featuresService.isFeatureEnabled('fetchRegisterEnabled'))  {
+        //     console.log('fetchRegister feature is enabled');
 
             // const messageHandler: MessageHandler = async (msg: amqp.ConsumeMessage | null) => {
                 const messageHandler: MessageHandler<FetchRegisterMessagePayload> = async (msg, messagePayload) => { // Type-safe handler
@@ -142,9 +163,9 @@ class EventDrivenController {
                 console.error(`Error setting up fetchRegister queue or subscription:`, error);
             }
 
-        } else {
-            console.log('fetchRegister feature is not enabled');
-        }
+        // } else {
+        //     console.log('fetchRegister feature is not enabled');
+        // }
     }
 
     // Placeholder for register data fetching - replace with your actual service call

@@ -1,14 +1,17 @@
 // src/service/publisher.rabbitMQ.service.ts
 import * as amqp from 'amqplib';
+import { inject, injectable } from 'tsyringe';
 import { Message, MessageProperties } from '../types/message.types';
 import RabbitMQClientService from './rabbitMQ.service'; // Adjust path if necessary
 
+@injectable()
 class PublisherRabbitMQService {
-    private rabbitMQClient: RabbitMQClientService;
+    // private rabbitMQClient: RabbitMQClientService;
 
-    constructor(rabbitMQClient: RabbitMQClientService) {
-        this.rabbitMQClient = rabbitMQClient;
-    }
+    // constructor(rabbitMQClient: RabbitMQClientService) {
+    //     this.rabbitMQClient = rabbitMQClient;
+    // }
+    constructor(@inject(RabbitMQClientService) private rabbitMQClient: RabbitMQClientService) {}
 
     // Modified createMessage to be generic and type-safe
     createMessage<BodyType>(properties?: MessageProperties, body?: BodyType): Message<BodyType> {

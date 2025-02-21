@@ -1,4 +1,5 @@
 # feature.config.yml
+startListening: true
 # listening Queues
 fetchRegisterEnabled: false
 fetchDataEnabled: true
