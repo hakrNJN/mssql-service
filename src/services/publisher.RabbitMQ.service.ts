@@ -1,17 +1,19 @@
 // src/service/publisher.rabbitMQ.service.ts
 import * as amqp from 'amqplib';
 import { inject, injectable } from 'tsyringe';
+import winston from 'winston';
 import { Message, MessageProperties } from '../types/message.types';
+import { WINSTON_LOGGER } from '../utils/logger';
 import RabbitMQClientService from './rabbitMQ.service'; // Adjust path if necessary
 
 @injectable()
 class PublisherRabbitMQService {
-    // private rabbitMQClient: RabbitMQClientService;
+    private readonly logger: winston.Logger;
 
-    // constructor(rabbitMQClient: RabbitMQClientService) {
-    //     this.rabbitMQClient = rabbitMQClient;
-    // }
-    constructor(@inject(RabbitMQClientService) private rabbitMQClient: RabbitMQClientService) {}
+    constructor(@inject(RabbitMQClientService) private rabbitMQClient: RabbitMQClientService,
+        @inject(WINSTON_LOGGER) logger: winston.Logger) { 
+        this.logger = logger
+     }
 
     // Modified createMessage to be generic and type-safe
     createMessage<BodyType>(properties?: MessageProperties, body?: BodyType): Message<BodyType> {
@@ -26,9 +28,9 @@ class PublisherRabbitMQService {
         try {
             const message = this.createMessage<BodyType>(undefined, messageBody); // Create with default properties
             await this.rabbitMQClient.sendMessage(queueName, message, options);
-            console.log(`Message published to ${queueName}`);
+            this.logger.info(`Message published to ${queueName}`);
         } catch (error: any) {
-            console.error(`Error publishing message to queue ${queueName}:`, error);
+            this.logger.error(`Error publishing message to queue ${queueName}:`, error);
             throw error;
         }
     }
@@ -44,9 +46,9 @@ class PublisherRabbitMQService {
             message.body = currentData;
 
             await this.rabbitMQClient.sendMessage(queueName, message, { persistentMessage: true }); // Ensure persistence
-            console.log(`Message published to ${queueName}`);
+            this.logger.info(`Message published to ${queueName}`);
         } catch (error: any) {
-            console.error(`Error in updateAndSendMessage to queue ${queueName}:`, error);
+            this.logger.error(`Error in updateAndSendMessage to queue ${queueName}:`, error);
             throw error; // Re-throw to be handled by the controller
         }
     }

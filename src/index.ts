@@ -3,38 +3,31 @@ import "reflect-metadata";
 import { container } from "tsyringe";
 import { App } from './App';
 import { AppConfig } from './config/config';
-import EventDrivenController from "./controllers/eventDriven.controller";
 import { DataSourceService } from "./services/dataSource.service";
-import FeaturesService from "./services/feature.service";
-import PublisherRabbitMQService from "./services/publisher.RabbitMQ.service";
-import RabbitMQClientService from "./services/rabbitMQ.service";
-import { Logger } from './utils/logger';
+import { registerDependencies } from "./utils/registerDependencies";
 
-const logger = Logger.getInstance();
+// Register all dependencies
+registerDependencies();
+
+// Resolve the Winston Logger from the container
+// const logger = container.resolve<winston.Logger>(WINSTON_LOGGER);
 
 async function startServer() {
+  
+
   try {
 
-    const dataSourceService = new DataSourceService();
-    await dataSourceService.initializeDataSources();
-
-    container.register(DataSourceService, { useValue: dataSourceService });
-
-    // **Register RabbitMQClientService and PublisherRabbitMQService here**
-    const rabbitMQConnectionUrl = {connectionUrl:AppConfig.RABBITMQ_BROCKER}; // Replace with your RabbitMQ connection URL
-    container.register(RabbitMQClientService, { useValue: new RabbitMQClientService(rabbitMQConnectionUrl) });
-    container.register(PublisherRabbitMQService, { useFactory: (c) => new PublisherRabbitMQService(c.resolve(RabbitMQClientService)) });
-    container.register(EventDrivenController, { useFactory: (c) => new EventDrivenController(c.resolve(RabbitMQClientService), c.resolve(PublisherRabbitMQService), c.resolve(FeaturesService)) });
-
-    const app = new App(dataSourceService);
+    // Register the Winston Logger with tsyringe.
+    // We register the LoggerProvider as a singleton, and then resolve the winston.Logger instance from it.
+    const dataSourceService = container.resolve(DataSourceService);
+    // const app = new App(dataSourceService);
+    const app = container.resolve(App);
     app.listen(AppConfig.APP.PORT, () => {
-      logger.info(`${AppConfig.APP.NAME} server is running on port ${AppConfig.APP.PORT} in ${AppConfig.APP.ENVIRONMENT} environment`);
+      console.info(`${AppConfig.APP.NAME} server is running on port ${AppConfig.APP.PORT} in ${AppConfig.APP.ENVIRONMENT} environment`);
     });
 
-    // No need to call app.startEventListeners() here anymore, it's called inside app.listen() in App.ts
-
   } catch (error) {
-    logger.error('Error starting server:', error);
+    console.error('Error starting server:', error);
     process.exit(1);
   }
 }

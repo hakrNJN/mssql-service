@@ -1,6 +1,9 @@
 import { Request, Response } from 'express';
+import { container } from 'tsyringe'; // Import container
+import winston from 'winston'; // Import winston
 import { HttpException } from '../exceptions/httpException'; // Adjust path if needed
 import { StandardMetadata } from '../interface/response';
+import { WINSTON_LOGGER } from '../utils/logger'; // Import WINSTON_LOGGER token
 
 interface ApiResponseOptions<T> {
     res: Response;
@@ -48,11 +51,13 @@ export class ApiResponse {
     }
 
     public static error(error: HttpException, res: Response): Response<any, Record<string, any>> {
+// Resolve the Winston Logger from the container within the static method
+        const logger = container.resolve<winston.Logger>(WINSTON_LOGGER);
         const statusCode = error.status;
         const message = error.message;
         const details = error.details;
 
-        console.error('API Error:', message, error); // Still log errors
+        logger.error('API Error:', message, error); // Still log errors
 
         return res.status(statusCode).json({
             statusCode,

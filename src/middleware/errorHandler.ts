@@ -1,9 +1,12 @@
+//src/middleware/errorHandler.ts
 import { NextFunction, Request, Response } from 'express';
-
+import { container } from 'tsyringe';
+import winston from 'winston';
 import { HttpException } from '../exceptions/httpException';
-import { Logger } from '../utils/logger';
+import { WINSTON_LOGGER } from '../utils/logger';
 
-const logger = Logger.getInstance();
+// Resolve the Winston Logger from the container
+// const logger = container.resolve<winston.Logger>(WINSTON_LOGGER);
 
 export const errorHandler = (
   error: HttpException,
@@ -11,6 +14,8 @@ export const errorHandler = (
   res: Response,
   next: NextFunction
 ): void => {
+  const logger = container.resolve<winston.Logger>(WINSTON_LOGGER); 
+  
   const status = error.status || 500;
   const message = error.message || 'Something went wrong';
 

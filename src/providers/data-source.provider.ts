@@ -1,12 +1,22 @@
 //src/providers/data-source.provider.ts
+import { inject, injectable } from "tsyringe";
 import { DataSource } from "typeorm";
+import winston from "winston";
 import { AppConfig } from "../config/config";
+import { WINSTON_LOGGER } from "../utils/logger";
 
 const DB_CONFIG = AppConfig.DB_CONFIG
 
+@injectable()
 export class AppDataSource {
 
     private _dataSource: DataSource | null = null;
+    private readonly logger: winston.Logger;
+
+    constructor(@inject(WINSTON_LOGGER) logger: winston.Logger) {      // Add this line
+        this.logger = logger;
+     }
+    
 
     async init(): Promise<DataSource> { // Return Promise<DataSource> for init
         if (!this._dataSource) {
@@ -33,9 +43,9 @@ export class AppDataSource {
 
             try {
                 await this._dataSource.initialize();
-                console.log("App Data Source has been initialized!");
+                this.logger.info("App Data Source has been initialized!");
             } catch (err) {
-                console.error("Error during Data Source initialization", err);
+                this.logger.error("Error during Data Source initialization", err);
                 this._dataSource = null; // Clear the instance after initialization error
                 throw err; // Re-throw to propagate the error
             }
@@ -47,14 +57,14 @@ export class AppDataSource {
         if (this._dataSource) {
             try {
                 await this._dataSource.destroy(); // Use destroy instead of close for TypeORM >= 0.3
-                console.log("Data Source has been closed!");
+                this.logger.info("Data Source has been closed!");
                 this._dataSource = null; // Clear the instance after closing
             } catch (err) {
-                console.error("Error during Data Source closing", err);
+                this.logger.error("Error during Data Source closing", err);
                 throw err;
             }
         } else {
-            console.log("Data Source was already closed or not initialized.");
+            this.logger.error("Data Source was already closed or not initialized.");
         }
     }
 

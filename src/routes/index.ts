@@ -1,9 +1,10 @@
 //src/routes/index.ts
 import { Router } from 'express';
-import path from 'path';
+import { container } from 'tsyringe';
+import winston from 'winston';
 import { DataSourceService } from '../services/dataSource.service';
 import FeaturesService from '../services/feature.service';
-import { Logger } from '../utils/logger';
+import { WINSTON_LOGGER } from '../utils/logger';
 import accountRoute from './account.route';
 import companyRoute from './company.route';
 import featureRoute from './feature.route';
@@ -13,12 +14,14 @@ import testRoute from './test.route';
 import yearRoute from './year.route';
 
 const router: Router = Router();
-const logger = Logger.getInstance();
-const featuresService = new FeaturesService(path.join(__dirname, '../config'));
+// const logger = container.resolve<winston.Logger>(WINSTON_LOGGER);
+const featuresService = new FeaturesService();
 
 // Function to create apiRoutes and accept dataSource
 // const apiRoutes = (dataSource: AppDataSource, dataSource2 : PhoenixDataSource): Router => {
-    const apiRoutes = (dataSourceService: DataSourceService): Router => {
+const apiRoutes = (dataSourceService: DataSourceService): Router => {
+    const logger = container.resolve<winston.Logger>(WINSTON_LOGGER); 
+    
     try {
         router.use('/test', testRoute);
         router.use('/year', yearRoute(dataSourceService.getAppDataSource())); // Pass dataSource to yearRoute

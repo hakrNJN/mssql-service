@@ -1,7 +1,10 @@
 //src/service/rabbitMQ.service.ts
 import * as amqp from 'amqplib';
+import { inject, injectable } from 'tsyringe';
+import winston from 'winston';
 import { EnsureQueueOptions, IRabbitMQClient, SendMessageOptions } from "../interface/rabbitMQ.interface";
 import { MessageCondition, MessageHandler } from "../types/rabbitMq.types";
+import { WINSTON_LOGGER } from '../utils/logger';
 
 interface RabbitMQClientOptions {
     connectionUrl: string;
@@ -16,6 +19,8 @@ interface RabbitMQClientOptions {
  * Class representing the RabbitMQ Client service.
  * Implements the IRabbitMQClient interface.
  */
+
+@injectable() 
 class RabbitMQClientService implements IRabbitMQClient {
     #connectionUrl: string;
     #connection: amqp.Connection | null = null;
@@ -24,14 +29,18 @@ class RabbitMQClientService implements IRabbitMQClient {
     #reconnectDelayMs: number;
     #channelRecreateRetries: number;
     #channelRecreateDelayMs: number;
+    private readonly logger: winston.Logger;
 
-
-    constructor(options: RabbitMQClientOptions) {
+    constructor(
+        options: RabbitMQClientOptions,
+        @inject(WINSTON_LOGGER) logger: winston.Logger // Inject Winston Logger
+    ) {
         this.#connectionUrl = options.connectionUrl;
         this.#reconnectRetries = options.reconnectRetries ?? 5; // Default retries
         this.#reconnectDelayMs = options.reconnectDelayMs ?? 5000; // Default delay
         this.#channelRecreateRetries = options.channelRecreateRetries ?? 5;
         this.#channelRecreateDelayMs = options.channelRecreateDelayMs ?? 5000;
+        this.logger = logger; // Assign injected logger
     }
 
     /**
@@ -42,9 +51,9 @@ class RabbitMQClientService implements IRabbitMQClient {
         try {
             await this.#createConnection();
             await this.#createChannel();
-            console.log('RabbitMQ Client initialized successfully');
+            this.logger.info('RabbitMQ Client initialized successfully');
         } catch (err: any) {
-            console.error('Failed to initialize RabbitMQ Client:', err);
+            this.logger.error('Failed to initialize RabbitMQ Client:', err);
             throw new Error(`Failed to initialize RabbitMQ Client: ${err.message}`);
         }
     }
@@ -57,9 +66,9 @@ class RabbitMQClientService implements IRabbitMQClient {
         try {
             this.#connection = await amqp.connect(this.#connectionUrl, { heartbeat: 60 });
             this.#connection.on('error', (err) => this.#handleConnectionError(err));
-            this.#connection.on('close', () => console.warn('RabbitMQ connection closed.'));
+            this.#connection.on('close', () =>this.logger.warn('RabbitMQ connection closed.'));
         } catch (err: any) {
-            console.error('Failed to establish RabbitMQ connection:', err);
+            this.logger.error('Failed to establish RabbitMQ connection:', err);
             throw new Error(`Failed to establish RabbitMQ connection: ${err.message}`);
         }
     }
@@ -75,9 +84,9 @@ class RabbitMQClientService implements IRabbitMQClient {
             }
             this.#channel = await this.#connection.createChannel();
             this.#channel.on('error', (err: Error) => this.#handleChannelError(err));
-            console.log('RabbitMQ channel created successfully');
+            this.logger.info('RabbitMQ channel created successfully');
         } catch (err: any) {
-            console.error('Failed to create RabbitMQ channel:', err);
+            this.logger.error('Failed to create RabbitMQ channel:', err);
             throw new Error(`Failed to create RabbitMQ channel: ${err.message}`);
         }
     }
@@ -87,7 +96,7 @@ class RabbitMQClientService implements IRabbitMQClient {
      * @param {Error} err - The connection error.
      */
     async #handleConnectionError(err: Error): Promise<void> {
-        console.error('A connection error occurred:', err);
+        this.logger.error('A connection error occurred:', err);
         await this.#attemptReconnect();
     }
 
@@ -96,7 +105,7 @@ class RabbitMQClientService implements IRabbitMQClient {
      * @param {Error} err - The channel error.
      */
     async #handleChannelError(err: Error): Promise<void> {
-        console.error('A channel error occurred:', err);
+        this.logger.error('A channel error occurred:', err);
         await this.#attemptRecreateChannel();
     }
 
@@ -107,14 +116,14 @@ class RabbitMQClientService implements IRabbitMQClient {
     async #attemptReconnect(): Promise<void> {
         for (let attempt = 1; attempt <= this.#reconnectRetries; attempt++) {
             try {
-                console.log(`Attempting to reconnect (Attempt ${attempt}/${this.#reconnectRetries})...`);
+                this.logger.info(`Attempting to reconnect (Attempt ${attempt}/${this.#reconnectRetries})...`);
                 if (this.#channel) await this.#channel.close();
                 if (this.#connection) await this.#connection.close();
                 await this.init();
-                console.log('Reconnection successful');
+                this.logger.info('Reconnection successful');
                 return;
             } catch (err: any) {
-                console.error(`Reconnection attempt ${attempt} failed:`, err);
+                this.logger.error(`Reconnection attempt ${attempt} failed:`, err);
                 if (attempt < this.#reconnectRetries) {
                     await this.#delay(this.#reconnectDelayMs);
                 } else {
@@ -131,13 +140,13 @@ class RabbitMQClientService implements IRabbitMQClient {
     async #attemptRecreateChannel(): Promise<void> {
         for (let attempt = 1; attempt <= this.#reconnectRetries; attempt++) {
             try {
-                console.log(`Attempting to recreate channel (Attempt ${attempt}/${this.#reconnectRetries})...`);
+                this.logger.info(`Attempting to recreate channel (Attempt ${attempt}/${this.#reconnectRetries})...`);
                 if (this.#channel) await this.#channel.close();
                 await this.#createChannel();
-                console.log('Channel recreated successfully');
+                this.logger.info('Channel recreated successfully');
                 return;
             } catch (err: any) {
-                console.error(`Channel recreation attempt ${attempt} failed:`, err);
+                this.logger.error(`Channel recreation attempt ${attempt} failed:`, err);
                 if (attempt < this.#reconnectRetries) {
                     await this.#delay(this.#reconnectDelayMs);
                 } else {
@@ -172,9 +181,9 @@ class RabbitMQClientService implements IRabbitMQClient {
                 throw new Error('RabbitMQ channel is not initialized.');
             }
             this.#channel.sendToQueue(queueName, bufferMessage, { persistent: options.persistentMessage === undefined ? true : options.persistentMessage });
-            console.log(`Message sent to queue: ${queueName} (persistent: ${options.persistentMessage !== false})`);
+            this.logger.info(`Message sent to queue: ${queueName} (persistent: ${options.persistentMessage !== false})`);
         } catch (err: any) {
-            console.error('Failed to send message:', err);
+            this.logger.error('Failed to send message:', err);
             throw new Error(`Failed to send message to queue ${queueName}: ${err.message}`);
         }
     }
@@ -207,7 +216,7 @@ class RabbitMQClientService implements IRabbitMQClient {
 
             this.#channel.consume(queueName, async (msg) => {
                 if (msg === null) {
-                    console.warn('Consumer cancelled by server or channel closed.');
+                   this.logger.warn('Consumer cancelled by server or channel closed.');
                     return;
                 }
                 try {
@@ -217,17 +226,17 @@ class RabbitMQClientService implements IRabbitMQClient {
                         this.ack(msg);
                     }
                     else {
-                        console.log('Message did not match the condition, requeueing.');
+                        this.logger.info('Message did not match the condition, requeueing.');
                         this.nack(msg, false, true);
                     }
                 } catch (err: any) {
-                    console.error('Error processing message:', err, { messageContent: msg.content.toString() }); // Log message content on error
+                    this.logger.error('Error processing message:', err, { messageContent: msg.content.toString() }); // Log message content on error
                     this.nack(msg, false, true);
                 }
             }, { noAck: false });
-            console.log(`Subscribed to queue: ${queueName}`);
+            this.logger.info(`Subscribed to queue: ${queueName}`);
         } catch (err: any) {
-            console.error('Failed to subscribe to queue:', err);
+            this.logger.error('Failed to subscribe to queue:', err);
             throw new Error(`Failed to subscribe to queue ${queueName}: ${err.message}`);
         }
     }
@@ -238,11 +247,11 @@ class RabbitMQClientService implements IRabbitMQClient {
      */
     ack(msg: amqp.ConsumeMessage | null): void {
         if (!msg || !this.#channel) {
-            console.warn('Attempted to ack a null message or with no channel.');
+           this.logger.warn('Attempted to ack a null message or with no channel.');
             return;
         }
         this.#channel.ack(msg); // Correctly using channel.ack with the message object
-        console.log('Message acknowledged.'); // Added log for acknowledgement
+        this.logger.info('Message acknowledged.'); // Added log for acknowledgement
     }
 
     /**
@@ -253,11 +262,11 @@ class RabbitMQClientService implements IRabbitMQClient {
      */
     nack(msg: amqp.ConsumeMessage | null, requeue: boolean, allUpTo: boolean = false): void {
         if (!msg || !this.#channel) {
-            console.warn('Attempted to nack a null message or with no channel.');
+           this.logger.warn('Attempted to nack a null message or with no channel.');
             return;
         }
         this.#channel.nack(msg, allUpTo, requeue); // Correctly using channel.nack with message object and parameters
-        console.log(`Message nacked (requeue: ${requeue}).`); // Added log for nack
+        this.logger.info(`Message nacked (requeue: ${requeue}).`); // Added log for nack
     }
 
     /**
@@ -277,19 +286,19 @@ class RabbitMQClientService implements IRabbitMQClient {
 
             if (options.enableDeadLettering) {
                 if (!options.deadLetterExchangeName || !options.deadLetterQueueName) {
-                    console.warn('Dead lettering enabled but DLQ exchange or queue name missing. Dead lettering will not be properly configured.');
+                   this.logger.warn('Dead lettering enabled but DLQ exchange or queue name missing. Dead lettering will not be properly configured.');
                 } else {
                     await this.#assertDeadLetterExchangeAndQueue(options.deadLetterExchangeName, options.deadLetterQueueName);
                     assertOptions.arguments!['x-dead-letter-exchange'] = options.deadLetterExchangeName;
                     assertOptions.arguments!['x-dead-letter-routing-key'] = options.deadLetterQueueName; // Route to queue name as routing key for simplicity
-                    console.log(`DLQ configured for queue ${queueName} to exchange ${options.deadLetterExchangeName} and queue ${options.deadLetterQueueName}`);
+                    this.logger.info(`DLQ configured for queue ${queueName} to exchange ${options.deadLetterExchangeName} and queue ${options.deadLetterQueueName}`);
                 }
             }
 
             await this.#channel.assertQueue(queueName, assertOptions);
-            console.log(`Queue ensured: ${queueName} (durable: ${assertOptions.durable})`);
+            this.logger.info(`Queue ensured: ${queueName} (durable: ${assertOptions.durable})`);
         } catch (err: any) {
-            console.error('Failed to ensure queue:', err);
+            this.logger.error('Failed to ensure queue:', err);
             throw new Error(`Failed to ensure queue ${queueName}: ${err.message}`);
         }
     }
@@ -299,7 +308,7 @@ class RabbitMQClientService implements IRabbitMQClient {
         await this.#channel.assertExchange(exchangeName, 'fanout', { durable: true }); // Fanout exchange for DLQ is common
         await this.#channel.assertQueue(queueName, { durable: true });
         await this.#channel.bindQueue(queueName, exchangeName, ''); // Bind DLQ to DLQ exchange
-        console.log(`DLQ Exchange and Queue ensured: Exchange=${exchangeName}, Queue=${queueName}`);
+        this.logger.info(`DLQ Exchange and Queue ensured: Exchange=${exchangeName}, Queue=${queueName}`);
     }
 
 
@@ -311,9 +320,9 @@ class RabbitMQClientService implements IRabbitMQClient {
         try {
             if (this.#channel) await this.#channel.close();
             if (this.#connection) await this.#connection.close();
-            console.log('RabbitMQ connection and channel closed');
+            this.logger.info('RabbitMQ connection and channel closed');
         } catch (err: any) {
-            console.error('Failed to close RabbitMQ connection or channel:', err);
+            this.logger.error('Failed to close RabbitMQ connection or channel:', err);
             throw new Error(`Failed to close RabbitMQ connection or channel: ${err.message}`);
         } finally {
             this.#channel = null;
@@ -347,18 +356,18 @@ export default RabbitMQClientService;
 //     await rabbitMQClient.subscribe(queueName, async (msg) => {
 //       if (msg) {
 //         const content = msg.content.toString();
-//         console.log(`Received message: ${content}`);
+//         this.logger.info(`Received message: ${content}`);
 //         // Process your message here
 //       }
 //     });
 
-//     console.log('Listening for messages...');
+//     this.logger.info('Listening for messages...');
 
 //     // Keep the process running to receive messages
 //     // To close the connection later: await rabbitMQClient.close();
 
 //   } catch (error: any) {
-//     console.error('An error occurred:', error.message);
+//     this.logger.error('An error occurred:', error.message);
 //   }
 // }
 

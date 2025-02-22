@@ -1,6 +1,7 @@
 /// src/app.ts
 import { Application } from 'express';
-import { container } from 'tsyringe';
+import { container, inject, injectable } from 'tsyringe';
+import winston from 'winston';
 import EventDrivenController from './controllers/eventDriven.controller';
 import FeatureController from './controllers/feature.controller';
 import { errorHandler } from './middleware/errorHandler';
@@ -9,11 +10,14 @@ import ExpressApp from './providers/express.provider';
 import apiRoutes from './routes';
 import { DataSourceService } from './services/dataSource.service';
 import FeaturesService from './services/feature.service';
-import { Logger } from './utils/logger';
+import { WINSTON_LOGGER } from './utils/logger';
 
+// const logger = container.resolve<winston.Logger>(WINSTON_LOGGER);
+
+@injectable()
 class App {
   public app: Application;
-  private logger = Logger.getInstance();
+  private readonly logger: winston.Logger;
   private expressAppInstance: ExpressApp;
   public dataSourceService: DataSourceService;
   private eventDrivenController: EventDrivenController;
@@ -21,8 +25,12 @@ class App {
   private featureController!: FeatureController;
 
 
-  constructor(dataSourceService: DataSourceService) {
+  constructor(
+    dataSourceService: DataSourceService,
+    @inject(WINSTON_LOGGER) logger: winston.Logger 
+  ) {
     this.dataSourceService = dataSourceService;
+    this.logger = logger; 
     this.expressAppInstance = new ExpressApp();
     this.app = this.expressAppInstance.app;
     this.initializeRoutes();

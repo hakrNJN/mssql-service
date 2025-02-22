@@ -1,12 +1,21 @@
 // src/providers/phoenix-data-source.provider.ts
+import { inject, injectable } from "tsyringe";
 import { DataSource } from "typeorm";
+import winston from "winston";
 import { AppConfig } from "../config/config";
+import { WINSTON_LOGGER } from "../utils/logger";
 
 
 const DB_CONFIG = AppConfig.DB_CONFIG;
 
+@injectable()
 export class PhoenixDataSource {
     private _dataSource: DataSource | null = null;
+    private readonly logger: winston.Logger;
+
+    constructor(@inject(WINSTON_LOGGER) logger: winston.Logger) {
+        this.logger = logger;
+    }
 
     async init(): Promise<DataSource> {
         if (!this._dataSource) {
@@ -33,9 +42,9 @@ export class PhoenixDataSource {
 
             try {
                 await this._dataSource.initialize();
-                console.log("Phoenix Data Source has been initialized!");
+                this.logger.info("Phoenix Data Source has been initialized!");
             } catch (err) {
-                console.error("Error during Phoenix Data Source initialization", err);
+                this.logger.error("Error during Phoenix Data Source initialization", err);
                 this._dataSource = null;
                 throw err;
             }
@@ -47,14 +56,14 @@ export class PhoenixDataSource {
         if (this._dataSource) {
             try {
                 await this._dataSource.destroy();
-                console.log("Phoenix Data Source has been closed!");
+                this.logger.info("Phoenix Data Source has been closed!");
                 this._dataSource = null;
             } catch (err) {
-                console.error("Error during Phoenix Data Source closing", err);
+                this.logger.error("Error during Phoenix Data Source closing", err);
                 throw err;
             }
         } else {
-            console.log("Phoenix Data Source was already closed or not initialized.");
+            this.logger.info("Phoenix Data Source was already closed or not initialized.");
         }
     }
 
