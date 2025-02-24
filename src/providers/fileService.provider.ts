@@ -1,17 +1,26 @@
 //src/privoders/fileService.provider.ts
 import * as fs from 'fs/promises';
 import * as yaml from 'js-yaml';
+import { inject } from 'tsyringe';
+import winston from 'winston';
 import { IFileService } from '../interface/feature.interface';
 import FeaturesModel from '../model/feature.model';
+import { WINSTON_LOGGER } from '../utils/logger';
 
 
 class FileService implements IFileService {
     public filePath: string;
     public model: FeaturesModel; // Using concrete class here, could be interface if more flexible
+    private readonly logger: winston.Logger;
 
-    constructor(filePath: string) {
+
+    constructor(
+        filePath: string,
+        @inject(WINSTON_LOGGER) logger: winston.Logger
+    ) {
         this.filePath = filePath;
         this.model = new FeaturesModel();
+        this.logger = logger;
     }
 
     async initialize(): Promise<void> {
@@ -26,7 +35,7 @@ class FileService implements IFileService {
                 }
             }
         } catch (error) {
-            console.error('Error initializing FileService:', error);
+            this.logger.error('Error initializing FileService:', error);
             throw error; // Re-throw to be caught by service/controller
         }
     }
@@ -36,7 +45,7 @@ class FileService implements IFileService {
             const yamlStr = yaml.dump(this.model.read());
             await fs.writeFile(this.filePath, yamlStr, 'utf8');
         } catch (error) {
-            console.error('Error saving FileService:', error);
+            this.logger.error('Error saving FileService:', error);
             throw error; // Re-throw to be caught by service/controller
         }
     }

@@ -1,5 +1,6 @@
 // src/utils/registerDependencies.ts
-import { container, InjectionToken } from "tsyringe";
+import { join } from 'path'; // Import path
+import { container } from "tsyringe";
 import winston from 'winston';
 import { AppConfig } from '../config/config';
 import EventDrivenController from "../controllers/eventDriven.controller";
@@ -12,45 +13,58 @@ import PublisherRabbitMQService from "../services/publisher.RabbitMQ.service";
 import RabbitMQClientService from "../services/rabbitMQ.service";
 import { Logger, WINSTON_LOGGER } from "./logger";
 
-
-// Define a token for FileService
-export const FILE_SERVICE_TOKEN = Symbol('FileServiceToken') as InjectionToken<FileService>; 
-
+// Define a token for FileService if you want to use interface injection.
+// export const FILE_SERVICE_TOKEN = Symbol('FileServiceToken') as InjectionToken<FileService>; // Not strictly needed here
 
 export function registerDependencies(): void {
 
-    
-      // Register DataSourceService using useClass
-      container.register(DataSourceService, { useClass: DataSourceService });
+  // Register Winston Logger
+  container.register<winston.Logger>(WINSTON_LOGGER, {
+    useFactory: () => {
+      const loggerInstance = Logger.createLogger();
+      console.log("WINSTON_LOGGER Factory - Logger instance created:", loggerInstance); // Keep this log for verification
+      return loggerInstance;
+    }
+  });
 
-      // Register AppDataSource and PhoenixDataSource using useClass
-      container.register(AppDataSource, { useClass: AppDataSource });
-      container.register(PhoenixDataSource, { useClass: PhoenixDataSource });
+  // Register DataSourceService
+  container.register(DataSourceService, { useClass: DataSourceService });
+  container.register(AppDataSource, { useClass: AppDataSource });
+  container.register(PhoenixDataSource, { useClass: PhoenixDataSource });
 
-    //register the rabbitMQClientService
-    const rabbitMQConnectionUrl = { connectionUrl: AppConfig.RABBITMQ_BROCKER };
-      container.register(RabbitMQClientService, {
-          useFactory: (c) => new RabbitMQClientService(rabbitMQConnectionUrl, c.resolve(WINSTON_LOGGER)) 
-      });
-    
-    //register the RabbitMQPublisherService
+  // Register RabbitMQClientService
+  const rabbitMQConnectionUrl = { connectionUrl: AppConfig.RABBITMQ_BROCKER };
+  container.register(RabbitMQClientService, {
+    useFactory: (c) => new RabbitMQClientService(rabbitMQConnectionUrl, c.resolve(WINSTON_LOGGER))
+  });
+
+  // Register RabbitMQPublisherService
   container.register(PublisherRabbitMQService, {
     useFactory: (c) => new PublisherRabbitMQService(
       c.resolve(RabbitMQClientService),
-      c.resolve(WINSTON_LOGGER))
+      c.resolve(WINSTON_LOGGER)
+    )
   });
-    
-    //register the Event Controller
-    container.register(EventDrivenController, {
-      useFactory: (c) => new EventDrivenController(
-          c.resolve(RabbitMQClientService),
-          c.resolve(PublisherRabbitMQService),
-          c.resolve(FeaturesService),
-          c.resolve(WINSTON_LOGGER) 
-      )
+
+  // **Register FileService using a factory function:**
+  container.register(FileService, { // Register FileService directly, or use FILE_SERVICE_TOKEN if you had an interface token
+    useFactory: (c) => {
+      const filePath = join(__dirname, '../config', 'feature.config.yml'); // Define filePath here, same as in FeaturesService
+      return new FileService(filePath, c.resolve(WINSTON_LOGGER)); // Resolve logger from container
+    }
   });
-     // Register Winston Logger
-     container.register<winston.Logger>(WINSTON_LOGGER, {
-        useFactory: () => Logger.createLogger() // Use the factory method
-    });
+
+  container.register(FeaturesService, { useClass: FeaturesService });
+
+  // Register FeaturesService (implicitly registered as it's injectable and singleton)
+
+  // Register Event Controller
+  container.register(EventDrivenController, {
+    useFactory: (c) => new EventDrivenController(
+      c.resolve(RabbitMQClientService),
+      c.resolve(PublisherRabbitMQService),
+      c.resolve(FeaturesService),
+      c.resolve(WINSTON_LOGGER)
+    )
+  });
 }

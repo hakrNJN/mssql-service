@@ -1,9 +1,12 @@
 // src/providers/account.provider.ts
+import { container } from "tsyringe";
 import { FindManyOptions, Repository, SelectQueryBuilder } from "typeorm";
+import winston from "winston";
 import { objectDecorators } from "../decorators/objectDecorators";
 import { Mast } from "../entity/anushree/accounts.entity";
 import { BaseProviderInterface } from "../interface/base.provider";
 import { Filters } from "../types/filter.types";
+import { WINSTON_LOGGER } from "../utils/logger";
 import { applyFilters } from "../utils/query-utils";
 import { AppDataSource } from "./data-source.provider";
 export interface AccountProvider extends BaseProviderInterface<Mast, Filters<Mast>>{
@@ -14,9 +17,11 @@ export interface AccountProvider extends BaseProviderInterface<Mast, Filters<Mas
 export class AccountProvider { 
     private accountRepository: Repository<Mast> | null = null;;
     private dataSourceInstance: AppDataSource; 
-    
+    private readonly logger: winston.Logger;
+
     constructor(dataSourceInstance: AppDataSource) { // Inject AppDataSource in constructor
         this.dataSourceInstance = dataSourceInstance;
+        this.logger = container.resolve<winston.Logger>(WINSTON_LOGGER);
     }
 
     private _getRepository(): Repository<Mast> {
@@ -32,6 +37,7 @@ export class AccountProvider {
     }
 
     async getAllAccountWithFilters(filters?: Filters<Mast>, offset?: number, limit?: number): Promise<Mast[]> {
+       try {
         const queryBuilder = this._getRepository().createQueryBuilder('account');
         const filteredQueryBuilder:SelectQueryBuilder<Mast> = applyFilters(queryBuilder, filters, 'account'); // Call the imported utility function
 
@@ -47,6 +53,10 @@ export class AccountProvider {
 
         const account = await filteredQueryBuilder.getMany();
         return this.trimWhitespace(account);
+       } catch (error) {
+        this.logger.error("Error fetching All Accounts with Filter", error);
+        throw new Error(error as string)
+       }
     }
 
     async getAllAccounts(offset?: number, limit?: number): Promise<Mast[]> {
@@ -62,6 +72,7 @@ export class AccountProvider {
             const accounts: Mast[] = await this._getRepository().find(findOptions);
             return this.trimWhitespace(accounts)
         } catch (error) {
+            this.logger.error("Error fetching All Accounts", error);
             throw new Error(error as string)
         }
     }
@@ -83,7 +94,7 @@ export class AccountProvider {
             return { Agent: this.trimWhitespace(agent) }; // Return object with Agent property
 
         } catch (error) {
-            console.error("Error fetching agent with customers (eager loading):", error);
+            this.logger.error("Error fetching agent with customers (eager loading):", error);
             throw new Error(`Failed to fetch agent with customers (eager loading): ${(error as Error).message}`);
         }
     }

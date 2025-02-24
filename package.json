@@ -6,7 +6,7 @@
   "scripts": {
     "test": "ts-node--watch src/index.ts",
     "start": "node --env-file=.env dist/index.js",
-    "dev": "ts-node-dev --respawn --transpile-only --env-file=.development.env src/index.ts",
+    "dev": "ts-node-dev --watch --respawn --transpile-only --env-file=.development.env src/index.ts",
     "build": "tsc"
   },
   "keywords": [

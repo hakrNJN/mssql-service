@@ -1,63 +1,71 @@
 //src/services/feature.service.ts
-import * as fs from 'fs'; // Import the 'fs' module for file watching
+import * as fs from 'fs';
 import { join } from 'path';
-import { injectable, singleton } from 'tsyringe'; // Import Tsyringe decorators
+import { inject, injectable, singleton } from 'tsyringe'; // Import 'inject'
+import winston from 'winston';
 import { AppError } from '../exceptions/appException';
 import { FeatureConfig, IFeaturesService, IFileService } from '../interface/feature.interface';
-import FileService from '../providers/fileService.provider';
+import FileService from '../providers/fileService.provider'; // Keep import for type, or remove if only using interface
+import { WINSTON_LOGGER } from '../utils/logger';
 
-@injectable() // Mark as injectable
-@singleton()  // Register as a singleton in container
+@injectable()
+@singleton()
 class FeaturesService implements IFeaturesService {
-    public fileService: IFileService;
+    public fileService: IFileService; // Use the interface
     private features: FeatureConfig = {};
     private filePath: string;
+    private readonly logger: winston.Logger;
 
-    constructor() { // Remove filePath from constructor, handle in initialize
-        this.filePath = join(__dirname, '../config', 'feature.config.yml'); // Define filePath here
-        this.fileService = new FileService(this.filePath);
+    constructor(
+        @inject(FileService) fileService: IFileService, // Inject IFileService
+        @inject(WINSTON_LOGGER) logger: winston.Logger // Inject Logger
+    ) {
+        this.filePath = join(__dirname, '../config', 'feature.config.yml');
+        this.fileService = fileService;
         this.features = {};
-        this.initializeFileWatcher(); // Start watching the file
+        this.logger = logger;         // Assign logger FIRST
+        console.log("FeaturesService constructor - Logger injected:", this.logger); 
+        this.initializeFileWatcher(); // Then call initializeFileWatcher, logger will be defined
     }
 
-    async initialize(): Promise<void> { // Initialize method to be called once on startup
+    async initialize(): Promise<void> {
         await this.loadFeatures();
     }
 
     private initializeFileWatcher(): void {
-        fs.watchFile(this.filePath, { interval: 1000 }, async (curr, prev) => { // Check every second
-            if (curr.mtimeMs !== prev.mtimeMs) { // File modified
-                console.log('Feature config file changed. Reloading features...');
+        console.log(this.filePath)
+        fs.watchFile(this.filePath, { interval: 1000 }, async (curr, prev) => {
+            if (curr.mtimeMs !== prev.mtimeMs) {
+                this.logger.info('Feature config file changed. Reloading features...');
                 try {
                     await this.reloadFeatures();
-                    console.log('Features reloaded successfully.');
-                    // Optionally, publish an event to notify other parts of the app about feature flag changes
+                    this.logger.info('Features reloaded successfully.');
                 } catch (error) {
-                    console.error('Error reloading features after file change:', error);
+                    this.logger.error('Error reloading features after file change:', error);
                 }
             }
         });
-        console.log(`Watching for changes in feature config file: ${this.filePath}`);
+        this.logger.info(`Watching for changes in feature config file: ${this.filePath}`);
     }
 
 
-    private async reloadFeatures(): Promise<void> { // Separate reload logic
-        try {
-            await this.fileService.initialize(); // Re-initialize FileService to read fresh data
-            this.features = this.fileService.model.read();
-        } catch (error: any) {
-            console.error('Error reloading features in FeaturesService:', error);
-            throw new AppError(500, "Unable to reload features configuration");
-        }
-    }
-
-    async loadFeatures(): Promise<void> { // Initial load (called once on startup)
+    private async reloadFeatures(): Promise<void> {
         try {
             await this.fileService.initialize();
             this.features = this.fileService.model.read();
         } catch (error: any) {
-            console.error('Error loading features in FeaturesService:', error);
-            throw new AppError( 500,"Unable to load features configuration");
+            this.logger.error('Error reloading features in FeaturesService:', error);
+            throw new AppError(500, "Unable to reload features configuration");
+        }
+    }
+
+    async loadFeatures(): Promise<void> {
+        try {
+            await this.fileService.initialize();
+            this.features = this.fileService.model.read();
+        } catch (error: any) {
+            this.logger.error('Error loading features in FeaturesService:', error);
+            throw new AppError(500, "Unable to load features configuration");
         }
     }
 
@@ -66,7 +74,7 @@ class FeaturesService implements IFeaturesService {
     }
 
     isFeatureEnabled(featureName: string): boolean {
-        return !!this.features[featureName]; // Safely check if feature is enabled
+        return !!this.features[featureName];
     }
 }
 
