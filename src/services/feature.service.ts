@@ -23,8 +23,7 @@ class FeaturesService implements IFeaturesService {
         this.filePath = join(__dirname, '../config', 'feature.config.yml');
         this.fileService = fileService;
         this.features = {};
-        this.logger = logger;         // Assign logger FIRST
-        console.log("FeaturesService constructor - Logger injected:", this.logger); 
+        this.logger = logger; 
         this.initializeFileWatcher(); // Then call initializeFileWatcher, logger will be defined
     }
 
@@ -33,7 +32,6 @@ class FeaturesService implements IFeaturesService {
     }
 
     private initializeFileWatcher(): void {
-        console.log(this.filePath)
         fs.watchFile(this.filePath, { interval: 1000 }, async (curr, prev) => {
             if (curr.mtimeMs !== prev.mtimeMs) {
                 this.logger.info('Feature config file changed. Reloading features...');

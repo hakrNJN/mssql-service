@@ -4,7 +4,6 @@ import { container } from "tsyringe";
 import { App } from './App';
 import { AppConfig } from './config/config';
 import { DataSourceService } from "./services/dataSource.service";
-import FeaturesService from "./services/feature.service";
 import { registerDependencies } from "./utils/registerDependencies";
 
 // Register all dependencies
@@ -14,18 +13,11 @@ registerDependencies();
 // const logger = container.resolve<winston.Logger>(WINSTON_LOGGER);
 
 async function startServer() {
-  
-
   try {
-
-    // Register the Winston Logger with tsyringe.
-    // We register the LoggerProvider as a singleton, and then resolve the winston.Logger instance from it.
     const dataSourceService = container.resolve(DataSourceService);
-    // const app = new App(dataSourceService);
-    // Resolve FeaturesService AFTER dependencies are registered
-    const featuresService = container.resolve(FeaturesService);
-
     const app = container.resolve(App);
+    await app.init(); // Call app.init() to handle async initialization - This is crucial and correct
+
     app.listen(AppConfig.APP.PORT, () => {
       console.info(`${AppConfig.APP.NAME} server is running on port ${AppConfig.APP.PORT} in ${AppConfig.APP.ENVIRONMENT} environment`);
     });

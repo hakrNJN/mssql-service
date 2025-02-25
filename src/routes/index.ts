@@ -15,13 +15,13 @@ import yearRoute from './year.route';
 
 const router: Router = Router();
 // const logger = container.resolve<winston.Logger>(WINSTON_LOGGER);
-const featuresService = new FeaturesService();
+// const featuresService = new FeaturesService(); // REMOVE THIS LINE - INCORRECT INSTANTIATION
 
 // Function to create apiRoutes and accept dataSource
 // const apiRoutes = (dataSource: AppDataSource, dataSource2 : PhoenixDataSource): Router => {
-const apiRoutes = (dataSourceService: DataSourceService): Router => {
-    const logger = container.resolve<winston.Logger>(WINSTON_LOGGER); 
-    
+const apiRoutes = (dataSourceService: DataSourceService, featuresService: FeaturesService): Router => { // ADD featuresService as argument
+    const logger = container.resolve<winston.Logger>(WINSTON_LOGGER);
+
     try {
         router.use('/test', testRoute);
         router.use('/year', yearRoute(dataSourceService.getAppDataSource())); // Pass dataSource to yearRoute
@@ -29,10 +29,10 @@ const apiRoutes = (dataSourceService: DataSourceService): Router => {
         router.use('/series', seriesRoute(dataSourceService.getAppDataSource()));
         router.use('/accounts', accountRoute(dataSourceService.getAppDataSource()));
         router.use('/transaction/sale/', saleTransactionRoute(dataSourceService.getPhoenixDataSource()));
-        
-        
+
+
         // Load features and then create feature route
-        featuresService.loadFeatures().then(() => {
+        featuresService.loadFeatures().then(() => { // USE the featuresService PASSED as argument
             const features = featuresService.getFeatures();
             if (features.fetchDataEnabled) {
                 logger.info("Fetch Data Feature is enabled!"); // Use your logger

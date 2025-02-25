@@ -22,7 +22,6 @@ export function registerDependencies(): void {
   container.register<winston.Logger>(WINSTON_LOGGER, {
     useFactory: () => {
       const loggerInstance = Logger.createLogger();
-      console.log("WINSTON_LOGGER Factory - Logger instance created:", loggerInstance); // Keep this log for verification
       return loggerInstance;
     }
   });

@@ -24,45 +24,49 @@ class App {
   private featuresService: FeaturesService;
   private featureController!: FeatureController;
 
-
   constructor(
     dataSourceService: DataSourceService,
-    @inject(WINSTON_LOGGER) logger: winston.Logger 
+    @inject(WINSTON_LOGGER) logger: winston.Logger
   ) {
     this.dataSourceService = dataSourceService;
-    this.logger = logger; 
+    this.logger = logger;
     this.expressAppInstance = new ExpressApp();
     this.app = this.expressAppInstance.app;
-    this.initializeRoutes();
-    this.initializeErrorHandling();
-    this.featuresService = container.resolve(FeaturesService);
+    this.featuresService = container.resolve(FeaturesService); // Resolve FeaturesService in constructor - keep this
     this.eventDrivenController = container.resolve(EventDrivenController);
     this.initControllers();
+    // initializeRoutes(); // REMOVE from constructor - move to init()
+    this.initializeErrorHandling(); // Keep error handling in constructor if it doesn't depend on featuresService
+  }
+
+  public async init(): Promise<void> { // in init()
+    await this.featuresService.initialize(); // Initialize FeaturesService FIRST in init()
+    this.initializeRoutes(); // THEN initialize routes - now it's guaranteed featuresService is ready
   }
 
   private initControllers(): void {
-    const featuresService = container.resolve(FeaturesService);
-    this.featureController = new FeatureController(featuresService);
-    // this.app.use('/features', this.featureController.handleRequest); // it will be already routed via /api in initializeRoutes()
-}
+    // const featuresService = container.resolve(FeaturesService); // Removed redundant resolution
+    this.featureController = new FeatureController(this.featuresService); // Use the instance variable
+    // this.app.use('/features', this.featureController.handleRequest);
+  }
 
   private initializeRoutes(): void {
-    this.app.use('/api', timeTrackerMiddleware, apiRoutes(this.dataSourceService));
+    this.app.use('/api', timeTrackerMiddleware, apiRoutes(this.dataSourceService, this.featuresService)); // Passing the instance variable here
   }
 
   public async startEventListeners(): Promise<void> {
     await this.eventDrivenController.initialize();
     if (this.featuresService.isFeatureEnabled('startListening')) {
-        this.logger.info('startListening feature is enabled. Starting EventDrivenController listeners...');
-        await this.eventDrivenController.startEventListeners();
+      this.logger.info('startListening feature is enabled. Starting EventDrivenController listeners...');
+      await this.eventDrivenController.startEventListeners();
     } else {
-        this.logger.info('startListening feature is disabled. Skipping EventDrivenController listeners.');
+      this.logger.info('startListening feature is disabled. Skipping EventDrivenController listeners.');
     }
   }
 
   public listen(port: string | number, callback?: () => void): void {
     this.app.listen(port, callback);
-    this.startEventListeners(); // Call startEventListeners here, AFTER the server starts listening
+    this.startEventListeners();
   }
 
   private initializeErrorHandling(): void {
