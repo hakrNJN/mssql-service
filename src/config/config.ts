@@ -31,6 +31,18 @@ export class AppConfig {
         migrations: [],
     } as const
 
+    public static readonly AWSCredentials = {
+        ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,
+        SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
+        REGION: process.env.AWS_REGION
+    }
+
+    public static readonly Cloud_Log = {
+        enabled: process.env.USE_CLOUD_LOG || false,
+        logGroup: process.env.LOG_GROUP_NAME || `${this.APP.NAME}_LOG_GROUP`,
+        logLevel: process.env.LOG_LEVEL || 'info',
+    }
+    
     public static readonly logLevel = process.env.LOG_LEVEL || "info";
 
     public static readonly allowedFormsForSaleSeries = ['frmSalBill/frmsalentry', 'frmSalRet/frmSalRetEntry', 'frmGreySale', 'frmGreySaleReturn', 'frmDebitNote'];

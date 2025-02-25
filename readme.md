@@ -6,8 +6,10 @@
     └── 📁controllers
         └── account.controller.ts
         └── company.controller.ts
+        └── eventDriven.controller.ts
         └── example.ts
         └── feature.controller.ts
+        └── saleTransaction.controller.ts
         └── series.controller.ts
         └── test.controller.ts
         └── year.controller.ts
@@ -15,22 +17,27 @@
         └── objectDecorators.ts
         └── stringDecorators.ts
     └── 📁entity
-        └── accounts.entity.ts
-        └── company.entity.ts
-        └── SaleTransaction.ts
-        └── series.entity.ts
-        └── years.entity.ts
+        └── 📁anushree
+            └── accounts.entity.ts
+            └── company.entity.ts
+            └── series.entity.ts
+            └── years.entity.ts
+        └── 📁phoenix
+            └── SaleTransaction.ts
+            └── saleTransactionDetail.ts
     └── 📁exceptions
         └── appException.ts
         └── httpException.ts
     └── 📁interface
         └── base.provider.ts
+        └── brockerMessage.interface.ts
         └── feature.interface.ts
         └── rabbitMQ.interface.ts
         └── response.ts
         └── sqlInstance.ts
     └── 📁middleware
         └── errorHandler.ts
+        └── TimeTracker.middleware.ts
     └── 📁migration
     └── 📁model
         └── feature.model.ts
@@ -41,6 +48,8 @@
         └── data-source.provider.ts
         └── express.provider.ts
         └── fileService.provider.ts
+        └── phoenix.data-source.provider.ts
+        └── saleTransaction.provider.ts
         └── series.provider.ts
         └── years.provider.ts
     └── 📁routes
@@ -48,26 +57,35 @@
         └── company.route.ts
         └── feature.route.ts
         └── index.ts
+        └── saleTransaction.route.ts
         └── series.route.ts
         └── test.route.ts
         └── year.route.ts
     └── 📁services
         └── account.service.ts
         └── company.service.ts
+        └── dataSource.service.ts
         └── example2.ts
         └── feature.service.ts
+        └── publisher.RabbitMQ.service.ts
         └── rabbitMQ.service.ts
+        └── saleTransaction.service.ts
         └── series.service.ts
         └── serviceExample.ts
         └── years.service.ts
     └── 📁tests
+        └── year.controller.test.ts
+        └── years.provider.test.ts
+        └── years.service.test.ts
     └── 📁types
         └── filter.types.ts
+        └── message.types.ts
         └── rabbitMq.types.ts
     └── 📁utils
         └── api-response.ts
         └── logger.ts
         └── query-utils.ts
+        └── registerDependencies.ts
     └── 📁validators
     └── App.ts
     └── index.ts
