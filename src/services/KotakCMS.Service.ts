@@ -1,4 +1,4 @@
-//src/sercices/KotakCMS.Service.ts
+//src/services/KotakCMS.Service.ts
 import { Vwkotakcmsonline } from "../entity/anushree/KotakCMS.entity";
 import { KotakCMSProvider } from "../providers/KotakCMS.provider";
 import { AppDataSource } from "../providers/data-source.provider";
@@ -15,7 +15,14 @@ export class KotakCMSService {
         await this.kotakCMSProvider.initializeRepository();
     }
 
-    async getAllByVno(filters?: Filters<Vwkotakcmsonline>, offset?: number, limit?: number): Promise<Vwkotakcmsonline[]> {
-        return this.kotakCMSProvider.getAllKotakCMSWithFilters(filters, offset, limit);
+    // This method already accepts the filters object, which will now contain Conum and Yearid
+    async getKotakCMSWithFilters(filters?: Filters<Vwkotakcmsonline>, offset?: number, limit?: number): Promise<Vwkotakcmsonline[]> {
+        return this.kotakCMSProvider.getAllWithFilters(filters, offset, limit);
     }
-}   
+
+    // getKotakCMSById method is already removed from controller, so no longer directly called from there.
+    // Keeping it in service if it's used internally or for future.
+    async getKotakCMSById(vno: number): Promise<Vwkotakcmsonline | null> {
+        return this.kotakCMSProvider.getById(vno);
+    }
+}

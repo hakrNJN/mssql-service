@@ -4,6 +4,7 @@ import { container } from 'tsyringe';
 import winston from 'winston';
 import { HttpException } from '../exceptions/httpException';
 import { WINSTON_LOGGER } from '../utils/logger';
+import { ILogger } from '../interface/logger.interface';
 
 // Resolve the Winston Logger from the container
 // const logger = container.resolve<winston.Logger>(WINSTON_LOGGER);
@@ -14,7 +15,7 @@ export const errorHandler = (
   res: Response,
   next: NextFunction
 ): void => {
-  const logger = container.resolve<winston.Logger>(WINSTON_LOGGER); 
+  const logger = container.resolve<ILogger>(WINSTON_LOGGER); 
   
   const status = error.status || 500;
   const message = error.message || 'Something went wrong';

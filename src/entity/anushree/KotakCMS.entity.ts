@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity("Vwkotakcmsonline")
 
@@ -118,6 +118,9 @@ export class Vwkotakcmsonline {
     Enrichment_19?: string;
     @Column({ nullable: true })
     Enrichment_20?: string;
-    @PrimaryGeneratedColumn()
+
+    @Column()
+    Conum!: string; // Company number
+    @PrimaryColumn()
     vno!: number;
 }

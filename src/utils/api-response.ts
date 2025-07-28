@@ -4,6 +4,7 @@ import winston from 'winston'; // Import winston
 import { HttpException } from '../exceptions/httpException'; // Adjust path if needed
 import { StandardMetadata } from '../interface/response';
 import { WINSTON_LOGGER } from '../utils/logger'; // Import WINSTON_LOGGER token
+import { ILogger } from '../interface/logger.interface';
 
 interface ApiResponseOptions<T> {
     res: Response;
@@ -52,7 +53,7 @@ export class ApiResponse {
 
     public static error(error: HttpException, res: Response): Response<any, Record<string, any>> {
 // Resolve the Winston Logger from the container within the static method
-        const logger = container.resolve<winston.Logger>(WINSTON_LOGGER);
+        const logger = container.resolve<ILogger>(WINSTON_LOGGER);
         const statusCode = error.status;
         const message = error.message;
         const details = error.details;

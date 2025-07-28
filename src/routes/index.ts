@@ -1,7 +1,7 @@
 //src/routes/index.ts
 import { Router } from 'express';
 import { container } from 'tsyringe';
-import winston from 'winston';
+// No direct winston import needed here if ILogger is used
 import { DataSourceService } from '../services/dataSource.service';
 import FeaturesService from '../services/feature.service';
 import { WINSTON_LOGGER } from '../utils/logger';
@@ -12,40 +12,50 @@ import saleTransactionRoute from './saleTransaction.route';
 import seriesRoute from './series.route';
 import testRoute from './test.route';
 import yearRoute from './year.route';
+import { ILogger } from '../interface/logger.interface';
+
+// Import your new route factory functions
+import kotakCMSRoute from './KotakCMS.route'; // Corrected import path
+import purchasePipeLineRoute from './purchasePipeLine.route'; // Corrected import path
+
 
 const router: Router = Router();
-// const logger = container.resolve<winston.Logger>(WINSTON_LOGGER);
-// const featuresService = new FeaturesService(); // REMOVE THIS LINE - INCORRECT INSTANTIATION
 
-// Function to create apiRoutes and accept dataSource
-// const apiRoutes = (dataSource: AppDataSource, dataSource2 : PhoenixDataSource): Router => {
-const apiRoutes = (dataSourceService: DataSourceService, featuresService: FeaturesService): Router => { // ADD featuresService as argument
-    const logger = container.resolve<winston.Logger>(WINSTON_LOGGER);
+// Function to create apiRoutes and accept dataSourceService and featuresService
+const apiRoutes = (dataSourceService: DataSourceService, featuresService: FeaturesService): Router => {
+    const logger = container.resolve<ILogger>(WINSTON_LOGGER);
 
     try {
         router.use('/test', testRoute);
-        router.use('/year', yearRoute(dataSourceService.getAppDataSource())); // Pass dataSource to yearRoute
+        router.use('/year', yearRoute(dataSourceService.getAppDataSource()));
         router.use('/company', companyRoute(dataSourceService.getAppDataSource()));
         router.use('/series', seriesRoute(dataSourceService.getAppDataSource()));
         router.use('/accounts', accountRoute(dataSourceService.getAppDataSource()));
+
+        // Use purchasePipeLineRoute and pass AppDataSource
+        router.use('/purchase-pipeline', purchasePipeLineRoute(dataSourceService.getAppDataSource()));
+
+        // Use kotakCMSRoute and pass AppDataSource
+        router.use('/kotak-cms', kotakCMSRoute(dataSourceService.getAppDataSource()));
+
         router.use('/transaction/sale/', saleTransactionRoute(dataSourceService.getPhoenixDataSource()));
 
 
         // Load features and then create feature route
-        featuresService.loadFeatures().then(() => { // USE the featuresService PASSED as argument
+        featuresService.loadFeatures().then(() => {
             const features = featuresService.getFeatures();
             if (features.fetchDataEnabled) {
-                logger.info("Fetch Data Feature is enabled!"); // Use your logger
+                logger.info("Fetch Data Feature is enabled!");
             } else {
-                logger.info("Fetch Data Feature is disabled."); // Use your logger
+                logger.info("Fetch Data Feature is disabled.");
             }
 
-            router.use('/features', featureRoute(featuresService)); // Pass FeaturesService instance to featureRoute
+            router.use('/features', featureRoute(featuresService));
 
             // other routes (e.g., router.use('/other', otherRoute()); )
 
         }).catch(error => {
-            logger.error("Error loading feature flags:", error); // Log error if feature loading fails
+            logger.error("Error loading feature flags:", error);
             // Handle error appropriately, maybe exit application if feature config is critical
         });
     } catch (error) {

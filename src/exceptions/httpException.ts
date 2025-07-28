@@ -100,4 +100,8 @@ export class HttpException extends Error {
   static Expired(message = 'Code has expired', details?: any) {
     return new HttpException(HttpStatus.EXPIRED, message, details);
   }
+
+  static NotImplemented(message = 'This feature is not implemented', details?: any) {
+    return new HttpException(HttpStatus.NOT_IMPLEMENTED, message, details);
+  }
 }

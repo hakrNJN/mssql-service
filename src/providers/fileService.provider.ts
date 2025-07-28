@@ -6,17 +6,18 @@ import winston from 'winston';
 import { IFileService } from '../interface/feature.interface';
 import FeaturesModel from '../model/feature.model';
 import { WINSTON_LOGGER } from '../utils/logger';
+import { ILogger } from '../interface/logger.interface';
 
 
 class FileService implements IFileService {
     public filePath: string;
     public model: FeaturesModel; // Using concrete class here, could be interface if more flexible
-    private readonly logger: winston.Logger;
+    private readonly logger: ILogger;
 
 
     constructor(
         filePath: string,
-        @inject(WINSTON_LOGGER) logger: winston.Logger
+        @inject(WINSTON_LOGGER) logger: ILogger
     ) {
         this.filePath = filePath;
         this.model = new FeaturesModel();

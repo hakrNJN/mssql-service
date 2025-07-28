@@ -11,7 +11,12 @@ import { DataSourceService } from "../services/dataSource.service";
 import FeaturesService from "../services/feature.service";
 import PublisherRabbitMQService from "../services/publisher.RabbitMQ.service";
 import RabbitMQClientService from "../services/rabbitMQ.service";
+import { PurchaseParcelStatusService } from '../services/PurchaseInwardOutWard.service';
+import { KotakCMSService } from '../services/KotakCMS.Service';
 import { Logger, WINSTON_LOGGER } from "./logger";
+import { ILogger } from '../interface/logger.interface';
+import { KotakCMSController } from '../controllers/KotakCMS.controller';
+import { PurchasePipeLineController } from '../controllers/purchasePipeLine.controller';
 
 // Define a token for FileService if you want to use interface injection.
 // export const FILE_SERVICE_TOKEN = Symbol('FileServiceToken') as InjectionToken<FileService>; // Not strictly needed here
@@ -19,7 +24,7 @@ import { Logger, WINSTON_LOGGER } from "./logger";
 export function registerDependencies(): void {
 
   // Register Winston Logger
-  container.register<winston.Logger>(WINSTON_LOGGER, {
+  container.register<ILogger>(WINSTON_LOGGER, {
     useFactory: () => {
       const loggerInstance = Logger.createLogger();
       return loggerInstance;
@@ -65,5 +70,33 @@ export function registerDependencies(): void {
       c.resolve(FeaturesService),
       c.resolve(WINSTON_LOGGER)
     )
+  });
+
+    container.register(PurchaseParcelStatusService, {
+    useFactory: (c) => {
+      const dataSourceInstance = c.resolve(AppDataSource);
+      const service = new PurchaseParcelStatusService(dataSourceInstance);
+      return service;
+    }
+  });
+
+  container.register(PurchasePipeLineController, {
+    useFactory: (c) => new PurchasePipeLineController(c.resolve(PurchaseParcelStatusService))
+  });
+
+   // --- Register KotakCMSService and KotakCMSController ---
+
+  // Register KotakCMSService
+  container.register(KotakCMSService, {
+    useFactory: (c) => {
+      const dataSourceInstance = c.resolve(AppDataSource);
+      const service = new KotakCMSService(dataSourceInstance);
+      return service;
+    }
+  });
+
+  // Register KotakCMSController
+  container.register(KotakCMSController, {
+    useFactory: (c) => new KotakCMSController(c.resolve(KotakCMSService))
   });
 }

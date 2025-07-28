@@ -5,13 +5,14 @@ import winston from 'winston';
 import { Message, MessageProperties } from '../types/message.types';
 import { WINSTON_LOGGER } from '../utils/logger';
 import RabbitMQClientService from './rabbitMQ.service'; // Adjust path if necessary
+import { ILogger } from '../interface/logger.interface';
 
 @injectable()
 class PublisherRabbitMQService {
-    private readonly logger: winston.Logger;
+    private readonly logger: ILogger;
 
     constructor(@inject(RabbitMQClientService) private rabbitMQClient: RabbitMQClientService,
-        @inject(WINSTON_LOGGER) logger: winston.Logger) { 
+        @inject(WINSTON_LOGGER) logger: ILogger) { 
         this.logger = logger
      }
 

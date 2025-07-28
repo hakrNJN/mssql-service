@@ -6,6 +6,7 @@ import PublisherRabbitMQService from '../services/publisher.RabbitMQ.service';
 import RabbitMQClientService from '../services/rabbitMQ.service';
 import { MessageHandler } from '../types/rabbitMq.types';
 import { WINSTON_LOGGER } from '../utils/logger';
+import { ILogger } from '../interface/logger.interface';
 
 // Define message types for queues (example)
 interface FetchDataMessagePayload {
@@ -31,13 +32,13 @@ class EventDrivenController {
     private publisherService: PublisherRabbitMQService;
     // private featuresService: FeatureConfig = {};
     private featuresService: FeaturesService;
-    private readonly logger: winston.Logger;
+    private readonly logger:ILogger;
 
     constructor(
         rabbitMQClient: RabbitMQClientService,
         publisherService: PublisherRabbitMQService,
         @inject(FeaturesService) featuresService: FeaturesService ,// Inject FeaturesService
-        @inject(WINSTON_LOGGER) logger: winston.Logger 
+        @inject(WINSTON_LOGGER) logger: ILogger 
     ) {
         this.rabbitMQClient = rabbitMQClient;
         this.publisherService = publisherService;

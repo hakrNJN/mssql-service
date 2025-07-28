@@ -5,6 +5,7 @@ import winston from 'winston';
 import { EnsureQueueOptions, IRabbitMQClient, SendMessageOptions } from "../interface/rabbitMQ.interface";
 import { MessageCondition, MessageHandler } from "../types/rabbitMq.types";
 import { WINSTON_LOGGER } from '../utils/logger';
+import { ILogger } from '../interface/logger.interface';
 
 interface RabbitMQClientOptions {
     connectionUrl: string;
@@ -29,11 +30,11 @@ class RabbitMQClientService implements IRabbitMQClient {
     #reconnectDelayMs: number;
     #channelRecreateRetries: number;
     #channelRecreateDelayMs: number;
-    private readonly logger: winston.Logger;
+    private readonly logger: ILogger;
 
     constructor(
         options: RabbitMQClientOptions,
-        @inject(WINSTON_LOGGER) logger: winston.Logger // Inject Winston Logger
+        @inject(WINSTON_LOGGER) logger: ILogger // Inject Winston Logger
     ) {
         this.#connectionUrl = options.connectionUrl;
         this.#reconnectRetries = options.reconnectRetries ?? 5; // Default retries

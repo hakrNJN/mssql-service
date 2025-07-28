@@ -11,11 +11,11 @@ import { applyFilters } from "../utils/query-utils";
 import { AppDataSource } from "./data-source.provider";
 
 // Renamed the interface to avoid conflict with the entity class
-export interface PurchasePileLineProviderInterface extends BaseProviderInterface<PurchasePipeLineEntity, Filters<PurchasePipeLineEntity>> {
+export interface PurchasePileLineInterface extends BaseProviderInterface<PurchasePipeLineEntity, Filters<PurchasePipeLineEntity>> {
     trimWhitespace<T>(obj: T): T;
 
     // Renamed getById to avoid conflict with BaseProviderInterface's getById(id: number)
-    getByPurtrnIdAndType(PurtrnId: number, type: number): Promise<PurchasePipeLineEntity | null>;
+    // getByPurtrnIdAndType(PurtrnId: number, type: number): Promise<PurchasePipeLineEntity | null>;
 
     // BaseProviderInterface already defines 'getAll', 'create', 'update', 'delete'.
     // Ensure the parameters match the BaseProviderInterface definition.
@@ -35,7 +35,7 @@ export interface PurchasePileLineProviderInterface extends BaseProviderInterface
 }
 
 @objectDecorators
-export class PurchasePileLine implements PurchasePileLineProviderInterface {
+export class PurchasePileLine implements PurchasePileLineInterface {
     private purchasePipeLineRepository: Repository<PurchasePipeLineEntity> | null = null;
     private dataSourceInstance: AppDataSource;
     private readonly logger: ILogger;
@@ -43,6 +43,26 @@ export class PurchasePileLine implements PurchasePileLineProviderInterface {
     constructor(dataSourceInstance: AppDataSource) {
         this.dataSourceInstance = dataSourceInstance;
         this.logger = container.resolve<ILogger>(WINSTON_LOGGER);
+    }
+    async getAll(offset?: number, limit?: number): Promise<PurchasePipeLineEntity[]> {
+        try {
+            const queryBuilder = this._getRepository().createQueryBuilder('purchasePipeline');
+
+            if (offset !== undefined) {
+                queryBuilder.skip(offset);
+            }
+            if (limit !== undefined) {
+                queryBuilder.take(limit);
+            }
+
+            queryBuilder.orderBy('purchasePipeline.Purtrnid', 'ASC');
+
+            const records = await queryBuilder.getMany();
+            return this.trimWhitespace(records);
+        } catch (error) {
+            this.logger.error("Error fetching all Purchase Pipe Line entries", error);
+            throw new Error(error as string);
+        }
     }
 
     private _getRepository(): Repository<PurchasePipeLineEntity> {
@@ -58,7 +78,7 @@ export class PurchasePileLine implements PurchasePileLineProviderInterface {
     }
 
     // Renamed from getAllWithFilters to getAll to satisfy BaseProviderInterface
-    async getAll(filters?: Filters<PurchasePipeLineEntity>, offset?: number, limit?: number): Promise<PurchasePipeLineEntity[]> {
+    async getAllWithFilters(filters?: Filters<PurchasePipeLineEntity>, offset?: number, limit?: number): Promise<PurchasePipeLineEntity[]> {
         try {
             const queryBuilder = this._getRepository().createQueryBuilder('purchasePipeline');
             const filteredQueryBuilder: SelectQueryBuilder<PurchasePipeLineEntity> = applyFilters(queryBuilder, filters, 'purchasePipeline');
@@ -84,7 +104,7 @@ export class PurchasePileLine implements PurchasePileLineProviderInterface {
     async getById(id: number): Promise<PurchasePipeLineEntity | null> {
         try {
             const record = await this._getRepository().findOne({
-                where: { id: id } // Assuming 'id' is the primary generated column
+                where: { Purtrnid: id } // Assuming 'id' is the primary generated column
             });
             return record ? this.trimWhitespace(record) : null;
         } catch (error) {
@@ -95,20 +115,20 @@ export class PurchasePileLine implements PurchasePileLineProviderInterface {
 
 
     // New method for your specific composite key lookup
-    async getByPurtrnIdAndType(PurtrnId: number, type: number): Promise<PurchasePipeLineEntity | null> {
-        try {
-            const record = await this._getRepository().findOne({
-                where: {
-                    Purtrnid: PurtrnId,
-                    Type: type
-                }
-            });
-            return record ? this.trimWhitespace(record) : null;
-        } catch (error) {
-            this.logger.error(`Error fetching Purchase Pipe Line with PurtrnId ${PurtrnId} and Type ${type}`, error);
-            throw new Error(error as string);
-        }
-    }
+    // async getByPurtrnIdAndType(PurtrnId: number, type: number): Promise<PurchasePipeLineEntity | null> {
+    //     try {
+    //         const record = await this._getRepository().findOne({
+    //             where: {
+    //                 Purtrnid: PurtrnId,
+    //                 Type: type
+    //             }
+    //         });
+    //         return record ? this.trimWhitespace(record) : null;
+    //     } catch (error) {
+    //         this.logger.error(`Error fetching Purchase Pipe Line with PurtrnId ${PurtrnId} and Type ${type}`, error);
+    //         throw new Error(error as string);
+    //     }
+    // }
 
     // Implementation of BaseProviderInterface's create
     async create(data: Partial<PurchasePipeLineEntity>): Promise<PurchasePipeLineEntity> {
@@ -124,14 +144,17 @@ export class PurchasePileLine implements PurchasePileLineProviderInterface {
 
     // Implementation of BaseProviderInterface's update
     // Assuming BaseProviderInterface's update takes a single ID for update
-    async update(id: number, data: Partial<PurchasePipeLineEntity>): Promise<boolean> {
+    async update(id: number, data: Partial<PurchasePipeLineEntity>): Promise<PurchasePipeLineEntity | null> {
         try {
             const updateData = { ...data, UpdDate: new Date() }; // Add current date for UpdDate
             const updateResult: UpdateResult = await this._getRepository().update(
                 { id: id }, // Update by the entity's primary key 'id'
                 updateData
             );
-            return (updateResult.affected ?? 0) > 0; // Fix: Use nullish coalescing
+            if ((updateResult.affected ?? 0) > 0) { 
+                return await this.getById(id); // Return the updated entity
+            }
+            return null; // Explicitly return null if not updated
         } catch (error) {
             this.logger.error(`Error updating Purchase Pipe Line with id ${id}`, error);
             throw new Error(error as string);
@@ -139,19 +162,19 @@ export class PurchasePileLine implements PurchasePileLineProviderInterface {
     }
 
     // New specific update method if you need to update by Purtrnid and Type directly
-    async updateByPurtrnIdAndType(PurtrnId: number, type: number, data: Partial<PurchasePipeLineEntity>): Promise<boolean> {
-        try {
-            const updateData = { ...data, UpdDate: new Date() }; // Add current date for UpdDate
-            const updateResult: UpdateResult = await this._getRepository().update(
-                { Purtrnid: PurtrnId, Type: type }, // Update by Purtrnid and Type
-                updateData
-            );
-            return (updateResult.affected ?? 0) > 0; // Fix: Use nullish coalescing
-        } catch (error) {
-            this.logger.error(`Error updating Purchase Pipe Line with PurtrnId ${PurtrnId} and Type ${type}`, error);
-            throw new Error(error as string);
-        }
-    }
+    // async updateByPurtrnIdAndType(PurtrnId: number, type: number, data: Partial<PurchasePipeLineEntity>): Promise<boolean> {
+    //     try {
+    //         const updateData = { ...data, UpdDate: new Date() }; // Add current date for UpdDate
+    //         const updateResult: UpdateResult = await this._getRepository().update(
+    //             { Purtrnid: PurtrnId, Type: type }, // Update by Purtrnid and Type
+    //             updateData
+    //         );
+    //         return (updateResult.affected ?? 0) > 0; // Fix: Use nullish coalescing
+    //     } catch (error) {
+    //         this.logger.error(`Error updating Purchase Pipe Line with PurtrnId ${PurtrnId} and Type ${type}`, error);
+    //         throw new Error(error as string);
+    //     }
+    // }
 
 
     // Implementation of BaseProviderInterface's delete
