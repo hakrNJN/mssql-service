@@ -6,13 +6,15 @@ import { Filters } from "../types/filter.types";
 import { applyFilters } from "../utils/query-utils";
 import { AppDataSource } from "./data-source.provider";
 
-export interface SeriesProvider extends BaseProviderInterface<SerMst, Filters<SerMst>> {} 
-export class SeriesProvider implements SeriesProvider { 
+export interface SeriesProvider extends BaseProviderInterface<SerMst, Filters<SerMst>> { }
+export class SeriesProvider implements SeriesProvider {
     private seriesRepository: Repository<SerMst> | null = null;;
-    private dataSourceInstance: AppDataSource; 
+    private dataSourceInstance: AppDataSource;
+    // private readonly logger: ILogger;
 
     constructor(dataSourceInstance: AppDataSource) { // Inject AppDataSource in constructor
         this.dataSourceInstance = dataSourceInstance;
+        //  this.logger = container.resolve<ILogger>(WINSTON_LOGGER);
     }
 
     private _getRepository(): Repository<SerMst> {
@@ -21,7 +23,7 @@ export class SeriesProvider implements SeriesProvider {
         }
         return this.seriesRepository;
     }
-    
+
     async initializeRepository(): Promise<void> { // Initialize the repository
         const dataSource = await this.dataSourceInstance.init(); // Ensure DataSource is initialized
         this.seriesRepository = dataSource.getRepository(SerMst);

@@ -41,7 +41,7 @@ export class AccountService {
             id: { equal: id } as EqualFilter<number>,
             Type: { equal: 6 } as EqualFilter<number>
         };
-        return this.accountProvider.getAllAccountWithFilters(filters,0, 1);
+        return this.accountProvider.getAllAccountWithFilters(filters, 0, 1);
     }
 
     async getCustomerByGST(gst: string): Promise<Mast[] | null> {
@@ -52,7 +52,7 @@ export class AccountService {
         return this.accountProvider.getAllAccountWithFilters(filters, 0, 100);
     }
 
-    async getTransporters( offset?: number, limit?: number): Promise<Mast[] | null> {
+    async getTransporters(offset?: number, limit?: number): Promise<Mast[] | null> {
         const filters: Filters<Mast> = {
             Type: { equal: 25 } as EqualFilter<number>,
             Status: { equal: 'T' } as EqualFilter<string>,
@@ -60,7 +60,7 @@ export class AccountService {
         return this.accountProvider.getAllAccountWithFilters(filters, offset, limit);
     }
 
-    async getAgents( offset?: number, limit?: number): Promise<Mast[] | null> {
+    async getAgents(offset?: number, limit?: number): Promise<Mast[] | null> {
         const filters: Filters<Mast> = {
             Type: { equal: 2 } as EqualFilter<number>,
             Status: { equal: 'T' } as EqualFilter<string>,

@@ -1,27 +1,27 @@
 // src/providers/account.provider.ts
 import { container } from "tsyringe";
 import { FindManyOptions, Repository, SelectQueryBuilder } from "typeorm";
-import winston from "winston";
 import { objectDecorators } from "../decorators/objectDecorators";
 import { Mast } from "../entity/anushree/accounts.entity";
 import { BaseProviderInterface } from "../interface/base.provider";
+import { ILogger } from "../interface/logger.interface";
 import { Filters } from "../types/filter.types";
 import { WINSTON_LOGGER } from "../utils/logger";
 import { applyFilters } from "../utils/query-utils";
 import { AppDataSource } from "./data-source.provider";
-export interface AccountProvider extends BaseProviderInterface<Mast, Filters<Mast>>{
+export interface AccountProvider extends BaseProviderInterface<Mast, Filters<Mast>> {
     trimWhitespace<T>(obj: T): T;
 }
 
 @objectDecorators
-export class AccountProvider { 
+export class AccountProvider {
     private accountRepository: Repository<Mast> | null = null;;
-    private dataSourceInstance: AppDataSource; 
-    private readonly logger: winston.Logger;
+    private dataSourceInstance: AppDataSource;
+    private readonly logger: ILogger;
 
     constructor(dataSourceInstance: AppDataSource) { // Inject AppDataSource in constructor
         this.dataSourceInstance = dataSourceInstance;
-        this.logger = container.resolve<winston.Logger>(WINSTON_LOGGER);
+        this.logger = container.resolve<ILogger>(WINSTON_LOGGER);
     }
 
     private _getRepository(): Repository<Mast> {
@@ -30,33 +30,33 @@ export class AccountProvider {
         }
         return this.accountRepository;
     }
-    
+
     async initializeRepository(): Promise<void> { // Initialize the repository
         const dataSource = await this.dataSourceInstance.init(); // Ensure DataSource is initialized
         this.accountRepository = dataSource.getRepository(Mast);
     }
 
     async getAllAccountWithFilters(filters?: Filters<Mast>, offset?: number, limit?: number): Promise<Mast[]> {
-       try {
-        const queryBuilder = this._getRepository().createQueryBuilder('account');
-        const filteredQueryBuilder:SelectQueryBuilder<Mast> = applyFilters(queryBuilder, filters, 'account'); // Call the imported utility function
+        try {
+            const queryBuilder = this._getRepository().createQueryBuilder('account');
+            const filteredQueryBuilder: SelectQueryBuilder<Mast> = applyFilters(queryBuilder, filters, 'account'); // Call the imported utility function
 
-       /* The code snippet you provided is checking if the `offset` and `limit` parameters are defined or not. If they are defined (not `undefined`), it will apply pagination to the query builder. */
-        if (offset !== undefined) {
-            filteredQueryBuilder.skip(offset);
+            /* The code snippet you provided is checking if the `offset` and `limit` parameters are defined or not. If they are defined (not `undefined`), it will apply pagination to the query builder. */
+            if (offset !== undefined) {
+                filteredQueryBuilder.skip(offset);
+            }
+            if (limit !== undefined) {
+                filteredQueryBuilder.take(limit);
+            }
+
+            filteredQueryBuilder.orderBy('account.id', 'ASC'); // Order by account id in ascending order
+
+            const account = await filteredQueryBuilder.getMany();
+            return this.trimWhitespace(account);
+        } catch (error) {
+            this.logger.error("Error fetching All Accounts with Filter", error);
+            throw new Error(error as string)
         }
-        if (limit !== undefined) {
-            filteredQueryBuilder.take(limit);
-        }
-
-        filteredQueryBuilder.orderBy('account.id', 'ASC'); // Order by account id in ascending order
-
-        const account = await filteredQueryBuilder.getMany();
-        return this.trimWhitespace(account);
-       } catch (error) {
-        this.logger.error("Error fetching All Accounts with Filter", error);
-        throw new Error(error as string)
-       }
     }
 
     async getAllAccounts(offset?: number, limit?: number): Promise<Mast[]> {
@@ -98,7 +98,7 @@ export class AccountProvider {
             throw new Error(`Failed to fetch agent with customers (eager loading): ${(error as Error).message}`);
         }
     }
-    
+
     async getAccountById(id: number): Promise<Mast | null> {
         return this._getRepository().findOneBy({ id });
     }
