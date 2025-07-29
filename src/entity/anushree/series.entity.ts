@@ -1,4 +1,6 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+// src/entity/anushree/SerMst.entity.ts
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Vwkotakcmsonline } from "./KotakCMS.entity"; // Import Vwkotakcmsonline
 
 @Entity("SerMst")
 export class SerMst {
@@ -32,4 +34,7 @@ export class SerMst {
     @Column({ type: 'bit', nullable: true, default: 1 })
     AcEffect?: boolean;
 
+    // OneToMany relationship to Vwkotakcmsonline
+    @OneToMany(() => Vwkotakcmsonline, vwkotakcmsonline => vwkotakcmsonline.seriesMaster)
+    vwkotakcmsonlineEntries!: Vwkotakcmsonline[];
 }

@@ -5,7 +5,7 @@ import { AppConfig } from '../config/config';
 import { ILogger } from '../interface/logger.interface';
 import CloudWatchService from '../services/cloudWatch.service'; // Import CloudWatchService
 
-export const WINSTON_LOGGER = Symbol('WinstonLogger') as InjectionToken<ILogger>; // Use ILogger Interface for InjectionToken
+export const WINSTON_LOGGER = Symbol('WinstonLogger') as InjectionToken<winston.Logger>;
 export class Logger {
     private static cloudWatchService: CloudWatchService | null = null; // Static CloudWatchService instance
 

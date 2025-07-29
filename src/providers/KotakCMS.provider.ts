@@ -1,78 +1,71 @@
 //src/providers/KotakCMS.provider.ts
-import { container } from "tsyringe";
-import { Repository, SelectQueryBuilder } from "typeorm";
+import { container, inject } from "tsyringe";
+import { Repository } from "typeorm";
 import { objectDecorators } from "../decorators/objectDecorators";
 import { Vwkotakcmsonline } from "../entity/anushree/KotakCMS.entity";
-import { BaseProviderInterface } from "../interface/base.provider";
-import { Filters } from "../types/filter.types";
-import { WINSTON_LOGGER } from "../utils/logger";
-import { applyFilters } from "../utils/query-utils";
-import { AppDataSource } from "./data-source.provider";
+import { SerMst } from "../entity/anushree/series.entity";
+// import { BaseProviderInterface } from "../interface/base.provider"; // REMOVED: Not implementing generic base interface
 import { ILogger } from "../interface/logger.interface";
-import { HttpException } from "../exceptions/httpException"; // For NotImplemented
+// import { Filters } from "../types/filter.types"; // REMOVED: Not using generic filters directly here
+import { WINSTON_LOGGER } from "../utils/logger";
+// Removed applyFilters as we're building a custom query
+import { AppDataSource } from "./data-source.provider";
 
-export interface KotakCMSProvider extends BaseProviderInterface<Vwkotakcmsonline, Filters<Vwkotakcmsonline>> {
+// Interface now contains only the specific methods needed for KotakCMS
+export interface KotakCMSProvider { // Interface no longer extends BaseProviderInterface
     trimWhitespace<T>(obj: T): T;
-    getAllWithFilters(filters?: Filters<Vwkotakcmsonline>, offset?: number, limit?: number): Promise<Vwkotakcmsonline[]>;
+
+    // This is the primary data retrieval method
+    getKotakCMSData(
+        fromVno: number,
+        toVno: number,
+        conum: string,
+        yearid: number,
+        offset?: number,
+        limit?: number
+    ): Promise<Vwkotakcmsonline[]>;
+
+    // Optionally, if getById is still needed internally or by other services, keep it here.
+    // However, the prompt indicates it's removed from the controller/route.
+    getById(id: number): Promise<Vwkotakcmsonline | null>;
 }
 
 @objectDecorators
-export class KotakCMSProvider implements KotakCMSProvider {
+export class KotakCMSProvider implements KotakCMSProvider { // Class implements its own interface
     private kotakCMSRepository: Repository<Vwkotakcmsonline> | null = null;
+    private serMstRepository: Repository<SerMst> | null = null;
     private dataSourceInstance: AppDataSource;
     private readonly logger: ILogger;
 
-    constructor(dataSourceInstance: AppDataSource) {
+    constructor(@inject(AppDataSource) dataSourceInstance: AppDataSource) {
         this.dataSourceInstance = dataSourceInstance;
         this.logger = container.resolve<ILogger>(WINSTON_LOGGER);
     }
 
-    private _getRepository(): Repository<Vwkotakcmsonline> {
+    private _getKotakCMSRepository(): Repository<Vwkotakcmsonline> {
         if (!this.kotakCMSRepository) {
             throw new Error("Kotak CMS repository not initialized. Call initializeRepository() first.");
         }
         return this.kotakCMSRepository;
     }
 
+    private _getSerMstRepository(): Repository<SerMst> {
+        if (!this.serMstRepository) {
+            throw new Error("SerMst repository not initialized. Call initializeRepository() first.");
+        }
+        return this.serMstRepository;
+    }
+
     async initializeRepository(): Promise<void> {
         const dataSource = await this.dataSourceInstance.init();
         this.kotakCMSRepository = dataSource.getRepository(Vwkotakcmsonline);
+        this.serMstRepository = dataSource.getRepository(SerMst);
     }
 
-    async getAll(offset?: number, limit?: number): Promise<Vwkotakcmsonline[]> {
-        // This method will now fetch *all* data by default if no filters are passed.
-        // If Conum/Yearid should always apply, even when `getAll` is called directly without filters,
-        // you would need a mechanism to store/pass those default filters.
-        // For now, it will apply only the filters passed.
-        return this.getAllWithFilters(undefined, offset, limit);
-    }
-
-    async getAllWithFilters(filters?: Filters<Vwkotakcmsonline>, offset?: number, limit?: number): Promise<Vwkotakcmsonline[]> {
-        try {
-            const queryBuilder = this._getRepository().createQueryBuilder('kotakCMS');
-            // `applyFilters` utility should be able to handle `filters.or` and new fields like `Client_Code` and `Yearid`
-            const filteredQueryBuilder: SelectQueryBuilder<Vwkotakcmsonline> = applyFilters(queryBuilder, filters, 'kotakCMS');
-
-            if (offset !== undefined) {
-                filteredQueryBuilder.skip(offset);
-            }
-            if (limit !== undefined) {
-                filteredQueryBuilder.take(limit);
-            }
-
-            filteredQueryBuilder.orderBy('kotakCMS.vno', 'ASC');
-
-            const kotakCMSRecords = await filteredQueryBuilder.getMany();
-            return this.trimWhitespace(kotakCMSRecords);
-        } catch (error) {
-            this.logger.error("Error fetching Kotak CMS with Filter", error);
-            throw new Error(error as string)
-        }
-    }
-
+    // Explicit implementation for getById if kept (from previously, not from BaseProviderInterface)
     async getById(id: number): Promise<Vwkotakcmsonline | null> {
         try {
-            const record = await this._getRepository().findOne({ where: { vno: id } });
+            const record = await this._getKotakCMSRepository().findOne({ where: { vno: id } });
             return record ? this.trimWhitespace(record) : null;
         } catch (error) {
             this.logger.error(`Error fetching Kotak CMS by vno ${id}`, error);
@@ -80,20 +73,59 @@ export class KotakCMSProvider implements KotakCMSProvider {
         }
     }
 
-    // CRUD operations are not supported on this view
-    async create(data: Partial<Vwkotakcmsonline>): Promise<Vwkotakcmsonline> {
-        throw HttpException.NotImplemented("Create operation not supported on view 'Vwkotakcmsonline'.");
+    // This is the single, specific data retrieval method for Kotak CMS
+    async getKotakCMSData(
+        fromVno: number,
+        toVno: number,
+        conum: string,
+        yearid: number,
+        offset?: number,
+        limit?: number
+    ): Promise<Vwkotakcmsonline[]> {
+        try {
+            const queryBuilder = this._getKotakCMSRepository().createQueryBuilder('vwkotak');
+
+            // Add WHERE conditions for vno and conum
+            queryBuilder
+                .where('vwkotak.vno BETWEEN :fromVno AND :toVno', { fromVno, toVno })
+                .andWhere('vwkotak.Conum = :conum', { conum });
+
+            // Add the subquery for TYPE IN (...)
+            const subQuery = this._getSerMstRepository().createQueryBuilder('serMst')
+                .select('serMst.id')
+                .where('serMst.Type = :serMstType', { serMstType: 'Payment' })
+                .andWhere('serMst.Name NOT IN (:...excludedNames)', { excludedNames: ['Multi Payment', 'Cash Payment'] })
+                .andWhere('serMst.YearId = :yearid', { yearid });
+
+            queryBuilder.andWhere(`vwkotak.Type IN (${subQuery.getQuery()})`);
+            queryBuilder.setParameters(subQuery.getParameters()); // Important: Set parameters from subquery
+
+            // Apply pagination
+            if (offset !== undefined) {
+                queryBuilder.skip(offset);
+            }
+            if (limit !== undefined) {
+                queryBuilder.take(limit);
+            }
+
+            // Order by vno
+            queryBuilder.orderBy('vwkotak.vno', 'ASC');
+
+            const result = await queryBuilder.getMany();
+            return this.trimWhitespace(result);
+        } catch (error) {
+            this.logger.error(`Error fetching Kotak CMS data with complex query: ${error instanceof Error ? error.message : String(error)}`, error);
+            throw new Error(`Failed to fetch Kotak CMS data: ${error instanceof Error ? error.message : String(error)}`);
+        }
     }
 
-    async update(id: number, data: Partial<Vwkotakcmsonline>): Promise<Vwkotakcmsonline | null> {
-        throw HttpException.NotImplemented("Update operation not supported on view 'Vwkotakcmsonline'.");
-    }
-
-    async delete(id: number): Promise<boolean> {
-        throw HttpException.NotImplemented("Delete operation not supported on view 'Vwkotakcmsonline'.");
-    }
-
+    // Keep trimWhitespace, likely provided by decorator
     trimWhitespace<T>(obj: T): T {
         return obj;
     }
+
+    // Removed BaseProviderInterface implementations (getAll, create, update, delete)
+    // as this provider is now highly specialized for read-only complex query on a view.
+    // If these are truly never used/needed for Vwkotakcmsonline, it simplifies the provider.
+    // If they were, you'd re-add them here, and the interface would extend BaseProviderInterface again.
 }

@@ -1,7 +1,8 @@
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+// src/entity/anushree/KotakCMS.entity.ts
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm'; // Import JoinColumn, ManyToOne
+import { SerMst } from './series.entity'; // Assuming SerMst entity is in SerMst.entity.ts
 
 @Entity("Vwkotakcmsonline")
-
 export class Vwkotakcmsonline {
     @Column({ nullable: true })
     Client_Code!: string;
@@ -120,7 +121,22 @@ export class Vwkotakcmsonline {
     Enrichment_20?: string;
 
     @Column()
-    Conum!: string; // Company number
+    YearId!: number;
+
+    @Column()
+    Type!: number; // This column maps to SerMst.id
+
+    @Column()
+    Conum!: string;
+
     @PrimaryColumn()
     vno!: number;
+
+    // ManyToOne relationship to SerMst
+    @ManyToOne(() => SerMst, serMst => serMst.vwkotakcmsonlineEntries)
+    @JoinColumn([
+        { name: "Type", referencedColumnName: "id" },     // Vwkotakcmsonline.Type links to SerMst.id
+        { name: "YearId", referencedColumnName: "YearId" } // Vwkotakcmsonline.YearId links to SerMst.YearId
+    ])
+    seriesMaster!: SerMst;
 }
