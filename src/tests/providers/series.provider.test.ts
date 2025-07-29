@@ -5,33 +5,15 @@ import { WINSTON_LOGGER } from '../../utils/logger';
 import { SeriesProvider } from '../../providers/series.provider';
 import { applyFilters } from '../../utils/query-utils';
 
+import { container } from 'tsyringe';
+import { AppDataSource } from '../../providers/data-source.provider';
+
 const mockLogger: winston.Logger = {
   info: jest.fn(),
   warn: jest.fn(),
   error: jest.fn(),
   debug: jest.fn(),
-  log: jest.fn(),
-  verbose: jest.fn(),
-  http: jest.fn(),
-  silly: jest.fn(),
-  add: jest.fn(),
-  remove: jest.fn(),
-  clear: jest.fn(),
-  exceptions: jest.fn(),
-  rejections: jest.fn(),
-  profile: jest.fn(),
-  startTimer: jest.fn(),
-  transports: [],
-  exitOnError: jest.fn(),
-  format: jest.fn(),
-  levels: jest.fn(),
-  level: 'debug',
-  silent: jest.fn(),
-  configure: jest.fn(),
-  defaultMeta: {},
-  child: jest.fn(),
-  is  : jest.fn(),
-};
+} as unknown as winston.Logger;
 container.register<winston.Logger>(WINSTON_LOGGER, { useValue: mockLogger });
 jest.mock('../../providers/data-source.provider', () => {
   const mockGetRepository = jest.fn();
@@ -65,10 +47,10 @@ describe('SeriesProvider', () => {
     jest.clearAllMocks();
 
     const mockGetRepository = jest.fn().mockReturnValue(mockRepository);
-    mockDataSource = new AppDataSource(mockLogger) as jest.Mocked<AppDataSource>;
-    (mockDataSource.init as jest.Mock).mockResolvedValue({
+    mockDataSource = {
+      init: jest.fn().mockResolvedValue({ getRepository: mockGetRepository }),
       getRepository: mockGetRepository,
-    });
+    } as unknown as jest.Mocked<AppDataSource>;
 
     provider = new SeriesProvider(mockDataSource);
     await provider.initializeRepository();
@@ -94,9 +76,14 @@ describe('SeriesProvider', () => {
     it('should get series with filters', async () => {
       const mockData = [new SerMst(), new SerMst()];
       const mockQueryBuilder = {
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
         getMany: jest.fn().mockResolvedValue(mockData),
       };
-      (applyFilters as jest.Mock).mockReturnValue(mockQueryBuilder as any);
+      mockRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
+      (applyFilters as jest.Mock).mockImplementation((qb, filters, alias) => {
+        return mockQueryBuilder;
+      });
 
       const filters = { Name: { equal: 'Test' } };
       const result = await provider.getAllSeriesWithFilters(filters);

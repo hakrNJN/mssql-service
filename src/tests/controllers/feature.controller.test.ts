@@ -20,13 +20,19 @@ describe('FeatureController', () => {
   beforeEach(() => {
     // Mock the nested properties on FeaturesService
     const mockModel = new FeaturesModel() as jest.Mocked<FeaturesModel>;
-    const mockFileService = new FileService('', null as any) as jest.Mocked<FileService>;
-    mockFileService.model = mockModel;
-    mockFileService.initialize = jest.fn();
-    mockFileService.save = jest.fn();
-
-    mockService = new FeaturesService('', null as any) as jest.Mocked<FeaturesService>;
-    mockService.fileService = mockFileService;
+    const mockFileServiceInstance: jest.Mocked<FileService> = {
+      filePath: '',
+      model: mockModel,
+      initialize: jest.fn(),
+      save: jest.fn(),
+    };
+    const mockLogger: jest.Mocked<winston.Logger> = {
+      info: jest.fn(),
+      warn: jest.fn(),
+      error: jest.fn(),
+      debug: jest.fn(),
+    } as any;
+    mockService = new FeaturesService(mockFileServiceInstance, mockLogger) as jest.Mocked<FeaturesService>;
 
     controller = new FeatureController(mockService);
     mockRequest = {

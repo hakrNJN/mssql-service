@@ -6,11 +6,12 @@ import cors from 'cors';
 
 // Mock the middleware
 jest.mock('express', () => {
+  const actualExpress = jest.requireActual('express');
   const mockExpress = jest.fn(() => ({
     use: jest.fn(),
   }));
-  mockExpress.json = jest.fn();
-  mockExpress.urlencoded = jest.fn().mockReturnValue(jest.fn());
+  mockExpress.json = jest.fn(() => actualExpress.json());
+  mockExpress.urlencoded = jest.fn(() => actualExpress.urlencoded({ extended: true }));
   return mockExpress;
 });
 jest.mock('helmet', () => jest.fn());

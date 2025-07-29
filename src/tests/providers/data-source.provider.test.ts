@@ -8,41 +8,32 @@ import { WINSTON_LOGGER } from '../../utils/logger';
 // Mock winston logger
 const mockLogger: winston.Logger = {
   info: jest.fn(),
-  error: jest.fn(),
   warn: jest.fn(),
+  error: jest.fn(),
   debug: jest.fn(),
-  log: jest.fn(),
-  verbose: jest.fn(),
-  http: jest.fn(),
-  silly: jest.fn(),
-  add: jest.fn(),
-  remove: jest.fn(),
-  clear: jest.fn(),
-  exceptions: jest.fn(),
-  rejections: jest.fn(),
-  profile: jest.fn(),
-  startTimer: jest.fn(),
-  transports: [],
-  exitOnError: jest.fn(),
-  format: jest.fn(),
-  levels: jest.fn(),
-  level: 'debug',
-  silent: jest.fn(),
-  configure: jest.fn(),
-  defaultMeta: {},
-  child: jest.fn(),
-  is  : jest.fn(),
-};
+} as unknown as winston.Logger;
 container.register<winston.Logger>(WINSTON_LOGGER, { useValue: mockLogger });
 
 // Mock TypeORM DataSource
+const mockRepository = {
+  find: jest.fn(),
+  findOne: jest.fn(),
+  create: jest.fn(),
+  save: jest.fn(),
+  update: jest.fn(),
+  delete: jest.fn(),
+  createQueryBuilder: jest.fn(),
+};
+
+const mockDataSourceInstance = {
+  initialize: jest.fn().mockResolvedValue(undefined),
+  destroy: jest.fn().mockResolvedValue(undefined),
+  isInitialized: false,
+  getRepository: jest.fn().mockReturnValue(mockRepository),
+};
+
 jest.mock('typeorm', () => ({
-  DataSource: jest.fn().mockImplementation(() => ({
-    initialize: jest.fn().mockResolvedValue(undefined),
-    destroy: jest.fn().mockResolvedValue(undefined),
-    isInitialized: false,
-    getRepository: jest.fn().mockReturnValue({}), // Mock getRepository
-  })),
+  DataSource: jest.fn().mockImplementation(() => mockDataSourceInstance),
 }));
 
 describe('AppDataSource', () => {

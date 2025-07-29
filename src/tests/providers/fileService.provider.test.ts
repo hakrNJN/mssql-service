@@ -3,6 +3,7 @@ import * as fs from 'fs/promises';
 import * as yaml from 'js-yaml';
 import { container } from 'tsyringe';
 import { ILogger } from '../../interface/logger.interface';
+import winston from 'winston';
 import FileService from '../../providers/fileService.provider';
 import { WINSTON_LOGGER } from '../../utils/logger';
 
@@ -12,29 +13,8 @@ const mockLogger: winston.Logger = {
   warn: jest.fn(),
   error: jest.fn(),
   debug: jest.fn(),
-  log: jest.fn(),
-  verbose: jest.fn(),
-  http: jest.fn(),
-  silly: jest.fn(),
-  add: jest.fn(),
-  remove: jest.fn(),
-  clear: jest.fn(),
-  exceptions: jest.fn(),
-  rejections: jest.fn(),
-  profile: jest.fn(),
-  startTimer: jest.fn(),
-  transports: [],
-  exitOnError: jest.fn(),
-  format: jest.fn(),
-  levels: jest.fn(),
-  level: 'debug',
-  silent: jest.fn(),
-  configure: jest.fn(),
-  defaultMeta: {},
-  child: jest.fn(),
-  is  : jest.fn(),
-};
-container.register<winston.Logger>(WINSTON_LOGGER, { useValue: mockLogger });
+} as unknown as winston.Logger;
+container.register<ILogger>(WINSTON_LOGGER, { useValue: mockLogger });
 
 // Mock fs/promises
 jest.mock('fs/promises', () => ({

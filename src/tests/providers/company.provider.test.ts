@@ -7,35 +7,12 @@ import winston from 'winston';
 import { applyFilters } from '../../utils/query-utils';
 
 import { WINSTON_LOGGER } from '../../utils/logger';
-
-// Mock the logger
 const mockLogger: winston.Logger = {
   info: jest.fn(),
   warn: jest.fn(),
   error: jest.fn(),
   debug: jest.fn(),
-  log: jest.fn(),
-  verbose: jest.fn(),
-  http: jest.fn(),
-  silly: jest.fn(),
-  add: jest.fn(),
-  remove: jest.fn(),
-  clear: jest.fn(),
-  exceptions: jest.fn(),
-  rejections: jest.fn(),
-  profile: jest.fn(),
-  startTimer: jest.fn(),
-  transports: [],
-  exitOnError: jest.fn(),
-  format: jest.fn(),
-  levels: jest.fn(),
-  level: 'debug',
-  silent: jest.fn(),
-  configure: jest.fn(),
-  defaultMeta: {},
-  child: jest.fn(),
-  is  : jest.fn(),
-};
+} as unknown as winston.Logger;
 container.register<winston.Logger>(WINSTON_LOGGER, { useValue: mockLogger });
 jest.mock('../../providers/data-source.provider', () => {
   const mockGetRepository = jest.fn();
@@ -71,10 +48,10 @@ describe('CompanyProvider', () => {
     jest.clearAllMocks();
 
     const mockGetRepository = jest.fn().mockReturnValue(mockRepository);
-    mockDataSource = new AppDataSource(mockLogger) as jest.Mocked<AppDataSource>;
-    (mockDataSource.init as jest.Mock).mockResolvedValue({
-      getRepository: mockGetRepository,
-    });
+    mockDataSource = {
+      init: jest.fn().mockResolvedValue({ getRepository: mockRepository }),
+      getRepository: mockRepository,
+    } as unknown as jest.Mocked<AppDataSource>;
 
     provider = new CompanyProvider(mockDataSource);
     await provider.initializeRepository();

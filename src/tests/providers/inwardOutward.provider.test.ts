@@ -13,28 +13,7 @@ const mockLogger: winston.Logger = {
   warn: jest.fn(),
   error: jest.fn(),
   debug: jest.fn(),
-  log: jest.fn(),
-  verbose: jest.fn(),
-  http: jest.fn(),
-  silly: jest.fn(),
-  add: jest.fn(),
-  remove: jest.fn(),
-  clear: jest.fn(),
-  exceptions: jest.fn(),
-  rejections: jest.fn(),
-  profile: jest.fn(),
-  startTimer: jest.fn(),
-  transports: [],
-  exitOnError: jest.fn(),
-  format: jest.fn(),
-  levels: jest.fn(),
-  level: 'debug',
-  silent: jest.fn(),
-  configure: jest.fn(),
-  defaultMeta: {},
-  child: jest.fn(),
-  is  : jest.fn(),
-};
+} as unknown as winston.Logger;
 container.register<winston.Logger>(WINSTON_LOGGER, { useValue: mockLogger });
 
 // Mock QueryRunner
@@ -53,7 +32,7 @@ const mockQueryRunner = {
 // Mock AppDataSource
 jest.mock('../../providers/data-source.provider', () => ({
   AppDataSource: jest.fn().mockImplementation(() => ({
-    init: jest.fn().mockResolvedValue({}),
+    init: jest.fn().mockResolvedValue({ getRepository: jest.fn() }),
     getDataSource: jest.fn().mockReturnValue({
       createQueryRunner: () => mockQueryRunner,
     }),

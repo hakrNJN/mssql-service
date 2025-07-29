@@ -5,7 +5,6 @@ import winston from 'winston';
 import { WINSTON_LOGGER } from '../../utils/logger';
 import { AppDataSource } from '../../providers/data-source.provider';
 import { PurchasePileLine } from '../../providers/purchasePipeLine.provider';
-import { WINSTON_LOGGER } from '../../utils/logger';
 import { applyFilters } from '../../utils/query-utils';
 
 // Mock the logger
@@ -14,28 +13,7 @@ const mockLogger: winston.Logger = {
   warn: jest.fn(),
   error: jest.fn(),
   debug: jest.fn(),
-  log: jest.fn(),
-  verbose: jest.fn(),
-  http: jest.fn(),
-  silly: jest.fn(),
-  add: jest.fn(),
-  remove: jest.fn(),
-  clear: jest.fn(),
-  exceptions: jest.fn(),
-  rejections: jest.fn(),
-  profile: jest.fn(),
-  startTimer: jest.fn(),
-  transports: [],
-  exitOnError: jest.fn(),
-  format: jest.fn(),
-  levels: jest.fn(),
-  level: 'debug',
-  silent: jest.fn(),
-  configure: jest.fn(),
-  defaultMeta: {},
-  child: jest.fn(),
-  is  : jest.fn(),
-};
+} as unknown as winston.Logger;
 container.register<winston.Logger>(WINSTON_LOGGER, { useValue: mockLogger });
 
 // Mock AppDataSource
@@ -75,10 +53,10 @@ describe('PurchasePileLine', () => {
     jest.clearAllMocks();
 
     const mockGetRepository = jest.fn().mockReturnValue(mockRepository);
-    mockDataSource = new AppDataSource(mockLogger) as jest.Mocked<AppDataSource>;
-    (mockDataSource.init as jest.Mock).mockResolvedValue({
-      getRepository: mockGetRepository,
-    });
+    mockDataSource = {
+      init: jest.fn().mockResolvedValue({ getRepository: mockRepository }),
+      getRepository: mockRepository,
+    } as unknown as jest.Mocked<AppDataSource>;
 
     provider = new PurchasePileLine(mockDataSource);
     await provider.initializeRepository();
@@ -114,12 +92,17 @@ describe('PurchasePileLine', () => {
     it('should get records with filters', async () => {
       const mockData = [new PurchasePipeLineEntity(), new PurchasePipeLineEntity()];
       const mockQueryBuilder = {
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
         skip: jest.fn().mockReturnThis(),
         take: jest.fn().mockReturnThis(),
         orderBy: jest.fn().mockReturnThis(),
         getMany: jest.fn().mockResolvedValue(mockData),
       };
-      (applyFilters as jest.Mock).mockReturnValue(mockQueryBuilder as any);
+      mockRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
+      (applyFilters as jest.Mock).mockImplementation((qb, filters, alias) => {
+        return mockQueryBuilder;
+      });
 
       const filters = { Purtrnid: { equal: 1 } };
       const result = await provider.getAllWithFilters(filters, 0, 10);

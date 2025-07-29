@@ -5,10 +5,10 @@ import { AccountService } from '../../services/account.service';
 import { ApiResponse } from '../../utils/api-response';
 
 // Mock AccountService
-jest.mock('../services/account.service');
+jest.mock('../../services/account.service');
 
 // Mock ApiResponse
-jest.mock('../utils/api-response', () => ({
+jest.mock('../../utils/api-response', () => ({
   ApiResponse: {
     success: jest.fn(),
   },

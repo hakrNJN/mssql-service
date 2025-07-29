@@ -29,7 +29,11 @@ export class SaleTransactionController {
                 throw HttpException.NotFound(`Transactions not found`);
             }
         } catch (error) {
-            throw HttpException.InternalServerError(`Something Went Wrong`);
+            if (error instanceof HttpException) {
+                throw error;
+            } else {
+                throw HttpException.InternalServerError(`Something Went Wrong`);
+            }
         }
     }
 

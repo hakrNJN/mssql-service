@@ -31,7 +31,11 @@ export class YearController {
                 throw HttpException.NotFound(`Years not found`);
             }
         } catch (error) {
-            throw HttpException.InternalServerError(`Something Went Wrong`,error);
+            if (error instanceof HttpException) {
+                throw error;
+            } else {
+                throw HttpException.InternalServerError(`Something Went Wrong`, error);
+            }
         }
         
     }
@@ -55,7 +59,11 @@ export class YearController {
                 throw HttpException.NotFound(`Years not found`);
             }
         } catch (error) {
-            throw HttpException.InternalServerError(`Something Went Wrong`);
+            if (error instanceof HttpException) {
+                throw error;
+            } else {
+                throw HttpException.InternalServerError(`Something Went Wrong`);
+            }
         }
-    }
+}
 }

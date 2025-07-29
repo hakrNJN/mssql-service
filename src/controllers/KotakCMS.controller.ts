@@ -71,7 +71,11 @@ export class KotakCMSController {
             }
         } catch (error) {
             console.error("Error in getAllKotakCMS:", error);
-            throw HttpException.InternalServerError(`Something Went Wrong while fetching Kotak CMS records`, error);
+            if (error instanceof HttpException) {
+                throw error;
+            } else {
+                throw HttpException.InternalServerError(`Something Went Wrong while fetching Kotak CMS records`, error);
+            }
         }
     };
 

@@ -21,7 +21,7 @@ describe('PurchasePipeLineController', () => {
   let mockResponse: Partial<Response>;
 
   beforeEach(() => {
-    mockService = new PurchaseParcelStatusService(null as any, null as any) as jest.Mocked<PurchaseParcelStatusService>;
+    mockService = new PurchaseParcelStatusService(null as any) as jest.Mocked<PurchaseParcelStatusService>;
     controller = new PurchasePipeLineController(mockService);
     mockRequest = {
       query: {},

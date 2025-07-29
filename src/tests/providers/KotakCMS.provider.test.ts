@@ -8,16 +8,12 @@ import { KotakCMSProvider } from '../../providers/KotakCMS.provider';
 import { WINSTON_LOGGER } from '../../utils/logger';
 
 
-const mockWinstonLogger: jest.Mocked<winston.Logger> = {
-  log: jest.fn(),
-  error: jest.fn(),
-  warn: jest.fn(),
+const mockWinstonLogger: winston.Logger = {
   info: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn(),
   debug: jest.fn(),
-  verbose: jest.fn(),
-  http: jest.fn(),
-  silly: jest.fn(),
-} as any; // Cast to any to satisfy type checking for the partial mock
+} as unknown as winston.Logger;
 container.register<winston.Logger>(WINSTON_LOGGER, { useValue: mockWinstonLogger });
 
 
@@ -55,18 +51,14 @@ describe('KotakCMSProvider', () => {
     jest.clearAllMocks();
 
     // Mock getRepository to return the correct repository based on the entity
-    jest.mock('../../providers/data-source.provider', () => ({
-  AppDataSource: jest.fn().mockImplementation(() => ({
-    init: jest.fn().mockResolvedValue({
-      getRepository: jest.fn(),
-    }),
-    getRepository: jest.fn(),
-  })),
-}));
-
-
-
-    mockDataSource = new AppDataSource() as jest.Mocked<AppDataSource>;
+    mockDataSource = {
+      init: jest.fn().mockResolvedValue({ getRepository: mockKotakCMSRepository.createQueryBuilder }),
+      getRepository: jest.fn(entity => {
+        if (entity === Vwkotakcmsonline) return mockKotakCMSRepository;
+        if (entity === SerMst) return mockSerMstRepository;
+        return {};
+      }),
+    } as unknown as jest.Mocked<AppDataSource>;
     provider = new KotakCMSProvider(mockDataSource);
     await provider.initializeRepository();
   });

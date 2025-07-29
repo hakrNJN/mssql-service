@@ -5,7 +5,6 @@ import winston from 'winston';
 import { WINSTON_LOGGER } from '../../utils/logger';
 import { PhoenixDataSource } from '../../providers/phoenix.data-source.provider';
 import { SaleTransactionProvider } from '../../providers/saleTransaction.provider';
-import { WINSTON_LOGGER } from '../../utils/logger';
 
 // Mock the logger
 const mockLogger: winston.Logger = {
@@ -13,47 +12,27 @@ const mockLogger: winston.Logger = {
   warn: jest.fn(),
   error: jest.fn(),
   debug: jest.fn(),
-  log: jest.fn(),
-  verbose: jest.fn(),
-  http: jest.fn(),
-  silly: jest.fn(),
-  add: jest.fn(),
-  remove: jest.fn(),
-  clear: jest.fn(),
-  exceptions: jest.fn(),
-  rejections: jest.fn(),
-  profile: jest.fn(),
-  startTimer: jest.fn(),
-  transports: [],
-  exitOnError: jest.fn(),
-  format: jest.fn(),
-  levels: jest.fn(),
-  level: 'debug',
-  silent: jest.fn(),
-  configure: jest.fn(),
-  defaultMeta: {},
-  child: jest.fn(),
-  is  : jest.fn(),
-};
+} as unknown as winston.Logger;
 container.register<winston.Logger>(WINSTON_LOGGER, { useValue: mockLogger });
 
 // Mock PhoenixDataSource
 jest.mock('../../providers/phoenix.data-source.provider', () => {
-  const mockGetRepository = jest.fn();
+  const mockRepository = {
+    findOne: jest.fn(),
+  };
   return {
     PhoenixDataSource: jest.fn().mockImplementation(() => ({
       init: jest.fn().mockResolvedValue({
-        getRepository: mockGetRepository,
+        getRepository: jest.fn(() => mockRepository),
       }),
-      getRepository: mockGetRepository,
+      getRepository: jest.fn(() => mockRepository),
     })),
   };
 });
 
-// Mock TypeORM repository
-const mockRepository = {
-  findOne: jest.fn(),
-};
+
+
+
 
 describe('SaleTransactionProvider', () => {
   let provider: SaleTransactionProvider;
@@ -62,10 +41,9 @@ describe('SaleTransactionProvider', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
 
-    const mockGetRepository = jest.fn().mockReturnValue(mockRepository);
     mockDataSource = new PhoenixDataSource(mockLogger) as jest.Mocked<PhoenixDataSource>;
     (mockDataSource.init as jest.Mock).mockResolvedValue({
-      getRepository: mockGetRepository,
+      getRepository: jest.fn().mockReturnValue(mockRepository),
     });
 
     provider = new SaleTransactionProvider(mockDataSource);
