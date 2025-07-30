@@ -33,6 +33,9 @@ export class CompanyController {
                 throw HttpException.NotFound(`Companies not found`);
             }
         } catch (error) {
+            if (error instanceof HttpException) {
+                throw error;
+            }
             throw HttpException.InternalServerError(`Something Went Wrong`,error);
         }
         
@@ -54,10 +57,13 @@ export class CompanyController {
                     message: `Company retrived for id ${comapnyId}`// Include pagination metadata
                 });
             } else {
-                throw HttpException.NotFound(`Tests not found`);
+                throw HttpException.NotFound(`Company not found`);
             }
         } catch (error) {
-            throw HttpException.InternalServerError(`Something Went Wrong`);
+            if (error instanceof HttpException) {
+                throw error;
+            }
+            throw HttpException.InternalServerError(`Something Went Wrong`, error);
         }
     }
 
@@ -82,10 +88,13 @@ export class CompanyController {
                     message: `Company retrived for GSTIN ${GSTIN}`// Include pagination metadata
                 });
             } else {
-                throw HttpException.NotFound(`Tests not found`);
+                throw HttpException.NotFound(`Company not found`);
             }
         } catch (error) {
-            throw HttpException.InternalServerError(`Something Went Wrong`);
+            if (error instanceof HttpException) {
+                throw error;
+            }
+            throw HttpException.InternalServerError(`Something Went Wrong`, error);
         }
     }
 }

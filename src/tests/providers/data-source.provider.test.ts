@@ -1,9 +1,8 @@
-// src/tests/data-source.provider.test.ts
-import { container } from 'tsyringe';
+
+// src/tests/providers/data-source.provider.test.ts
 import { AppDataSource } from '../../providers/data-source.provider';
 import { DataSource } from 'typeorm';
 import winston from 'winston';
-import { WINSTON_LOGGER } from '../../utils/logger';
 
 // Mock winston logger
 const mockLogger: winston.Logger = {
@@ -12,33 +11,19 @@ const mockLogger: winston.Logger = {
   error: jest.fn(),
   debug: jest.fn(),
 } as unknown as winston.Logger;
-container.register<winston.Logger>(WINSTON_LOGGER, { useValue: mockLogger });
 
 // Mock TypeORM DataSource
-const mockRepository = {
-  find: jest.fn(),
-  findOne: jest.fn(),
-  create: jest.fn(),
-  save: jest.fn(),
-  update: jest.fn(),
-  delete: jest.fn(),
-  createQueryBuilder: jest.fn(),
-};
-
-const mockDataSourceInstance = {
-  initialize: jest.fn().mockResolvedValue(undefined),
-  destroy: jest.fn().mockResolvedValue(undefined),
+const mockDataSource = {
+  initialize: jest.fn(),
+  destroy: jest.fn(),
   isInitialized: false,
-  getRepository: jest.fn().mockReturnValue(mockRepository),
 };
-
 jest.mock('typeorm', () => ({
-  DataSource: jest.fn().mockImplementation(() => mockDataSourceInstance),
+  DataSource: jest.fn(() => mockDataSource),
 }));
 
 describe('AppDataSource', () => {
   let appDataSource: AppDataSource;
-  let mockTypeOrmDataSource: jest.Mocked<DataSource>;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -51,30 +36,23 @@ describe('AppDataSource', () => {
 
   describe('init', () => {
     it('should initialize the data source', async () => {
-      const dataSourceInstance = await appDataSource.init();
-      mockTypeOrmDataSource = dataSourceInstance as jest.Mocked<DataSource>;
-
-      expect(DataSource).toHaveBeenCalledTimes(1);
-      expect(mockTypeOrmDataSource.initialize).toHaveBeenCalledTimes(1);
+      mockDataSource.initialize.mockResolvedValue(undefined);
+      await appDataSource.init();
+      expect(mockDataSource.initialize).toHaveBeenCalledTimes(1);
       expect(mockLogger.info).toHaveBeenCalledWith('App Data Source has been initialized!');
     });
 
     it('should return the existing instance if already initialized', async () => {
-        const firstInstance = await appDataSource.init();
-        const secondInstance = await appDataSource.init();
-  
-        expect(firstInstance).toBe(secondInstance);
-        expect(DataSource).toHaveBeenCalledTimes(1); // Still only called once
-      });
+      mockDataSource.initialize.mockResolvedValue(undefined);
+      const firstInstance = await appDataSource.init();
+      const secondInstance = await appDataSource.init();
+      expect(firstInstance).toBe(secondInstance);
+      expect(mockDataSource.initialize).toHaveBeenCalledTimes(1);
+    });
 
     it('should handle initialization error', async () => {
       const error = new Error('Init error');
-      // To mock the error, we need to get the instance of the mock DataSource
-      // and set its initialize method to reject.
-      const mockDs = new (DataSource as jest.Mock<DataSource>)();
-      (mockDs.initialize as jest.Mock).mockRejectedValue(error);
-      (DataSource as jest.Mock).mockReturnValue(mockDs); // Ensure this instance is used
-
+      mockDataSource.initialize.mockRejectedValue(error);
       await expect(appDataSource.init()).rejects.toThrow(error);
       expect(mockLogger.error).toHaveBeenCalledWith('Error during Data Source initialization', error);
     });
@@ -82,39 +60,38 @@ describe('AppDataSource', () => {
 
   describe('close', () => {
     it('should close the data source', async () => {
-      const dataSourceInstance = await appDataSource.init();
-      mockTypeOrmDataSource = dataSourceInstance as jest.Mocked<DataSource>;
-
+      mockDataSource.initialize.mockResolvedValue(undefined);
+      await appDataSource.init();
+      mockDataSource.destroy.mockResolvedValue(undefined);
       await appDataSource.close();
-
-      expect(mockTypeOrmDataSource.destroy).toHaveBeenCalledTimes(1);
+      expect(mockDataSource.destroy).toHaveBeenCalledTimes(1);
       expect(mockLogger.info).toHaveBeenCalledWith('Data Source has been closed!');
     });
 
     it('should handle close error', async () => {
-        const error = new Error('Close error');
-        const dataSourceInstance = await appDataSource.init();
-        mockTypeOrmDataSource = dataSourceInstance as jest.Mocked<DataSource>;
-        (mockTypeOrmDataSource.destroy as jest.Mock).mockRejectedValue(error);
-  
-        await expect(appDataSource.close()).rejects.toThrow(error);
-        expect(mockLogger.error).toHaveBeenCalledWith('Error during Data Source closing', error);
-      });
+      mockDataSource.initialize.mockResolvedValue(undefined);
+      await appDataSource.init();
+      const error = new Error('Close error');
+      mockDataSource.destroy.mockRejectedValue(error);
+      await expect(appDataSource.close()).rejects.toThrow(error);
+      expect(mockLogger.error).toHaveBeenCalledWith('Error during Data Source closing', error);
+    });
 
-      it('should log an error if closing a non-initialized source', async () => {
-        await appDataSource.close();
-        expect(mockLogger.error).toHaveBeenCalledWith('Data Source was already closed or not initialized.');
-      });
+    it('should log an error if closing a non-initialized source', async () => {
+      await appDataSource.close();
+      expect(mockLogger.error).toHaveBeenCalledWith('Data Source was already closed or not initialized.');
+    });
   });
 
   describe('getDataSource', () => {
     it('should return the data source instance', async () => {
+      mockDataSource.initialize.mockResolvedValue(undefined);
       const dataSourceInstance = await appDataSource.init();
       expect(appDataSource.getDataSource()).toBe(dataSourceInstance);
     });
 
     it('should return null if not initialized', () => {
-        expect(appDataSource.getDataSource()).toBeNull();
-      });
+      expect(appDataSource.getDataSource()).toBeNull();
+    });
   });
 });

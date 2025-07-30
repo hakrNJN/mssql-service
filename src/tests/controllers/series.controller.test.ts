@@ -1,19 +1,14 @@
-// src/tests/series.controller.test.ts
+
+// src/tests/controllers/series.controller.test.ts
 import { Request, Response } from 'express';
 import { SeriesController } from '../../controllers/series.controller';
 import { HttpException } from '../../exceptions/httpException';
 import { SeriesService } from '../../services/series.service';
 import { ApiResponse } from '../../utils/api-response';
 
-// Mock SeriesService
+// Mock SeriesService and ApiResponse
 jest.mock('../../services/series.service');
-
-// Mock ApiResponse
-jest.mock('../../utils/api-response', () => ({
-  ApiResponse: {
-    success: jest.fn(),
-  },
-}));
+jest.mock('../../utils/api-response');
 
 describe('SeriesController', () => {
   let controller: SeriesController;
@@ -23,6 +18,7 @@ describe('SeriesController', () => {
 
   beforeEach(() => {
     mockService = new SeriesService(null as any) as jest.Mocked<SeriesService>;
+    mockService.initialize = jest.fn().mockResolvedValue(undefined);
     controller = new SeriesController(mockService);
     mockRequest = {
       query: {},
@@ -34,6 +30,10 @@ describe('SeriesController', () => {
     };
   });
 
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   it('should be defined', () => {
     expect(controller).toBeDefined();
   });
@@ -41,11 +41,16 @@ describe('SeriesController', () => {
   describe('getAllSeries', () => {
     it('should return all series', async () => {
       const mockData = [{ id: 1 }];
-      mockService.getAllSeries = jest.fn().mockResolvedValue(mockData);
+      mockService.getAllSeries.mockResolvedValue(mockData as any);
 
       await controller.getAllSeries(mockRequest as Request, mockResponse as Response);
 
-      expect(ApiResponse.success).toHaveBeenCalled();
+      expect(ApiResponse.success).toHaveBeenCalledWith({
+        res: mockResponse,
+        req: mockRequest,
+        data: mockData,
+        message: 'All Avalable Series Retrived',
+      });
     });
   });
 
@@ -53,11 +58,16 @@ describe('SeriesController', () => {
     it('should return a series by id', async () => {
       mockRequest.params = { id: '1' };
       const mockData = { id: 1 };
-      mockService.getSeriesbyId = jest.fn().mockResolvedValue(mockData);
+      mockService.getSeriesbyId.mockResolvedValue(mockData as any);
 
       await controller.getSeriesById(mockRequest as Request, mockResponse as Response);
 
-      expect(ApiResponse.success).toHaveBeenCalled();
+      expect(ApiResponse.success).toHaveBeenCalledWith({
+        res: mockResponse,
+        req: mockRequest,
+        data: mockData,
+        message: 'Series retrived for id 1',
+      });
     });
   });
 
@@ -65,18 +75,24 @@ describe('SeriesController', () => {
     it('should return IRN series', async () => {
       mockRequest.query = { yearid: '2023', type: 'D', company: '1' };
       const mockData = [{ id: 1 }];
-      mockService.getSeriesWithFilters = jest.fn().mockResolvedValue(mockData);
+      mockService.getSeriesWithFilters.mockResolvedValue(mockData as any);
 
       await controller.getIrnSeries(mockRequest as Request, mockResponse as Response);
 
-      expect(ApiResponse.success).toHaveBeenCalled();
+      expect(ApiResponse.success).toHaveBeenCalledWith({
+        res: mockResponse,
+        req: mockRequest,
+        data: mockData,
+        message: 'IRN Series retrived',
+      });
     });
 
     it('should throw BadRequest if company is missing', async () => {
       mockRequest.query = { yearid: '2023', type: 'D' };
 
-      await expect(controller.getIrnSeries(mockRequest as Request, mockResponse as Response))
-        .rejects.toThrow(HttpException.BadRequest('Company is required'));
+      await expect(controller.getIrnSeries(mockRequest as Request, mockResponse as Response)).rejects.toThrow(
+        HttpException.BadRequest('Company is required')
+      );
     });
   });
 });

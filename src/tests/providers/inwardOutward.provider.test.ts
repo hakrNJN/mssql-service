@@ -1,20 +1,21 @@
-// src/tests/inwardOutward.provider.test.ts
-import { container } from 'tsyringe';
-import { SpTblFinishInWardOutWard } from '../../entity/anushree/SpTblFinishInWardOutWard.entity';
-import { HttpException } from '../../exceptions/httpException';
-import { ILogger } from '../../interface/logger.interface';
-import { AppDataSource } from '../../providers/data-source.provider';
+// src/tests/providers/inwardOutward.provider.test.ts
 import { InWardOutWardProvider } from '../../providers/inwardOutward.provider';
-import { WINSTON_LOGGER } from '../../utils/logger';
+import { AppDataSource } from '../../providers/data-source.provider';
+import { SpTblFinishInWardOutWard } from '../../entity/anushree/SpTblFinishInWardOutWard.entity';
+import { ILogger } from '../../interface/logger.interface';
+import { HttpException } from '../../exceptions/httpException';
 
 // Mock the logger
-const mockLogger: winston.Logger = {
-  info: jest.fn(),
-  warn: jest.fn(),
+const mockLogger: ILogger = {
+  log: jest.fn(),
   error: jest.fn(),
+  warn: jest.fn(),
+  info: jest.fn(),
   debug: jest.fn(),
-} as unknown as winston.Logger;
-container.register<winston.Logger>(WINSTON_LOGGER, { useValue: mockLogger });
+  verbose: jest.fn(),
+  http: jest.fn(),
+  silly: jest.fn(),
+};
 
 // Mock QueryRunner
 const mockQueryRunner = {
@@ -29,33 +30,38 @@ const mockQueryRunner = {
   },
 };
 
-// Mock AppDataSource
-jest.mock('../../providers/data-source.provider', () => ({
-  AppDataSource: jest.fn().mockImplementation(() => ({
-    init: jest.fn().mockResolvedValue({ getRepository: jest.fn() }),
-    getDataSource: jest.fn().mockReturnValue({
-      createQueryRunner: () => mockQueryRunner,
-    }),
-  })),
-}));
-
 // Mock TypeORM repository
 const mockRepository = {
   findOne: jest.fn(),
   createQueryBuilder: jest.fn(),
 };
 
+// Mock AppDataSource
+const mockDataSourceInstance = {
+  getRepository: jest.fn((entity) => {
+    // You might want to return different repositories based on the entity if needed
+    return mockRepository;
+  }),
+};
+
+const mockDataSource = {
+  init: jest.fn().mockResolvedValue(mockDataSourceInstance),
+  getDataSource: jest.fn().mockReturnValue({
+    createQueryRunner: () => mockQueryRunner,
+  }),
+};
+
+
 describe('InWardOutWardProvider', () => {
   let provider: InWardOutWardProvider;
-  let mockDataSource: jest.Mocked<AppDataSource>;
 
   beforeEach(async () => {
     jest.clearAllMocks();
-
-    mockDataSource = new AppDataSource(mockLogger) as jest.Mocked<AppDataSource>;
+    const mockDataSourceInstance = mockDataSource as unknown as AppDataSource;
+    provider = new InWardOutWardProvider(mockDataSourceInstance);
+    // Manually inject logger
+    (provider as any).logger = mockLogger;
     (mockQueryRunner.manager.getRepository as jest.Mock).mockReturnValue(mockRepository);
-
-    provider = new InWardOutWardProvider(mockDataSource);
     await provider.initializeRepository();
   });
 
@@ -64,7 +70,7 @@ describe('InWardOutWardProvider', () => {
   });
 
   describe('getAll', () => {
-    it('should throw NotImplemented error', async () => {
+    it('should throw an error', async () => {
       await expect(provider.getAll()).rejects.toThrow(
         'Cannot call getAll directly. Use getEntriesByFilter and provide SP parameters.'
       );
@@ -75,9 +81,7 @@ describe('InWardOutWardProvider', () => {
     it('should get a record by id', async () => {
       const mockData = new SpTblFinishInWardOutWard();
       mockRepository.findOne.mockResolvedValue(mockData);
-
       const result = await provider.getById(1);
-
       expect(result).toEqual(mockData);
       expect(mockRepository.findOne).toHaveBeenCalledWith({ where: { PurtrnId: 1 } });
     });
@@ -85,15 +89,15 @@ describe('InWardOutWardProvider', () => {
 
   describe('create, update, delete', () => {
     it('should throw NotImplemented for create', async () => {
-      await expect(provider.create({})).rejects.toThrow(HttpException.NotImplemented());
+      await expect(provider.create({})).rejects.toThrow(HttpException.NotImplemented("Create operation not supported on view 'SpTblFinishInWardOutWard'."));
     });
 
     it('should throw NotImplemented for update', async () => {
-      await expect(provider.update(1, {})).rejects.toThrow(HttpException.NotImplemented());
+      await expect(provider.update(1, {})).rejects.toThrow(HttpException.NotImplemented("Update operation not supported on view 'SpTblFinishInWardOutWard'."));
     });
 
     it('should throw NotImplemented for delete', async () => {
-      await expect(provider.delete(1)).rejects.toThrow(HttpException.NotImplemented());
+      await expect(provider.delete(1)).rejects.toThrow(HttpException.NotImplemented("Delete operation not supported on view 'SpTblFinishInWardOutWard'."));
     });
   });
 
@@ -129,7 +133,7 @@ describe('InWardOutWardProvider', () => {
       const mockData = new SpTblFinishInWardOutWard();
       mockRepository.findOne.mockResolvedValue(mockData);
 
-      const result = await provider.getEntryByIdFromSPData('conum', 'fdat', 'tdat', 'accId', 1);
+      const result = await provider.getEntryByIdFromSPData('conum', 'fdat', 'tdat', 'accId', 1, 1);
 
       expect(result).toEqual(mockData);
       expect(mockQueryRunner.connect).toHaveBeenCalled();

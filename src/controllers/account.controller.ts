@@ -44,6 +44,9 @@ export class AccountController {
                 throw HttpException.NotFound(`Account not found`);
             }
         } catch (error) {
+            if (error instanceof HttpException) {
+                throw error;
+            }
             throw HttpException.InternalServerError(`Something Went Wrong`, error);
         }
     }
@@ -73,6 +76,9 @@ export class AccountController {
                 throw HttpException.NotFound(`Account not found`);
             }
         } catch (error) {
+            if (error instanceof HttpException) {
+                throw error;
+            }
             throw HttpException.InternalServerError(`Something Went Wrong`, error);
         }
     }
@@ -102,6 +108,9 @@ export class AccountController {
                 throw HttpException.NotFound(`Account not found`);
             }
         } catch (error) {
+            if (error instanceof HttpException) {
+                throw error;
+            }
             throw HttpException.InternalServerError(`Something Went Wrong`, error);
         }
     }
@@ -131,6 +140,9 @@ export class AccountController {
                 throw HttpException.NotFound(`Account not found`);
             }
         } catch (error) {
+            if (error instanceof HttpException) {
+                throw error;
+            }
             throw HttpException.InternalServerError(`Something Went Wrong`, error);
         }
     }
@@ -154,6 +166,9 @@ export class AccountController {
                 throw HttpException.NotFound(`Account not found`);
             }
         } catch (error) {
+            if (error instanceof HttpException) {
+                throw error;
+            }
             throw HttpException.InternalServerError(`Something Went Wrong`, error);
         }
     }
@@ -199,6 +214,9 @@ export class AccountController {
                 throw HttpException.NotFound(`Account not found`);
             }
         } catch (error) {
+            if (error instanceof HttpException) {
+                throw error;
+            }
             throw HttpException.InternalServerError(`Something Went Wrong`, error);
         }
     }
@@ -222,6 +240,9 @@ export class AccountController {
                 throw HttpException.NotFound(`Account not found`);
             }
         } catch (error) {
+            if (error instanceof HttpException) {
+                throw error;
+            }
             throw HttpException.InternalServerError(`Something Went Wrong`, error);
         }
     }

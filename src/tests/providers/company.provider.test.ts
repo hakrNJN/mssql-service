@@ -1,30 +1,9 @@
-// src/tests/company.provider.test.ts
-import { container } from 'tsyringe';
-import { CompMst } from '../../entity/anushree/company.entity';
+
+// src/tests/providers/company.provider.test.ts
 import { CompanyProvider } from '../../providers/company.provider';
 import { AppDataSource } from '../../providers/data-source.provider';
-import winston from 'winston';
+import { CompMst } from '../../entity/anushree/company.entity';
 import { applyFilters } from '../../utils/query-utils';
-
-import { WINSTON_LOGGER } from '../../utils/logger';
-const mockLogger: winston.Logger = {
-  info: jest.fn(),
-  warn: jest.fn(),
-  error: jest.fn(),
-  debug: jest.fn(),
-} as unknown as winston.Logger;
-container.register<winston.Logger>(WINSTON_LOGGER, { useValue: mockLogger });
-jest.mock('../../providers/data-source.provider', () => {
-  const mockGetRepository = jest.fn();
-  return {
-    AppDataSource: jest.fn().mockImplementation(() => ({
-      init: jest.fn().mockResolvedValue({
-        getRepository: mockGetRepository,
-      }),
-      getRepository: mockGetRepository,
-    })),
-  };
-});
 
 // Mock query-utils
 jest.mock('../../utils/query-utils', () => ({
@@ -40,20 +19,18 @@ const mockRepository = {
   }),
 };
 
+// Mock AppDataSource
+const mockDataSource = {
+  init: jest.fn().mockResolvedValue({ getRepository: () => mockRepository }),
+};
+
 describe('CompanyProvider', () => {
   let provider: CompanyProvider;
-  let mockDataSource: jest.Mocked<AppDataSource>;
 
   beforeEach(async () => {
     jest.clearAllMocks();
-
-    const mockGetRepository = jest.fn().mockReturnValue(mockRepository);
-    mockDataSource = {
-      init: jest.fn().mockResolvedValue({ getRepository: mockRepository }),
-      getRepository: mockRepository,
-    } as unknown as jest.Mocked<AppDataSource>;
-
-    provider = new CompanyProvider(mockDataSource);
+    const mockDataSourceInstance = mockDataSource as unknown as AppDataSource;
+    provider = new CompanyProvider(mockDataSourceInstance);
     await provider.initializeRepository();
   });
 

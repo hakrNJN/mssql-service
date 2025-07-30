@@ -109,6 +109,9 @@ export class PurchasePipeLineController {
             }
         } catch (error) {
             console.error("Error in getEntriesByFilter:", error); // Log the actual error for debugging
+            if (error instanceof HttpException) {
+                throw error;
+            }
             throw HttpException.InternalServerError(`Something Went Wrong while fetching purchase pipeline entries`, error);
         }
     };

@@ -1,25 +1,28 @@
-// src/tests/eventDriven.controller.test.ts
-import { container } from 'tsyringe';
+
+// src/tests/controllers/eventDriven.controller.test.ts
 import EventDrivenController from '../../controllers/eventDriven.controller';
 import { ILogger } from '../../interface/logger.interface';
+import * as winston from 'winston';
 import FeaturesService from '../../services/feature.service';
 import PublisherRabbitMQService from '../../services/publisher.RabbitMQ.service';
 import RabbitMQClientService from '../../services/rabbitMQ.service';
-import { WINSTON_LOGGER } from '../../utils/logger';
-
-// Mock the logger
-const mockLogger: ILogger = {
-  info: jest.fn(),
-  warn: jest.fn(),
-  error: jest.fn(),
-  debug: jest.fn(),
-};
-container.register<ILogger>(WINSTON_LOGGER, { useValue: mockLogger });
 
 // Mock services
-jest.mock('../services/rabbitMQ.service');
-jest.mock('../services/publisher.RabbitMQ.service');
-jest.mock('../services/feature.service');
+jest.mock('../../services/rabbitMQ.service');
+jest.mock('../../services/publisher.RabbitMQ.service');
+jest.mock('../../services/feature.service');
+
+// Mock the logger
+const mockLogger: winston.Logger = {
+  log: jest.fn(),
+  error: jest.fn(),
+  warn: jest.fn(),
+  info: jest.fn(),
+  debug: jest.fn(),
+  verbose: jest.fn(),
+  http: jest.fn(),
+  silly: jest.fn(),
+} as unknown as winston.Logger;
 
 describe('EventDrivenController', () => {
   let controller: EventDrivenController;
@@ -28,9 +31,10 @@ describe('EventDrivenController', () => {
   let mockFeaturesService: jest.Mocked<FeaturesService>;
 
   beforeEach(() => {
-    mockRabbitMQClient = new RabbitMQClientService('') as jest.Mocked<RabbitMQClientService>;
-    mockPublisherService = new PublisherRabbitMQService(mockRabbitMQClient) as jest.Mocked<PublisherRabbitMQService>;
-    mockFeaturesService = new FeaturesService('', mockLogger) as jest.Mocked<FeaturesService>;
+    // Correctly instantiate mocked services with all required constructor arguments
+    mockRabbitMQClient = new RabbitMQClientService({} as any, mockLogger) as jest.Mocked<RabbitMQClientService>;
+    mockPublisherService = new PublisherRabbitMQService(mockRabbitMQClient, mockLogger) as jest.Mocked<PublisherRabbitMQService>;
+    mockFeaturesService = new FeaturesService({} as any, mockLogger) as jest.Mocked<FeaturesService>;
 
     controller = new EventDrivenController(
       mockRabbitMQClient,
@@ -38,6 +42,10 @@ describe('EventDrivenController', () => {
       mockFeaturesService,
       mockLogger
     );
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   it('should be defined', () => {
@@ -59,8 +67,8 @@ describe('EventDrivenController', () => {
       });
 
       // Spy on the private methods
-      const fetchDataSpy = jest.spyOn(controller as any, 'fetchData');
-      const fetchRegisterSpy = jest.spyOn(controller as any, 'fetchRegister');
+      const fetchDataSpy = jest.spyOn(controller as any, 'fetchData').mockImplementation(() => Promise.resolve());
+      const fetchRegisterSpy = jest.spyOn(controller as any, 'fetchRegister').mockImplementation(() => Promise.resolve());
 
       await controller.startEventListeners();
 

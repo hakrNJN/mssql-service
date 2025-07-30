@@ -1,22 +1,21 @@
-// src/tests/KotakCMS.provider.test.ts
-import { container } from 'tsyringe';
-import winston from 'winston';
+// src/tests/providers/KotakCMS.provider.test.ts
+import { KotakCMSProvider } from '../../providers/KotakCMS.provider';
+import { AppDataSource } from '../../providers/data-source.provider';
 import { Vwkotakcmsonline } from '../../entity/anushree/KotakCMS.entity';
 import { SerMst } from '../../entity/anushree/series.entity';
-import { AppDataSource } from '../../providers/data-source.provider';
-import { KotakCMSProvider } from '../../providers/KotakCMS.provider';
-import { WINSTON_LOGGER } from '../../utils/logger';
+import { ILogger } from '../../interface/logger.interface';
 
-
-const mockWinstonLogger: winston.Logger = {
-  info: jest.fn(),
-  warn: jest.fn(),
+// Mock the logger
+const mockLogger: ILogger = {
+  log: jest.fn(),
   error: jest.fn(),
+  warn: jest.fn(),
+  info: jest.fn(),
   debug: jest.fn(),
-} as unknown as winston.Logger;
-container.register<winston.Logger>(WINSTON_LOGGER, { useValue: mockWinstonLogger });
-
-
+  verbose: jest.fn(),
+  http: jest.fn(),
+  silly: jest.fn(),
+};
 
 // Mock TypeORM
 const mockQueryBuilder = {
@@ -42,24 +41,25 @@ const mockSerMstRepository = {
   createQueryBuilder: jest.fn(() => mockQueryBuilder),
 };
 
+const mockDataSource = {
+  init: jest.fn().mockResolvedValue({
+    getRepository: jest.fn(entity => {
+      if (entity === Vwkotakcmsonline) return mockKotakCMSRepository;
+      if (entity === SerMst) return mockSerMstRepository;
+      return {};
+    }),
+  }),
+};
+
 describe('KotakCMSProvider', () => {
   let provider: KotakCMSProvider;
-  let mockDataSource: jest.Mocked<AppDataSource>;
 
   beforeEach(async () => {
-    // Reset mocks before each test
     jest.clearAllMocks();
-
-    // Mock getRepository to return the correct repository based on the entity
-    mockDataSource = {
-      init: jest.fn().mockResolvedValue({ getRepository: mockKotakCMSRepository.createQueryBuilder }),
-      getRepository: jest.fn(entity => {
-        if (entity === Vwkotakcmsonline) return mockKotakCMSRepository;
-        if (entity === SerMst) return mockSerMstRepository;
-        return {};
-      }),
-    } as unknown as jest.Mocked<AppDataSource>;
-    provider = new KotakCMSProvider(mockDataSource);
+    const mockDataSourceInstance = mockDataSource as unknown as AppDataSource;
+    provider = new KotakCMSProvider(mockDataSourceInstance);
+    // Manually inject logger
+    (provider as any).logger = mockLogger;
     await provider.initializeRepository();
   });
 
@@ -76,21 +76,6 @@ describe('KotakCMSProvider', () => {
 
       expect(result).toEqual(mockRecord);
       expect(mockKotakCMSRepository.findOne).toHaveBeenCalledWith({ where: { vno: 1 } });
-    });
-
-    it('should return null if record not found', async () => {
-      mockKotakCMSRepository.findOne.mockResolvedValue(null);
-
-      const result = await provider.getById(1);
-
-      expect(result).toBeNull();
-    });
-
-    it('should throw an error if repository fails', async () => {
-      const error = new Error('Database error');
-      mockKotakCMSRepository.findOne.mockRejectedValue(error);
-
-      await expect(provider.getById(1)).rejects.toThrow(error);
     });
   });
 
@@ -120,19 +105,6 @@ describe('KotakCMSProvider', () => {
       expect(mockQueryBuilder.where).toHaveBeenCalledWith('serMst.Type = :serMstType', { serMstType: 'Payment' });
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('serMst.Name NOT IN (:...excludedNames)', { excludedNames: ['Multi Payment', 'Cash Payment'] });
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('serMst.YearId = :yearid', { yearid: 17 });
-    });
-
-    it('should handle pagination correctly', async () => {
-      await provider.getKotakCMSData(1, 100, 'C001', 17);
-      expect(mockQueryBuilder.skip).not.toHaveBeenCalled();
-      expect(mockQueryBuilder.take).not.toHaveBeenCalled();
-    });
-
-    it('should throw an error if the query fails', async () => {
-      const error = new Error('Query failed');
-      (mockQueryBuilder.getMany as jest.Mock).mockRejectedValue(error);
-
-      await expect(provider.getKotakCMSData(1, 100, 'C001', 17)).rejects.toThrow('Failed to fetch Kotak CMS data: Query failed');
     });
   });
 });

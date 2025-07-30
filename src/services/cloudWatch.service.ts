@@ -94,7 +94,7 @@ class CloudWatchService {
             const params: PutMetricAlarmCommandInput = { // Explicitly type params
                 AlarmName: alarmName,
                 ComparisonOperator: "GreaterThanThreshold", // Enclose string values in quotes
-                EvaluationPeriods: threshold, // Changed to use threshold as EvaluationPeriods - review logic
+                EvaluationPeriods: 1, // Set to 1 as a common default for immediate evaluation
                 MetricName: metricName,
                 Namespace: AppConfig.APP.NAME, // Using AppConfig for Namespace as suggested
                 Period: 60,

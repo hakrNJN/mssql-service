@@ -1,30 +1,9 @@
-// src/tests/years.provider.test.ts
-import { YearMst } from '../../entity/anushree/years.entity';
-import winston from 'winston';
-import { WINSTON_LOGGER } from '../../utils/logger';
-import { YearsProvider } from '../../providers/years.provider';
-import { applyFilters } from '../../utils/query-utils';
-import { container } from 'tsyringe';
-import { AppDataSource } from '../../providers/data-source.provider';
 
-const mockLogger: winston.Logger = {
-  info: jest.fn(),
-  warn: jest.fn(),
-  error: jest.fn(),
-  debug: jest.fn(),
-} as unknown as winston.Logger;
-container.register<winston.Logger>(WINSTON_LOGGER, { useValue: mockLogger });
-jest.mock('../../providers/data-source.provider', () => {
-  const mockGetRepository = jest.fn();
-  return {
-    AppDataSource: jest.fn().mockImplementation(() => ({
-      init: jest.fn().mockResolvedValue({
-        getRepository: mockGetRepository,
-      }),
-      getRepository: mockGetRepository,
-    })),
-  };
-});
+// src/tests/providers/years.provider.test.ts
+import { YearsProvider } from '../../providers/years.provider';
+import { AppDataSource } from '../../providers/data-source.provider';
+import { YearMst } from '../../entity/anushree/years.entity';
+import { applyFilters } from '../../utils/query-utils';
 
 // Mock query-utils
 jest.mock('../../utils/query-utils', () => ({
@@ -35,23 +14,23 @@ jest.mock('../../utils/query-utils', () => ({
 const mockRepository = {
   find: jest.fn(),
   findOneBy: jest.fn(),
-  createQueryBuilder: jest.fn(),
+  createQueryBuilder: jest.fn().mockReturnValue({
+    getMany: jest.fn(),
+  }),
+};
+
+// Mock AppDataSource
+const mockDataSource = {
+  init: jest.fn().mockResolvedValue({ getRepository: () => mockRepository }),
 };
 
 describe('YearsProvider', () => {
   let provider: YearsProvider;
-  let mockDataSource: jest.Mocked<AppDataSource>;
 
   beforeEach(async () => {
     jest.clearAllMocks();
-
-    const mockGetRepository = jest.fn().mockReturnValue(mockRepository);
-    mockDataSource = {
-      init: jest.fn().mockResolvedValue({ getRepository: mockGetRepository }),
-      getRepository: mockGetRepository,
-    } as unknown as jest.Mocked<AppDataSource>;
-
-    provider = new YearsProvider(mockDataSource);
+    const mockDataSourceInstance = mockDataSource as unknown as AppDataSource;
+    provider = new YearsProvider(mockDataSourceInstance);
     await provider.initializeRepository();
   });
 
@@ -75,14 +54,9 @@ describe('YearsProvider', () => {
     it('should get years with filters', async () => {
       const mockData = [new YearMst(), new YearMst()];
       const mockQueryBuilder = {
-        where: jest.fn().mockReturnThis(),
-        andWhere: jest.fn().mockReturnThis(),
         getMany: jest.fn().mockResolvedValue(mockData),
       };
-      mockRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
-      (applyFilters as jest.Mock).mockImplementation((qb, filters, alias) => {
-        return mockQueryBuilder;
-      });
+      (applyFilters as jest.Mock).mockReturnValue(mockQueryBuilder as any);
 
       const filters = { Name: { equal: '2023' } };
       const result = await provider.getAllYearsWithFilters(filters);

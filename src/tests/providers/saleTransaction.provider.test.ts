@@ -1,52 +1,41 @@
-// src/tests/saleTransaction.provider.test.ts
-import { container } from 'tsyringe';
-import { SaleTransaction } from '../../entity/phoenix/SaleTransaction';
-import winston from 'winston';
-import { WINSTON_LOGGER } from '../../utils/logger';
-import { PhoenixDataSource } from '../../providers/phoenix.data-source.provider';
+// src/tests/providers/saleTransaction.provider.test.ts
 import { SaleTransactionProvider } from '../../providers/saleTransaction.provider';
+import { PhoenixDataSource } from '../../providers/phoenix.data-source.provider';
+import { SaleTransaction } from '../../entity/phoenix/SaleTransaction';
+import { Repository } from 'typeorm';
+import { ILogger } from '../../interface/logger.interface';
 
 // Mock the logger
-const mockLogger: winston.Logger = {
-  info: jest.fn(),
-  warn: jest.fn(),
+const mockLogger: ILogger = {
+  log: jest.fn(),
   error: jest.fn(),
+  warn: jest.fn(),
+  info: jest.fn(),
   debug: jest.fn(),
-} as unknown as winston.Logger;
-container.register<winston.Logger>(WINSTON_LOGGER, { useValue: mockLogger });
+  verbose: jest.fn(),
+  http: jest.fn(),
+  silly: jest.fn(),
+};
 
 // Mock PhoenixDataSource
-jest.mock('../../providers/phoenix.data-source.provider', () => {
-  const mockRepository = {
-    findOne: jest.fn(),
-  };
-  return {
-    PhoenixDataSource: jest.fn().mockImplementation(() => ({
-      init: jest.fn().mockResolvedValue({
-        getRepository: jest.fn(() => mockRepository),
-      }),
-      getRepository: jest.fn(() => mockRepository),
-    })),
-  };
-});
-
-
-
-
+const mockRepository = {
+  findOne: jest.fn(),
+};
+const mockDataSource = {
+  init: jest.fn().mockResolvedValue({
+    getRepository: jest.fn().mockReturnValue(mockRepository),
+  }),
+};
 
 describe('SaleTransactionProvider', () => {
   let provider: SaleTransactionProvider;
-  let mockDataSource: jest.Mocked<PhoenixDataSource>;
 
   beforeEach(async () => {
     jest.clearAllMocks();
-
-    mockDataSource = new PhoenixDataSource(mockLogger) as jest.Mocked<PhoenixDataSource>;
-    (mockDataSource.init as jest.Mock).mockResolvedValue({
-      getRepository: jest.fn().mockReturnValue(mockRepository),
-    });
-
-    provider = new SaleTransactionProvider(mockDataSource);
+    const mockDataSourceInstance = mockDataSource as unknown as PhoenixDataSource;
+    provider = new SaleTransactionProvider(mockDataSourceInstance);
+    // Manually inject logger
+    (provider as any).logger = mockLogger;
     await provider.initializeRepository();
   });
 
@@ -69,12 +58,13 @@ describe('SaleTransactionProvider', () => {
     });
 
     it('should return null on error', async () => {
-      mockRepository.findOne.mockRejectedValue(new Error('DB Error'));
+      const error = new Error('DB Error');
+      mockRepository.findOne.mockRejectedValue(error);
 
       const result = await provider.getTransactionById(1);
 
       expect(result).toBeNull();
-      expect(mockLogger.error).toHaveBeenCalled();
+      expect(mockLogger.error).toHaveBeenCalledWith('Error fetching sale transaction:', error);
     });
   });
 });

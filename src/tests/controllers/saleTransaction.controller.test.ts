@@ -1,19 +1,14 @@
-// src/tests/saleTransaction.controller.test.ts
+
+// src/tests/controllers/saleTransaction.controller.test.ts
 import { Request, Response } from 'express';
 import { SaleTransactionController } from '../../controllers/saleTransaction.controller';
 import { HttpException } from '../../exceptions/httpException';
 import { SaleTransactionService } from '../../services/saleTransaction.service';
 import { ApiResponse } from '../../utils/api-response';
 
-// Mock SaleTransactionService
+// Mock SaleTransactionService and ApiResponse
 jest.mock('../../services/saleTransaction.service');
-
-// Mock ApiResponse
-jest.mock('../../utils/api-response', () => ({
-  ApiResponse: {
-    success: jest.fn(),
-  },
-}));
+jest.mock('../../utils/api-response');
 
 describe('SaleTransactionController', () => {
   let controller: SaleTransactionController;
@@ -23,6 +18,7 @@ describe('SaleTransactionController', () => {
 
   beforeEach(() => {
     mockService = new SaleTransactionService(null as any) as jest.Mocked<SaleTransactionService>;
+    mockService.initialize = jest.fn().mockResolvedValue(undefined);
     controller = new SaleTransactionController(mockService);
     mockRequest = {
       params: {},
@@ -33,6 +29,10 @@ describe('SaleTransactionController', () => {
     };
   });
 
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   it('should be defined', () => {
     expect(controller).toBeDefined();
   });
@@ -41,19 +41,35 @@ describe('SaleTransactionController', () => {
     it('should return a transaction by id', async () => {
       mockRequest.params = { id: '1' };
       const mockData = { id: 1 };
-      mockService.getTransactionById = jest.fn().mockResolvedValue(mockData);
+      mockService.getTransactionById.mockResolvedValue(mockData as any);
 
       await controller.getTransactionById(mockRequest as Request, mockResponse as Response);
 
-      expect(ApiResponse.success).toHaveBeenCalled();
+      expect(ApiResponse.success).toHaveBeenCalledWith({
+        res: mockResponse,
+        req: mockRequest,
+        data: mockData,
+        message: 'Transaction retrived for id 1',
+      });
     });
 
     it('should throw NotFound if transaction not found', async () => {
       mockRequest.params = { id: '1' };
-      mockService.getTransactionById = jest.fn().mockResolvedValue(null);
+      mockService.getTransactionById.mockResolvedValue(null);
 
-      await expect(controller.getTransactionById(mockRequest as Request, mockResponse as Response))
-        .rejects.toThrow(HttpException.NotFound('Transactions not found'));
+      await expect(controller.getTransactionById(mockRequest as Request, mockResponse as Response)).rejects.toThrow(
+        HttpException.NotFound('Transactions not found')
+      );
+    });
+
+    it('should throw InternalServerError on service error', async () => {
+      mockRequest.params = { id: '1' };
+      const error = new Error('Service error');
+      mockService.getTransactionById.mockRejectedValue(error);
+
+      await expect(controller.getTransactionById(mockRequest as Request, mockResponse as Response)).rejects.toThrow(
+        HttpException.InternalServerError('Something Went Wrong')
+      );
     });
   });
 });

@@ -1,20 +1,8 @@
-// src/tests/fileService.provider.test.ts
+// src/tests/providers/fileService.provider.test.ts
 import * as fs from 'fs/promises';
 import * as yaml from 'js-yaml';
-import { container } from 'tsyringe';
 import { ILogger } from '../../interface/logger.interface';
-import winston from 'winston';
 import FileService from '../../providers/fileService.provider';
-import { WINSTON_LOGGER } from '../../utils/logger';
-
-// Mock the logger
-const mockLogger: winston.Logger = {
-  info: jest.fn(),
-  warn: jest.fn(),
-  error: jest.fn(),
-  debug: jest.fn(),
-} as unknown as winston.Logger;
-container.register<ILogger>(WINSTON_LOGGER, { useValue: mockLogger });
 
 // Mock fs/promises
 jest.mock('fs/promises', () => ({
@@ -30,10 +18,21 @@ jest.mock('js-yaml', () => ({
 
 describe('FileService', () => {
   let fileService: FileService;
+  let mockLogger: ILogger;
   const filePath = 'test.yaml';
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockLogger = {
+      log: jest.fn(),
+      error: jest.fn(),
+      warn: jest.fn(),
+      info: jest.fn(),
+      debug: jest.fn(),
+      verbose: jest.fn(),
+      http: jest.fn(),
+      silly: jest.fn(),
+    };
     fileService = new FileService(filePath, mockLogger);
   });
 
@@ -55,11 +54,12 @@ describe('FileService', () => {
       expect(fileService.model.read()).toEqual(parsedContent);
     });
 
-    it('should handle file read error', async () => {
+    it('should handle file read error and log it', async () => {
       const error = new Error('File not found');
       (fs.readFile as jest.Mock).mockRejectedValue(error);
 
       await expect(fileService.initialize()).rejects.toThrow(error);
+      expect(mockLogger.error).toHaveBeenCalledWith('Error initializing FileService:', error);
     });
   });
 
@@ -77,11 +77,12 @@ describe('FileService', () => {
       expect(fs.writeFile).toHaveBeenCalledWith(filePath, yamlString, 'utf8');
     });
 
-    it('should handle file write error', async () => {
+    it('should handle file write error and log it', async () => {
       const error = new Error('Permission denied');
       (fs.writeFile as jest.Mock).mockRejectedValue(error);
 
       await expect(fileService.save()).rejects.toThrow(error);
+      expect(mockLogger.error).toHaveBeenCalledWith('Error saving FileService:', error);
     });
   });
 });

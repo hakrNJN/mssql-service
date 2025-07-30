@@ -228,11 +228,11 @@ class RabbitMQClientService implements IRabbitMQClient {
                     }
                     else {
                         this.logger.info('Message did not match the condition, requeueing.');
-                        this.nack(msg, false, true);
+                        this.nack(msg, true, false);
                     }
                 } catch (err: any) {
                     this.logger.error('Error processing message:', err, { messageContent: msg.content.toString() }); // Log message content on error
-                    this.nack(msg, false, true);
+                    this.nack(msg, true, false);
                 }
             }, { noAck: false });
             this.logger.info(`Subscribed to queue: ${queueName}`);
