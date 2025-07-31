@@ -9,16 +9,19 @@ import { ILogger } from '../interface/logger.interface';
 import { AppDataSource } from "../providers/data-source.provider";
 import FileService from "../providers/fileService.provider";
 import { PhoenixDataSource } from "../providers/phoenix.data-source.provider";
+import { AccountService } from "../services/account.service";
 import { DataSourceService } from "../services/dataSource.service";
 import FeaturesService from "../services/feature.service";
 import { KotakCMSService } from '../services/kotakCMS.service';
+import { NoOpPublisherRabbitMQService } from "../services/noOpPublisherRabbitMQ.service";
+import { NoOpRabbitMQClientService } from "../services/noOpRabbitMQ.service";
 import PublisherRabbitMQService from "../services/publisher.RabbitMQ.service";
 import { PurchaseParcelStatusService } from '../services/purchaseInwardOutWard.service';
 import RabbitMQClientService from "../services/rabbitMQ.service";
 import { Logger, WINSTON_LOGGER } from "./logger";
 
-// Define a token for FileService if you want to use interface injection.
-// export const FILE_SERVICE_TOKEN = Symbol('FileServiceToken') as InjectionToken<FileService>; // Not strictly needed here
+export const RABBITMQ_CLIENT_SERVICE = Symbol('RabbitMQClientService');
+export const PUBLISHER_RABBITMQ_SERVICE = Symbol('PublisherRabbitMQService');
 
 export function registerDependencies(): void {
 
@@ -35,37 +38,56 @@ export function registerDependencies(): void {
   container.register(AppDataSource, { useClass: AppDataSource });
   container.register(PhoenixDataSource, { useClass: PhoenixDataSource });
 
-  // Register RabbitMQClientService
-  const rabbitMQConnectionUrl = { connectionUrl: AppConfig.RABBITMQ_BROCKER };
-  container.register(RabbitMQClientService, {
-    useFactory: (c) => new RabbitMQClientService(rabbitMQConnectionUrl, c.resolve(WINSTON_LOGGER))
+  // Register FileService and its dependencies first, as FeaturesService depends on it.
+  container.register(FileService, {
+    useFactory: (c) => new FileService(AppConfig.FEATURE_CONFIG_FILE_PATH, c.resolve(WINSTON_LOGGER))
   });
-
-  // Register RabbitMQPublisherService
-  container.register(PublisherRabbitMQService, {
-    useFactory: (c) => new PublisherRabbitMQService(
-      c.resolve(RabbitMQClientService),
-      c.resolve(WINSTON_LOGGER)
-    )
-  });
-
-  // **Register FileService using a factory function:**
-  container.register(FileService, { // Register FileService directly, or use FILE_SERVICE_TOKEN if you had an interface token
-    useFactory: (c) => {
-      const filePath = join(__dirname, '../config', 'feature.config.yml'); // Define filePath here, same as in FeaturesService
-      return new FileService(filePath, c.resolve(WINSTON_LOGGER)); // Resolve logger from container
-    }
-  });
-
   container.register(FeaturesService, { useClass: FeaturesService });
 
-  // Register FeaturesService (implicitly registered as it's injectable and singleton)
+  const featuresService = container.resolve(FeaturesService);
+  const features = featuresService.getFeatures();
+  const enableRabbitMQ = features.enableRabbitMQ;
+
+  if (enableRabbitMQ) {
+    // Register RabbitMQClientService
+    const rabbitMQConnectionUrl = { connectionUrl: AppConfig.RABBITMQ_BROCKER };
+    container.register(RABBITMQ_CLIENT_SERVICE, {
+      useFactory: (c) => new RabbitMQClientService(rabbitMQConnectionUrl, c.resolve(WINSTON_LOGGER))
+    });
+
+    // Register RabbitMQPublisherService
+    container.register(PUBLISHER_RABBITMQ_SERVICE, {
+      useFactory: (c) => new PublisherRabbitMQService(
+        c.resolve(RABBITMQ_CLIENT_SERVICE),
+        c.resolve(WINSTON_LOGGER)
+      )
+    });
+  } else {
+    // Register No-Op RabbitMQClientService
+    container.register(RABBITMQ_CLIENT_SERVICE, {
+      useFactory: (c) => new NoOpRabbitMQClientService(c.resolve(WINSTON_LOGGER))
+    });
+
+    // Register No-Op RabbitMQPublisherService
+    container.register(PUBLISHER_RABBITMQ_SERVICE, {
+      useFactory: (c) => new NoOpPublisherRabbitMQService(c.resolve(WINSTON_LOGGER))
+    });
+  }
+
+  // Register AccountService
+  container.register(AccountService, {
+    useFactory: (c) => {
+      const dataSourceInstance = c.resolve(AppDataSource);
+      const service = new AccountService(dataSourceInstance);
+      return service;
+    }
+  });
 
   // Register Event Controller
   container.register(EventDrivenController, {
     useFactory: (c) => new EventDrivenController(
-      c.resolve(RabbitMQClientService),
-      c.resolve(PublisherRabbitMQService),
+      c.resolve(RABBITMQ_CLIENT_SERVICE),
+      c.resolve(PUBLISHER_RABBITMQ_SERVICE),
       c.resolve(FeaturesService),
       c.resolve(WINSTON_LOGGER)
     )

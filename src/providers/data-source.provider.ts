@@ -15,8 +15,8 @@ export class AppDataSource {
 
     constructor(@inject(WINSTON_LOGGER) logger: winston.Logger) {      // Add this line
         this.logger = logger;
-     }
-    
+    }
+
 
     async init(): Promise<DataSource> { // Return Promise<DataSource> for init
         if (!this._dataSource) {
@@ -28,8 +28,8 @@ export class AppDataSource {
                 password: DB_CONFIG.password,
                 database: DB_CONFIG.database,//Main Database
                 synchronize: DB_CONFIG.synchronize,
-                logging: DB_CONFIG.logging,        
-                entities: ["src/entity/anushree/*.ts" ],//[YearMst, CompMst],
+                logging: DB_CONFIG.logging,
+                entities: ["src/entity/**/*.entity.ts"],
                 subscribers: [],
                 migrations: [],
                 connectionTimeout: 1500000,

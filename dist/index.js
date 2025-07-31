@@ -15,6 +15,7 @@ const logger_1 = require("./utils/logger");
 async function startServer() {
     const logger = tsyringe_1.container.resolve(logger_1.WINSTON_LOGGER);
     try {
+        config_1.AppConfig.validateConfig(); // Validate configuration at startup
         const dataSourceService = tsyringe_1.container.resolve(dataSource_service_1.DataSourceService);
         const app = tsyringe_1.container.resolve(App_1.App);
         await app.init(); // Call app.init() to handle async initialization - This is crucial and correct

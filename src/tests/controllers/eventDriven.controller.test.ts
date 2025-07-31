@@ -1,16 +1,14 @@
 
 // src/tests/controllers/eventDriven.controller.test.ts
 import EventDrivenController from '../../controllers/eventDriven.controller';
-import { ILogger } from '../../interface/logger.interface';
+
+
 import * as winston from 'winston';
 import FeaturesService from '../../services/feature.service';
 import PublisherRabbitMQService from '../../services/publisher.RabbitMQ.service';
 import RabbitMQClientService from '../../services/rabbitMQ.service';
 
-// Mock services
-jest.mock('../../services/rabbitMQ.service');
-jest.mock('../../services/publisher.RabbitMQ.service');
-jest.mock('../../services/feature.service');
+
 
 // Mock the logger
 const mockLogger: winston.Logger = {
@@ -32,9 +30,40 @@ describe('EventDrivenController', () => {
 
   beforeEach(() => {
     // Correctly instantiate mocked services with all required constructor arguments
-    mockRabbitMQClient = new RabbitMQClientService({} as any, mockLogger) as jest.Mocked<RabbitMQClientService>;
-    mockPublisherService = new PublisherRabbitMQService(mockRabbitMQClient, mockLogger) as jest.Mocked<PublisherRabbitMQService>;
-    mockFeaturesService = new FeaturesService({} as any, mockLogger) as jest.Mocked<FeaturesService>;
+    mockRabbitMQClient = {
+      init: jest.fn().mockResolvedValue(undefined),
+      close: jest.fn().mockResolvedValue(undefined),
+      consume: jest.fn(),
+      publish: jest.fn(),
+      sendToQueue: jest.fn(),
+      getChannel: jest.fn(),
+      getConnection: jest.fn(),
+    } as unknown as jest.Mocked<RabbitMQClientService>;
+
+    mockPublisherService = {
+      initialize: jest.fn().mockResolvedValue(undefined),
+      publish: jest.fn().mockResolvedValue(undefined),
+      closeConnection: jest.fn().mockResolvedValue(undefined),
+    } as unknown as jest.Mocked<PublisherRabbitMQService>;
+
+    mockFeaturesService = {
+      initialize: jest.fn().mockResolvedValue(undefined),
+      isFeatureEnabled: jest.fn().mockImplementation((feature: string) => {
+        if (feature === 'enableRabbitMQ') return true;
+        return false;
+      }),
+      getFeatureConfig: jest.fn().mockReturnValue({
+        enableRabbitMQ: true,
+        fetchDataEnabled: true,
+        fetchRegisterEnabled: true,
+        queueNames: {
+          fetchDataQueue: 'testFetchDataQueue',
+          validateQueue: 'testValidateQueue',
+          fetchRegisterQueue: 'testFetchRegisterQueue',
+          registerValidateQueue: 'testRegisterValidateQueue',
+        },
+      }),
+    } as unknown as jest.Mocked<FeaturesService>;
 
     controller = new EventDrivenController(
       mockRabbitMQClient,
@@ -42,6 +71,10 @@ describe('EventDrivenController', () => {
       mockFeaturesService,
       mockLogger
     );
+
+    // Spy on the methods of the actual controller instance
+    jest.spyOn(controller as any, 'fetchData').mockImplementation(() => Promise.resolve());
+    jest.spyOn(controller as any, 'fetchRegister').mockImplementation(() => Promise.resolve());
   });
 
   afterEach(() => {
@@ -63,17 +96,13 @@ describe('EventDrivenController', () => {
   describe('startEventListeners', () => {
     it('should start listeners based on feature flags', async () => {
       mockFeaturesService.isFeatureEnabled.mockImplementation((feature) => {
-        return feature === 'fetchDataEnabled'; // Only enable fetchData
+        return feature === 'fetchDataEnabled' || feature === 'enableRabbitMQ'; // Enable fetchData and RabbitMQ
       });
-
-      // Spy on the private methods
-      const fetchDataSpy = jest.spyOn(controller as any, 'fetchData').mockImplementation(() => Promise.resolve());
-      const fetchRegisterSpy = jest.spyOn(controller as any, 'fetchRegister').mockImplementation(() => Promise.resolve());
 
       await controller.startEventListeners();
 
-      expect(fetchDataSpy).toHaveBeenCalled();
-      expect(fetchRegisterSpy).not.toHaveBeenCalled();
+      expect((controller as any).fetchData).toHaveBeenCalled();
+      expect((controller as any).fetchRegister).not.toHaveBeenCalled();
     });
   });
 

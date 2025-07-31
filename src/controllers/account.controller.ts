@@ -17,7 +17,6 @@ export class AccountController {
     private accountService : AccountService;
     constructor(accountService: AccountService) {
         this.accountService = accountService;
-        this.accountService.initialize()
     }
 
     public getAllAccounts = async (req: Request, res: Response): Promise<void> => {

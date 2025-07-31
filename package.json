@@ -6,8 +6,9 @@
   "scripts": {
     "test": "jest",
     "start": "node --env-file=.env dist/index.js",
-    "dev": "ts-node-dev --watch --respawn --transpile-only --env-file=.development.env src/index.ts",
-    "build": "tsc"
+    "dev": "ts-node-dev --watch --respawn --transpile-only --env-file=.env.development src/index.ts",
+    "build": "tsc",
+    "lint": "eslint ."
   },
   "keywords": [
     "Database",

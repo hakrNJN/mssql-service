@@ -17,6 +17,7 @@ registerDependencies();
 async function startServer() {
   const logger = container.resolve<ILogger>(WINSTON_LOGGER);
   try {
+    AppConfig.validateConfig(); // Validate configuration at startup
     const dataSourceService = container.resolve(DataSourceService);
     const app = container.resolve(App);
     await app.init(); // Call app.init() to handle async initialization - This is crucial and correct

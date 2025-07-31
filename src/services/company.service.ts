@@ -1,11 +1,13 @@
 //src/services/company.service.ts
 
 
+import { injectable } from 'tsyringe';
 import { CompMst } from "../entity/anushreeDb/company.entity";
 import { CompanyProvider } from "../providers/company.provider";
 import { AppDataSource } from "../providers/data-source.provider";
 import { Filters } from "../types/filter.types";
 
+@injectable()
 export class CompanyService {
     private companyProvider: CompanyProvider;
 

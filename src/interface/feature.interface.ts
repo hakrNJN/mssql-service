@@ -1,6 +1,8 @@
 //src/interface/feature.interface.ts
 export interface FeatureConfig {
-    [key: string]: boolean; // Assuming feature flags are boolean for now
+    [key: string]: boolean | { [key: string]: string } | undefined; // Allow boolean flags, nested object for queue names, or undefined
+    queueNames?: { [key: string]: string };
+    enableRabbitMQ?: boolean;
   }
   
   export interface IFeaturesModel {

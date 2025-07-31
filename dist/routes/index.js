@@ -12,7 +12,7 @@ const company_route_1 = __importDefault(require("./company.route"));
 const feature_route_1 = __importDefault(require("./feature.route"));
 const saleTransaction_route_1 = __importDefault(require("./saleTransaction.route"));
 const series_route_1 = __importDefault(require("./series.route"));
-const test_route_1 = __importDefault(require("./test.route"));
+// import testRoute from './test.route';
 const year_route_1 = __importDefault(require("./year.route"));
 // Import your new route factory functions
 const kotakCMS_route_1 = __importDefault(require("./kotakCMS.route")); // Corrected import path
@@ -22,7 +22,7 @@ const router = (0, express_1.Router)();
 const apiRoutes = (dataSourceService, featuresService) => {
     const logger = tsyringe_1.container.resolve(logger_1.WINSTON_LOGGER);
     try {
-        router.use('/test', test_route_1.default);
+        // router.use('/test', testRoute);
         router.use('/year', (0, year_route_1.default)(dataSourceService.getAppDataSource()));
         router.use('/company', (0, company_route_1.default)(dataSourceService.getAppDataSource()));
         router.use('/series', (0, series_route_1.default)(dataSourceService.getAppDataSource()));

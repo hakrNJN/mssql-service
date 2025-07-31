@@ -1,14 +1,17 @@
-//src/privoders/fileService.provider.ts
+//src/providers/fileService.provider.ts
 import * as fs from 'fs/promises';
 import * as yaml from 'js-yaml';
 import { inject } from 'tsyringe';
-import winston from 'winston';
 import { IFileService } from '../interface/feature.interface';
+import { ILogger } from '../interface/logger.interface';
 import FeaturesModel from '../model/feature.model';
 import { WINSTON_LOGGER } from '../utils/logger';
-import { ILogger } from '../interface/logger.interface';
+import { FEATURE_CONFIG_FILE_PATH } from '../utils/registerDependencies';
 
 
+import { injectable } from 'tsyringe';
+
+@injectable()
 class FileService implements IFileService {
     public filePath: string;
     public model: FeaturesModel; // Using concrete class here, could be interface if more flexible

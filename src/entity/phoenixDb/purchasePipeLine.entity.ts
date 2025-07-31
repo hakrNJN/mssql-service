@@ -27,8 +27,8 @@ export class PurchasePipeLine {
     @Column()
     City!: string;
 
-    @Column({ nullable: true })
-    GroupName!: string | null;
+    // @Column({ nullable: true, length: 255 })
+    // GroupName?: string | null;
 
     @Column()
     AgentName!: string;

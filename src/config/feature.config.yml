@@ -7,3 +7,11 @@ fetchDataEnabled: true
 SNSNotification: true
 CloudWatchLogging: false
 SQSService: false
+enableRabbitMQ: false
+
+# Dynamic Queue Names
+queueNames:
+  fetchDataQueue: FetchDataQueue
+  validateQueue: ValidateQueue
+  fetchRegisterQueue: FetchRegisterQueue
+  registerValidateQueue: RegisterValidateQueue

@@ -2,11 +2,13 @@
 
 
 
+import { injectable } from 'tsyringe';
 import { SerMst } from "../entity/anushreeDb/series.entity";
 import { AppDataSource } from "../providers/data-source.provider";
 import { SeriesProvider } from "../providers/series.provider";
 import { Filters } from "../types/filter.types";
 
+@injectable()
 export class SeriesService {
     private seriesProvider: SeriesProvider;
 
@@ -19,7 +21,7 @@ export class SeriesService {
     }
 
     async getAllSeries(): Promise<SerMst[]> {
-        return this.seriesProvider.getAllSeriesWithFilters();
+        return this.seriesProvider.getAllSeries();
     }
 
     async getSeriesbyId(id: number): Promise<SerMst | null> {

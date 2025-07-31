@@ -10,6 +10,9 @@ import ExpressApp from './providers/express.provider';
 import apiRoutes from './routes';
 import { DataSourceService } from './services/dataSource.service';
 import FeaturesService from './services/feature.service';
+import { AccountService } from './services/account.service';
+import { CompanyService } from './services/company.service';
+import { SeriesService } from './services/series.service';
 import { WINSTON_LOGGER } from './utils/logger';
 
 // const logger = container.resolve<winston.Logger>(WINSTON_LOGGER);
@@ -23,6 +26,9 @@ class App {
   private eventDrivenController: EventDrivenController;
   private featuresService: FeaturesService;
   private featureController: FeatureController;
+  private accountService: AccountService;
+  private companyService: CompanyService;
+  private seriesService: SeriesService;
 
   constructor(
     dataSourceService: DataSourceService,
@@ -30,7 +36,10 @@ class App {
     @inject(ExpressApp) expressAppInstance: ExpressApp,
     @inject(FeaturesService) featuresService: FeaturesService,
     @inject(EventDrivenController) eventDrivenController: EventDrivenController,
-    @inject(FeatureController) featureController: FeatureController
+    @inject(FeatureController) featureController: FeatureController,
+    @inject(AccountService) accountService: AccountService,
+    @inject(CompanyService) companyService: CompanyService,
+    @inject(SeriesService) seriesService: SeriesService
   ) {
     this.dataSourceService = dataSourceService;
     this.logger = logger;
@@ -39,6 +48,9 @@ class App {
     this.featuresService = featuresService;
     this.eventDrivenController = eventDrivenController;
     this.featureController = featureController;
+    this.accountService = accountService;
+    this.companyService = companyService;
+    this.seriesService = seriesService;
     this.initControllers();
     // initializeRoutes(); // REMOVE from constructor - move to init()
     this.initializeErrorHandling(); // Keep error handling in constructor if it doesn't depend on featuresService
@@ -46,6 +58,9 @@ class App {
 
   public async init(): Promise<void> { // in init()
     await this.featuresService.initialize(); // Initialize FeaturesService FIRST in init()
+    await this.accountService.initialize(); // Initialize AccountService
+    await this.companyService.initialize(); // Initialize CompanyService
+    await this.seriesService.initialize(); // Initialize SeriesService
     this.initializeRoutes(); // THEN initialize routes - now it's guaranteed featuresService is ready
   }
 
@@ -60,12 +75,20 @@ class App {
   }
 
   public async startEventListeners(): Promise<void> {
-    await this.eventDrivenController.initialize();
-    if (this.featuresService.isFeatureEnabled('startListening')) {
-      this.logger.info('startListening feature is enabled. Starting EventDrivenController listeners...');
-      await this.eventDrivenController.startEventListeners();
+    const enableRabbitMQ = this.featuresService.isFeatureEnabled('enableRabbitMQ');
+
+    if (enableRabbitMQ) {
+      this.logger.info('RabbitMQ is enabled. Initializing EventDrivenController...');
+      await this.eventDrivenController.initialize();
+
+      if (this.featuresService.isFeatureEnabled('startListening')) {
+        this.logger.info('startListening feature is enabled. Starting EventDrivenController listeners...');
+        await this.eventDrivenController.startEventListeners();
+      } else {
+        this.logger.info('startListening feature is disabled. Skipping EventDrivenController listeners.');
+      }
     } else {
-      this.logger.info('startListening feature is disabled. Skipping EventDrivenController listeners.');
+      this.logger.info('RabbitMQ is disabled. Skipping EventDrivenController initialization and listeners.');
     }
   }
 

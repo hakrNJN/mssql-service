@@ -208,7 +208,6 @@ let AccountController = class AccountController {
             }
         };
         this.accountService = accountService;
-        this.accountService.initialize();
     }
 };
 exports.AccountController = AccountController;

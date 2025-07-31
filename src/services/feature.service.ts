@@ -1,7 +1,7 @@
 //src/services/feature.service.ts
 import * as fs from 'fs';
 import { join } from 'path';
-import { inject, injectable, singleton } from 'tsyringe'; // Import 'inject'
+import { delay, inject, injectable, singleton } from 'tsyringe'; // Import 'inject' and 'delay'
 import winston from 'winston';
 import { AppError } from '../exceptions/appException';
 import { FeatureConfig, IFeaturesService, IFileService } from '../interface/feature.interface';
@@ -17,7 +17,7 @@ class FeaturesService implements IFeaturesService {
     private readonly logger: winston.Logger;
 
     constructor(
-        @inject(FileService) fileService: IFileService, // Inject IFileService
+        @inject(delay(() => FileService)) fileService: IFileService, // Inject IFileService
         @inject(WINSTON_LOGGER) logger: winston.Logger // Inject Logger
     ) {
         this.filePath = join(__dirname, '../config', 'feature.config.yml');
@@ -73,6 +73,13 @@ class FeaturesService implements IFeaturesService {
 
     isFeatureEnabled(featureName: string): boolean {
         return !!this.features[featureName];
+    }
+
+    getQueueName(queueKey: string): string | undefined {
+        if (this.features.queueNames && typeof this.features.queueNames === 'object') {
+            return this.features.queueNames[queueKey];
+        }
+        return undefined;
     }
 }
 

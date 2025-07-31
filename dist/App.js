@@ -26,10 +26,11 @@ const express_provider_1 = __importDefault(require("./providers/express.provider
 const routes_1 = __importDefault(require("./routes"));
 const dataSource_service_1 = require("./services/dataSource.service");
 const feature_service_1 = __importDefault(require("./services/feature.service"));
+const account_service_1 = require("./services/account.service");
 const logger_1 = require("./utils/logger");
 // const logger = container.resolve<winston.Logger>(WINSTON_LOGGER);
 let App = class App {
-    constructor(dataSourceService, logger, expressAppInstance, featuresService, eventDrivenController, featureController) {
+    constructor(dataSourceService, logger, expressAppInstance, featuresService, eventDrivenController, featureController, accountService) {
         this.dataSourceService = dataSourceService;
         this.logger = logger;
         this.expressAppInstance = expressAppInstance;
@@ -37,12 +38,14 @@ let App = class App {
         this.featuresService = featuresService;
         this.eventDrivenController = eventDrivenController;
         this.featureController = featureController;
+        this.accountService = accountService;
         this.initControllers();
         // initializeRoutes(); // REMOVE from constructor - move to init()
         this.initializeErrorHandling(); // Keep error handling in constructor if it doesn't depend on featuresService
     }
     async init() {
         await this.featuresService.initialize(); // Initialize FeaturesService FIRST in init()
+        await this.accountService.initialize(); // Initialize AccountService
         this.initializeRoutes(); // THEN initialize routes - now it's guaranteed featuresService is ready
     }
     initControllers() {
@@ -54,13 +57,20 @@ let App = class App {
         this.app.use('/api', TimeTracker_middleware_1.timeTrackerMiddleware, (0, routes_1.default)(this.dataSourceService, this.featuresService)); // Passing the instance variable here
     }
     async startEventListeners() {
-        await this.eventDrivenController.initialize();
-        if (this.featuresService.isFeatureEnabled('startListening')) {
-            this.logger.info('startListening feature is enabled. Starting EventDrivenController listeners...');
-            await this.eventDrivenController.startEventListeners();
+        const enableRabbitMQ = this.featuresService.isFeatureEnabled('enableRabbitMQ');
+        if (enableRabbitMQ) {
+            this.logger.info('RabbitMQ is enabled. Initializing EventDrivenController...');
+            await this.eventDrivenController.initialize();
+            if (this.featuresService.isFeatureEnabled('startListening')) {
+                this.logger.info('startListening feature is enabled. Starting EventDrivenController listeners...');
+                await this.eventDrivenController.startEventListeners();
+            }
+            else {
+                this.logger.info('startListening feature is disabled. Skipping EventDrivenController listeners.');
+            }
         }
         else {
-            this.logger.info('startListening feature is disabled. Skipping EventDrivenController listeners.');
+            this.logger.info('RabbitMQ is disabled. Skipping EventDrivenController initialization and listeners.');
         }
     }
     listen(port, callback) {
@@ -82,10 +92,12 @@ exports.App = App = __decorate([
     __param(3, (0, tsyringe_1.inject)(feature_service_1.default)),
     __param(4, (0, tsyringe_1.inject)(eventDriven_controller_1.default)),
     __param(5, (0, tsyringe_1.inject)(feature_controller_1.default)),
+    __param(6, (0, tsyringe_1.inject)(account_service_1.AccountService)),
     __metadata("design:paramtypes", [dataSource_service_1.DataSourceService, winston_1.default.Logger, express_provider_1.default,
         feature_service_1.default,
         eventDriven_controller_1.default,
-        feature_controller_1.default])
+        feature_controller_1.default,
+        account_service_1.AccountService])
 ], App);
 // import { Application } from 'express';
 // import { errorHandler } from './middleware/errorHandler';

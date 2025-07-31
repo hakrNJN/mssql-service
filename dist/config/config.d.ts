@@ -31,4 +31,5 @@ export declare class AppConfig {
     };
     static readonly logLevel: string;
     static readonly allowedFormsForSaleSeries: string[];
+    static validateConfig(): void;
 }

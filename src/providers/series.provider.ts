@@ -1,4 +1,5 @@
 // src/providers/year.provider.ts
+import { injectable } from 'tsyringe';
 import { Repository } from "typeorm";
 import { SerMst } from "../entity/anushreeDb/series.entity";
 import { BaseProviderInterface } from "../interface/base.provider";
@@ -7,6 +8,7 @@ import { applyFilters } from "../utils/query-utils";
 import { AppDataSource } from "./data-source.provider";
 
 export interface SeriesProvider extends BaseProviderInterface<SerMst, Filters<SerMst>> { }
+@injectable()
 export class SeriesProvider implements SeriesProvider {
     private seriesRepository: Repository<SerMst> | null = null;;
     private dataSourceInstance: AppDataSource;
@@ -19,7 +21,7 @@ export class SeriesProvider implements SeriesProvider {
 
     private _getRepository(): Repository<SerMst> {
         if (!this.seriesRepository) {
-            throw new Error("Year repository not initialized. Call initializeRepository() first.");
+            throw new Error("Series repository not initialized. Call initializeRepository() first.");
         }
         return this.seriesRepository;
     }
@@ -37,15 +39,19 @@ export class SeriesProvider implements SeriesProvider {
     }
 
     async getAllSeries(): Promise<SerMst[]> {
+        console.log(`request at this level1`);
         try {
-            return this._getRepository().find();
+            const result = await this._getRepository().find();
+            console.log(`request at this level2`, result);
+            return result;
         } catch (error) {
+            console.log(`request at this level3`, error);
             throw new Error(error as string)
         }
     }
 
     async getSeriesById(id: number): Promise<SerMst | null> {
-        return this._getRepository().findOneBy({ id });
+        return await this._getRepository().findOneBy({ id });
     }
 
     // Additional CRUD Methods

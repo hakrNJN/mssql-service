@@ -19,7 +19,6 @@ export class SeriesController {
     private seriesService: SeriesService;
     constructor(seriesService: SeriesService) {
         this.seriesService = seriesService;
-        this.seriesService.initialize()
     }
 
     public getAllSeries = async (req: Request, res: Response): Promise<void> => {
@@ -27,6 +26,7 @@ export class SeriesController {
         const limit = parseInt(req.query.limit as string) || 10;
         const startIndex = (page - 1) * limit;
         const endIndex = page * limit;
+
         try {
             const result = await this.seriesService.getAllSeries()
             if (result) {

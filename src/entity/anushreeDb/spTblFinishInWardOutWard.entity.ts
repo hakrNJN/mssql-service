@@ -37,8 +37,8 @@ export class SpTblFinishInWardOutWard {
     @Column()
     Category!: string;
 
-    @Column({ nullable: true })
-    GRPName?: null | string;
+    // @Column({ nullable: true })
+    // GRPName?: null | string;
 
     @Column({ nullable: true })
     Add1?: null | string;

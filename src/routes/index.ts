@@ -11,7 +11,6 @@ import companyRoute from './company.route';
 import featureRoute from './feature.route';
 import saleTransactionRoute from './saleTransaction.route';
 import seriesRoute from './series.route';
-import testRoute from './test.route';
 import yearRoute from './year.route';
 
 // Import your new route factory functions
@@ -26,7 +25,7 @@ const apiRoutes = (dataSourceService: DataSourceService, featuresService: Featur
     const logger = container.resolve<ILogger>(WINSTON_LOGGER);
 
     try {
-        router.use('/test', testRoute);
+
         router.use('/year', yearRoute(dataSourceService.getAppDataSource()));
         router.use('/company', companyRoute(dataSourceService.getAppDataSource()));
         router.use('/series', seriesRoute(dataSourceService.getAppDataSource()));

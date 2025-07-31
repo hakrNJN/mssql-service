@@ -9,7 +9,7 @@ import { AppDataSource } from "./data-source.provider";
 export interface CompanyProvider extends BaseProviderInterface<CompMst, Filters<CompMst>> { }
 
 export class CompanyProvider implements CompanyProvider {
-    private yearRepository: Repository<CompMst> | null = null;;
+    private companyRepository: Repository<CompMst> | null = null;;
     private dataSourceInstance: AppDataSource;
 
 
@@ -18,15 +18,15 @@ export class CompanyProvider implements CompanyProvider {
     }
 
     private _getRepository(): Repository<CompMst> {
-        if (!this.yearRepository) {
-            throw new Error("Year repository not initialized. Call initializeRepository() first.");
+        if (!this.companyRepository) {
+            throw new Error("Company repository not initialized. Call initializeRepository() first.");
         }
-        return this.yearRepository;
+        return this.companyRepository;
     }
 
     async initializeRepository(): Promise<void> { // Initialize the repository
         const dataSource = await this.dataSourceInstance.init(); // Ensure DataSource is initialized
-        this.yearRepository = dataSource.getRepository(CompMst);
+        this.companyRepository = dataSource.getRepository(CompMst);
     }
 
     async getAllCompaniesWithFilters(filters?: Filters<CompMst>): Promise<CompMst[]> {

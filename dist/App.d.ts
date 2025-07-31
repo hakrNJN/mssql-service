@@ -5,6 +5,7 @@ import FeatureController from './controllers/feature.controller';
 import ExpressApp from './providers/express.provider';
 import { DataSourceService } from './services/dataSource.service';
 import FeaturesService from './services/feature.service';
+import { AccountService } from './services/account.service';
 declare class App {
     app: Application;
     private readonly logger;
@@ -13,7 +14,8 @@ declare class App {
     private eventDrivenController;
     private featuresService;
     private featureController;
-    constructor(dataSourceService: DataSourceService, logger: winston.Logger, expressAppInstance: ExpressApp, featuresService: FeaturesService, eventDrivenController: EventDrivenController, featureController: FeatureController);
+    private accountService;
+    constructor(dataSourceService: DataSourceService, logger: winston.Logger, expressAppInstance: ExpressApp, featuresService: FeaturesService, eventDrivenController: EventDrivenController, featureController: FeatureController, accountService: AccountService);
     init(): Promise<void>;
     private initControllers;
     private initializeRoutes;

@@ -46,4 +46,28 @@ export class AppConfig {
 
     public static readonly allowedFormsForSaleSeries = ['frmSalBill/frmsalentry', 'frmSalRet/frmSalRetEntry', 'frmGreySale', 'frmGreySaleReturn', 'frmDebitNote'];
 
+    public static readonly FEATURE_CONFIG_FILE_PATH = process.env.FEATURE_CONFIG_FILE_PATH || "./src/config/feature.config.yml";
+
+    public static validateConfig(): void {
+        const requiredEnvVars = [
+            'DB_HOST', 'DB_USER', 'DB_PASS', 'DB_NAME',
+            'MESSAGE_BROKER_URL', 'MESSAGE_BROKER_USER', 'MESSAGE_BROKER_PASS',
+            'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_REGION',
+            'FEATURE_CONFIG_FILE_PATH'
+        ];
+
+        for (const envVar of requiredEnvVars) {
+            if (!process.env[envVar]) {
+                throw new Error(`Missing required environment variable: ${envVar}`);
+            }
+        }
+
+        // Additional validation for numeric ports
+        if (process.env.DB_PORT && isNaN(parseInt(process.env.DB_PORT))) {
+            throw new Error('Invalid DB_PORT. Must be a number.');
+        }
+        if (process.env.MESSAGE_BROKER_PORT && isNaN(parseInt(process.env.MESSAGE_BROKER_PORT))) {
+            throw new Error('Invalid MESSAGE_BROKER_PORT. Must be a number.');
+        }
+    }
 }

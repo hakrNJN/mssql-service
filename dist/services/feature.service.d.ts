@@ -13,5 +13,6 @@ declare class FeaturesService implements IFeaturesService {
     loadFeatures(): Promise<void>;
     getFeatures(): FeatureConfig;
     isFeatureEnabled(featureName: string): boolean;
+    getQueueName(queueKey: string): string | undefined;
 }
 export default FeaturesService;

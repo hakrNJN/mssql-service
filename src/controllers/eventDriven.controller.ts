@@ -1,6 +1,6 @@
 // src/controller/eventDriven.controller.ts
 import { inject, injectable } from 'tsyringe';
-import winston from 'winston';
+import { RABBITMQ_CLIENT_SERVICE, PUBLISHER_RABBITMQ_SERVICE } from '../utils/registerDependencies';
 import FeaturesService from '../services/feature.service';
 import PublisherRabbitMQService from '../services/publisher.RabbitMQ.service';
 import RabbitMQClientService from '../services/rabbitMQ.service';
@@ -18,10 +18,7 @@ interface FetchRegisterMessagePayload {
 }
 
 // Define queue names as constants
-const fetchDataQueueName = 'FetchDataQueue';
-const validateQueueName = 'ValidateQueue';
-const fetchRegisterQueueName = 'FetchRegisterQueue';
-const registerValidateQueueName = 'RegisterValidateQueue';
+
 
 
 // const featuresService = new FeaturesService( '../config');
@@ -35,8 +32,8 @@ class EventDrivenController {
     private readonly logger:ILogger;
 
     constructor(
-        rabbitMQClient: RabbitMQClientService,
-        publisherService: PublisherRabbitMQService,
+        @inject(RABBITMQ_CLIENT_SERVICE) rabbitMQClient: RabbitMQClientService,
+        @inject(PUBLISHER_RABBITMQ_SERVICE) publisherService: PublisherRabbitMQService,
         @inject(FeaturesService) featuresService: FeaturesService ,// Inject FeaturesService
         @inject(WINSTON_LOGGER) logger: ILogger 
     ) {
@@ -47,6 +44,10 @@ class EventDrivenController {
     }
 
     async initialize(): Promise<void> {
+        if (!this.featuresService.isFeatureEnabled('enableRabbitMQ')) {
+            this.logger.info('RabbitMQ is disabled. EventDrivenController initialization skipped.');
+            return;
+        }
         await this.rabbitMQClient.init();
         await this.featuresService.initialize();
         // featuresService.loadFeatures().then(() => {
@@ -55,6 +56,10 @@ class EventDrivenController {
     }
 
     async startEventListeners(): Promise<void> { // New method to start listeners
+        if (!this.featuresService.isFeatureEnabled('enableRabbitMQ')) {
+            this.logger.info('RabbitMQ is disabled. EventDrivenController listeners not started.');
+            return;
+        }
         if (this.featuresService.isFeatureEnabled('fetchDataEnabled')) {
             await this.fetchData();
         } else {
@@ -91,9 +96,9 @@ class EventDrivenController {
                         const saleData= {}
 
                         if (saleData) {
-                            await this.publisherService.updateAndSendMessage(msg, saleData, validateQueueName); // Publish to ValidateQueue
+                            await this.publisherService.updateAndSendMessage(msg, saleData, this.featuresService.getQueueName('validateQueue')!); // Publish to ValidateQueue
                             this.rabbitMQClient.ack(msg); // Ack original message after successful publish
-                            this.logger.info(`Processed message with ID: ${id} and sent to ${validateQueueName}`);
+                            this.logger.info(`Processed message with ID: ${id} and sent to ${this.featuresService.getQueueName('validateQueue')}`);
                         } else {
                             this.logger.warn(`No sale data found for ID: ${id}, NACKing and requeueing message.`);
                             this.rabbitMQClient.nack(msg, false, true); // NACK and requeue - transient error, data not found?
@@ -109,9 +114,9 @@ class EventDrivenController {
             };
 
             try {
-                await this.rabbitMQClient.ensureQueue(fetchDataQueueName, { durable: true }); // Ensure durable queue
-                await this.rabbitMQClient.subscribe(fetchDataQueueName, messageHandler, { durable: true }); // Subscribe to durable queue
-                this.logger.info(`Subscribed to ${fetchDataQueueName}`);
+                await this.rabbitMQClient.ensureQueue(this.featuresService.getQueueName('fetchDataQueue')!, { durable: true }); // Ensure durable queue
+                await this.rabbitMQClient.subscribe(this.featuresService.getQueueName('fetchDataQueue')!, messageHandler, { durable: true }); // Subscribe to durable queue
+                this.logger.info(`Subscribed to ${this.featuresService.getQueueName('fetchDataQueue')}`);
             } catch (error: any) {
                 this.logger.error(`Error setting up fetchData queue or subscription:`, error);
             }
@@ -144,9 +149,9 @@ class EventDrivenController {
                         const registerData = await this.getRegisterDataById(registerId); // Placeholder register data fetch
 
                         if (registerData) {
-                            await this.publisherService.updateAndSendMessage(msg, registerData, registerValidateQueueName);
+                            await this.publisherService.updateAndSendMessage(msg, registerData, this.featuresService.getQueueName('registerValidateQueue')!);
                             this.rabbitMQClient.ack(msg);
-                            this.logger.info(`Processed register message with ID: ${registerId} and sent to ${registerValidateQueueName}`);
+                            this.logger.info(`Processed register message with ID: ${registerId} and sent to ${this.featuresService.getQueueName('registerValidateQueue')}`);
                         } else {
                             this.logger.warn(`No register data found for ID: ${registerId}, NACKing and requeueing message.`);
                             this.rabbitMQClient.nack(msg, false, true);
@@ -162,9 +167,9 @@ class EventDrivenController {
             };
 
             try {
-                await this.rabbitMQClient.ensureQueue(fetchRegisterQueueName, { durable: true });
-                await this.rabbitMQClient.subscribe(fetchRegisterQueueName, messageHandler, { durable: true });
-                this.logger.info(`Subscribed to ${fetchRegisterQueueName}`);
+                await this.rabbitMQClient.ensureQueue(this.featuresService.getQueueName('fetchRegisterQueue')!, { durable: true });
+                await this.rabbitMQClient.subscribe(this.featuresService.getQueueName('fetchRegisterQueue')!, messageHandler, { durable: true });
+                this.logger.info(`Subscribed to ${this.featuresService.getQueueName('fetchRegisterQueue')}`);
             } catch (error: any) {
                 this.logger.error(`Error setting up fetchRegister queue or subscription:`, error);
             }
@@ -182,6 +187,10 @@ class EventDrivenController {
     }
 
     async close(): Promise<void> {
+        if (!this.featuresService.isFeatureEnabled('enableRabbitMQ')) {
+            this.logger.info('RabbitMQ is disabled. Skipping EventDrivenController close.');
+            return;
+        }
         await this.rabbitMQClient.close();
         await this.publisherService.closeConnection();
         this.logger.info('EventDrivenController closed RabbitMQ connections.');

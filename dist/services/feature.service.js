@@ -110,6 +110,12 @@ let FeaturesService = class FeaturesService {
     isFeatureEnabled(featureName) {
         return !!this.features[featureName];
     }
+    getQueueName(queueKey) {
+        if (this.features.queueNames && typeof this.features.queueNames === 'object') {
+            return this.features.queueNames[queueKey];
+        }
+        return undefined;
+    }
 };
 FeaturesService = __decorate([
     (0, tsyringe_1.injectable)(),

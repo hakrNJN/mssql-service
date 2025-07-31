@@ -12,7 +12,6 @@ export class CompanyController {
 
     constructor(companyService: CompanyService) {
         this.companyService = companyService;
-        this.companyService.initialize()
     }
 
     public getCompanies = async (req: Request, res: Response): Promise<void> => {

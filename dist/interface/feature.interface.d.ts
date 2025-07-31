@@ -1,5 +1,11 @@
 export interface FeatureConfig {
-    [key: string]: boolean;
+    [key: string]: boolean | {
+        [key: string]: string;
+    } | undefined;
+    queueNames?: {
+        [key: string]: string;
+    };
+    enableRabbitMQ?: boolean;
 }
 export interface IFeaturesModel {
     read(): FeatureConfig;
