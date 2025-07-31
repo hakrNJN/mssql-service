@@ -1,0 +1,9 @@
+// tsconfig.spec.json
+
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["jest", "node"]
+  },
+  "include": ["src/**/*.ts", "src/**/*.test.ts", "src/tests/setup.ts"]
+}

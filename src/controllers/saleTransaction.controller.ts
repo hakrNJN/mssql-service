@@ -31,9 +31,8 @@ export class SaleTransactionController {
         } catch (error) {
             if (error instanceof HttpException) {
                 throw error;
-            } else {
-                throw HttpException.InternalServerError(`Something Went Wrong`);
             }
+            throw HttpException.InternalServerError(`Something Went Wrong`);
         }
     }
 

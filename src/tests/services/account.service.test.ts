@@ -1,10 +1,9 @@
-
 // src/tests/services/account.service.test.ts
 import { AccountService } from '../../services/account.service';
 import { AccountProvider } from '../../providers/account.provider';
 import { AppDataSource } from '../../providers/data-source.provider';
 import { ILogger } from '../../interface/logger.interface';
-import { Mast } from '../../entity/anushree/accounts.entity';
+import { Mast } from '../../entity/anushreeDb/accounts.entity';
 import { Filters, EqualFilter } from '../../types/filter.types';
 
 // Mock the logger

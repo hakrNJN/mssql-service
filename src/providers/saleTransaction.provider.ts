@@ -3,7 +3,7 @@
 import { container } from "tsyringe";
 import { Repository } from "typeorm"; // Changed ViewEntity to Repository
 import { objectDecorators } from "../decorators/objectDecorators";
-import { SaleTransaction } from '../entity/phoenix/SaleTransaction';
+import { SaleTransaction } from '../entity/phoenixDb/saleTransaction.entity';
 import { BaseProviderInterface } from "../interface/base.provider";
 import { ILogger } from "../interface/logger.interface";
 import { Filters } from "../types/filter.types";

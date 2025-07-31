@@ -1,8 +1,8 @@
 // src/routes/KotakCMS.routes.ts
 import { Router } from 'express';
-import { KotakCMSController } from '../controllers/KotakCMS.controller';
-import { KotakCMSService } from '../services/KotakCMS.Service';
+import { KotakCMSController } from '../controllers/kotakCMS.controller';
 import { AppDataSource } from '../providers/data-source.provider';
+import { KotakCMSService } from '../services/kotakCMS.service';
 
 const kotakCMSRoute = (dataSource: AppDataSource): Router => {
     const router: Router = Router();

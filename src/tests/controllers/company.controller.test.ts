@@ -4,7 +4,7 @@ import { CompanyController } from '../../controllers/company.controller';
 import { CompanyService } from '../../services/company.service';
 import { ApiResponse } from '../../utils/api-response';
 import { HttpException } from '../../exceptions/httpException';
-import { CompMst } from '../../entity/anushree/company.entity';
+import { CompMst } from '../../entity/anushreeDb/company.entity';
 
 // Mock CompanyService and ApiResponse
 jest.mock('../../services/company.service');

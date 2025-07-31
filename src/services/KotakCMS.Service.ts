@@ -1,7 +1,7 @@
-//src/services/KotakCMS.Service.ts
-import { Vwkotakcmsonline } from "../entity/anushree/KotakCMS.entity";
-import { KotakCMSProvider } from "../providers/KotakCMS.provider";
+//src/services/kotakCMS.service.ts
+import { Vwkotakcmsonline } from "../entity/anushreeDb/kotakCMS.entity";
 import { AppDataSource } from "../providers/data-source.provider";
+import { KotakCMSProvider } from "../providers/kotakCMS.provider";
 // import { Filters } from "../types/filter.types"; // No longer directly used in service method signature
 
 export class KotakCMSService {

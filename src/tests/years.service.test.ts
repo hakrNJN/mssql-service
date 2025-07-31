@@ -1,9 +1,8 @@
-
 // src/tests/years.service.test.ts
-import { YearService } from '@/services/years.service';
-import { YearsProvider } from '@/providers/years.provider';
-import { AppDataSource } from '@/providers/data-source.provider';
-import { ILogger } from '@/interface/logger.interface';
+import { ILogger } from '../interface/logger.interface';
+import { AppDataSource } from '../providers/data-source.provider';
+import { YearsProvider } from '../providers/years.provider';
+import { YearService } from '../services/years.service';
 
 // Mock the logger
 const mockLogger: ILogger = {
@@ -18,7 +17,7 @@ const mockLogger: ILogger = {
 };
 
 // Mock YearsProvider
-jest.mock('@/providers/years.provider');
+jest.mock('../providers/years.provider');
 
 describe('YearService', () => {
   let service: YearService;

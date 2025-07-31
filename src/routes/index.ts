@@ -2,6 +2,7 @@
 import { Router } from 'express';
 import { container } from 'tsyringe';
 // No direct winston import needed here if ILogger is used
+import { ILogger } from '../interface/logger.interface';
 import { DataSourceService } from '../services/dataSource.service';
 import FeaturesService from '../services/feature.service';
 import { WINSTON_LOGGER } from '../utils/logger';
@@ -12,10 +13,9 @@ import saleTransactionRoute from './saleTransaction.route';
 import seriesRoute from './series.route';
 import testRoute from './test.route';
 import yearRoute from './year.route';
-import { ILogger } from '../interface/logger.interface';
 
 // Import your new route factory functions
-import kotakCMSRoute from './KotakCMS.route'; // Corrected import path
+import kotakCMSRoute from './kotakCMS.route'; // Corrected import path
 import purchasePipeLineRoute from './purchasePipeLine.route'; // Corrected import path
 
 
@@ -52,7 +52,7 @@ const apiRoutes = (dataSourceService: DataSourceService, featuresService: Featur
 
             router.use('/features', featureRoute(featuresService));
 
-            // other routes (e.g., router.use('/other', otherRoute()); )
+            // other routes (e.use('/other', otherRoute()); )
 
         }).catch(error => {
             logger.error("Error loading feature flags:", error);
@@ -74,7 +74,7 @@ export default apiRoutes;
 // import yearRoute from './year.route';
 
 // const router: Router = Router(); // Create a main router
-// const logger = Logger.getInstance(); 
+// const logger = Logger.getInstance();
 
 // // Mount individual route files under specific paths
 // try { // <--- ADD TRY-CATCH BLOCK

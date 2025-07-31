@@ -2,8 +2,8 @@
 import { container, inject } from "tsyringe";
 import { Repository } from "typeorm";
 import { objectDecorators } from "../decorators/objectDecorators";
-import { Vwkotakcmsonline } from "../entity/anushree/KotakCMS.entity";
-import { SerMst } from "../entity/anushree/series.entity";
+import { Vwkotakcmsonline } from "../entity/anushreeDb/kotakCMS.entity";
+import { SerMst } from "../entity/anushreeDb/series.entity";
 // import { BaseProviderInterface } from "../interface/base.provider"; // REMOVED: Not implementing generic base interface
 import { ILogger } from "../interface/logger.interface";
 // import { Filters } from "../types/filter.types"; // REMOVED: Not using generic filters directly here

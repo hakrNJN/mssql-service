@@ -3,7 +3,7 @@
 import { Request, Response } from 'express'
 import { AppConfig } from '../config/config'
 import { stringDecorators } from '../decorators/stringDecorators'
-import { SerMst } from '../entity/anushree/series.entity'
+import { SerMst } from '../entity/anushreeDb/series.entity'
 import { HttpException } from '../exceptions/httpException'
 import { SeriesService } from '../services/series.service'
 import { EqualFilter, EqualNullFilter, Filters, InFilter, LikeFilter, NotLikeFilter } from '../types/filter.types'
@@ -75,7 +75,7 @@ export class SeriesController {
         const endIndex = page * limit;
         //getting required query params
         const { yearid, type, company } = req.query as { yearid: string, type: string, company: string };
-        
+
         //checking if required query params are present or not, and if not throw error
         if (!company) {
             throw HttpException.BadRequest(`Company is required`);
@@ -88,16 +88,16 @@ export class SeriesController {
         }
 
         //splitting company string into array
-        const comp :number[] =  this.stringToArray(company)//company!.split(',');
+        const comp: number[] = this.stringToArray(company)//company!.split(',');
 
         //checking if type is D or C and setting typeCondition accordingly
-        const typeCondition:string[] = (type!.toLowerCase() === 'd') ? ["sale", "dr note"] : ["sale return", "cr note"];
+        const typeCondition: string[] = (type!.toLowerCase() === 'd') ? ["sale", "dr note"] : ["sale return", "cr note"];
 
         //creating and empty array for orConditions For AllowedCompany
         const orConditionsForCompany: Filters<SerMst>[] = [];
 
         //checking if company array is empty or not, if not then modifying orConditionsForCompany array
-        if (comp && comp.length > 0) { 
+        if (comp && comp.length > 0) {
             comp.forEach(singleComp => {
                 orConditionsForCompany.push({
                     AllowComp: { like: `%\\${singleComp}\\%` } as LikeFilter<string | null>
@@ -106,7 +106,7 @@ export class SeriesController {
                     AllowComp: { equalNull: true } as EqualNullFilter
                 });
                 orConditionsForCompany.push({
-                    AllowComp: { equal: "\\" }  as EqualFilter<string | undefined> 
+                    AllowComp: { equal: "\\" } as EqualFilter<string | undefined>
                 });
             });
         } else {
@@ -115,7 +115,7 @@ export class SeriesController {
                 AllowComp: { equalNull: true }
             });
             orConditionsForCompany.push({
-                AllowComp: { equal: "\\" } 
+                AllowComp: { equal: "\\" }
             });
         }
 
@@ -124,16 +124,16 @@ export class SeriesController {
 
         //now creating the actual filters object from the above conditions
         const filters: Filters<SerMst> = {
-            YearId: { equal: parseInt(yearid as string) }  as EqualFilter<number>,
-            Type: { in: typeCondition }as InFilter<string>,
-            Name: { notLike: 'Supplier%' }as NotLikeFilter<string>, 
-            or: orConditionsForCompany, 
-            Status: { equal: 'T' }  as EqualFilter<string>, 
+            YearId: { equal: parseInt(yearid as string) } as EqualFilter<number>,
+            Type: { in: typeCondition } as InFilter<string>,
+            Name: { notLike: 'Supplier%' } as NotLikeFilter<string>,
+            or: orConditionsForCompany,
+            Status: { equal: 'T' } as EqualFilter<string>,
             AcEffect: { equal: true } as EqualFilter<boolean>,
-            Allow_form:{in:allowedForms} as InFilter<string>
+            Allow_form: { in: allowedForms } as InFilter<string>
         };
 
-        
+
         try {
             const result = await this.seriesService.getSeriesWithFilters(filters)
             if (result) {

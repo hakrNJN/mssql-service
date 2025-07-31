@@ -1,8 +1,7 @@
-
 // src/tests/providers/company.provider.test.ts
 import { CompanyProvider } from '../../providers/company.provider';
 import { AppDataSource } from '../../providers/data-source.provider';
-import { CompMst } from '../../entity/anushree/company.entity';
+import { CompMst } from '../../entity/anushreeDb/company.entity';
 import { applyFilters } from '../../utils/query-utils';
 
 // Mock query-utils

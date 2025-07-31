@@ -2,7 +2,7 @@
 import { container } from "tsyringe";
 import { FindManyOptions, Repository, SelectQueryBuilder } from "typeorm";
 import { objectDecorators } from "../decorators/objectDecorators";
-import { Mast } from "../entity/anushree/accounts.entity";
+import { Mast } from "../entity/anushreeDb/accounts.entity";
 import { BaseProviderInterface } from "../interface/base.provider";
 import { ILogger } from "../interface/logger.interface";
 import { Filters } from "../types/filter.types";

@@ -1,13 +1,13 @@
 // src/tests/controllers/KotakCMS.controller.test.ts
 import { Request, Response } from 'express';
-import { KotakCMSController } from '../../controllers/KotakCMS.controller';
+import { KotakCMSController } from '../../controllers/kotakCMS.controller';
 import { HttpException } from '../../exceptions/httpException';
-import { KotakCMSService } from '../../services/KotakCMS.Service';
+import { KotakCMSService } from '../../services/kotakCMS.service';
 import { ApiResponse } from '../../utils/api-response';
-import { Vwkotakcmsonline } from '../../entity/anushree/KotakCMS.entity';
+import { Vwkotakcmsonline } from '../../entity/anushreeDb/kotakCMS.entity';
 
 // Mock KotakCMSService and ApiResponse
-jest.mock('../../services/KotakCMS.Service');
+jest.mock('../../services/kotakCMS.service');
 jest.mock('../../utils/api-response');
 
 describe('KotakCMSController', () => {

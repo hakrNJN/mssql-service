@@ -1,4 +1,4 @@
-//src/routes/year.route.ts
+//src/routes/saleTransaction.route.ts
 import { Router } from 'express';
 import { SaleTransactionController } from '../controllers/saleTransaction.controller';
 import { PhoenixDataSource } from '../providers/phoenix.data-source.provider';

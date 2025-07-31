@@ -1,10 +1,10 @@
 // src/tests/services/PurchaseInwardOutWard.service.test.ts
-import { PurchaseParcelStatusService } from '../../services/PurchaseInwardOutWard.service';
-import { InWardOutWardProvider } from '../../providers/inwardOutward.provider';
-import { PurchasePileLine as PurchasePileLineProvider } from '../../providers/purchasePipeLine.provider'; // Corrected import alias
+import { SpTblFinishInWardOutWard } from '../../entity/anushreeDb/spTblFinishInWardOutWard.entity';
+import { PurchasePipeLine } from '../../entity/phoenixDb/purchasePipeLine.entity';
 import { AppDataSource } from '../../providers/data-source.provider';
-import { SpTblFinishInWardOutWard } from '../../entity/anushree/SpTblFinishInWardOutWard.entity';
-import { PurchasePipeLine } from '../../entity/phoenix/PurchasePipeLine';
+import { InWardOutWardProvider } from '../../providers/inwardOutward.provider';
+import { PurchasePileLine as PurchasePileLineProvider } from '../../providers/purchasePipeLine.provider';
+import { PurchaseParcelStatusService } from '../../services/purchaseInwardOutWard.service';
 
 // Mock providers
 jest.mock('../../providers/inwardOutward.provider');

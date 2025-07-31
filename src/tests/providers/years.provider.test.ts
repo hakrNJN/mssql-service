@@ -1,8 +1,7 @@
-
 // src/tests/providers/years.provider.test.ts
 import { YearsProvider } from '../../providers/years.provider';
 import { AppDataSource } from '../../providers/data-source.provider';
-import { YearMst } from '../../entity/anushree/years.entity';
+import { YearMst } from '../../entity/anushreeDb/years.entity';
 import { applyFilters } from '../../utils/query-utils';
 
 // Mock query-utils
@@ -28,7 +27,7 @@ describe('YearsProvider', () => {
   let provider: YearsProvider;
 
   beforeEach(async () => {
-    jest.clearAllMocks();
+    jest.clearAllMocks(); // Corrected typo here
     const mockDataSourceInstance = mockDataSource as unknown as AppDataSource;
     provider = new YearsProvider(mockDataSourceInstance);
     await provider.initializeRepository();

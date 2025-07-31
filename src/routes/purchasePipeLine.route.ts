@@ -1,8 +1,8 @@
 // src/routes/purchasePipeLine.routes.ts
 import { Router } from 'express';
 import { PurchasePipeLineController } from '../controllers/purchasePipeLine.controller';
-import { PurchaseParcelStatusService } from '../services/PurchaseInwardOutWard.service'; // Corrected service path/name
 import { AppDataSource } from '../providers/data-source.provider'; // Import AppDataSource
+import { PurchaseParcelStatusService } from '../services/purchaseInwardOutWard.service'; // Corrected service path/name
 
 // Define the route factory function
 const purchasePipeLineRoute = (dataSource: AppDataSource): Router => {

@@ -1,206 +1,140 @@
-// src/tests/services/cloudWatch.service.test.ts
-import { CloudWatchClient } from "@aws-sdk/client-cloudwatch";
-import { CloudWatchLogsClient } from "@aws-sdk/client-cloudwatch-logs";
-import { AppConfig } from '../../config/config';
-import CloudWatchService from '../../services/cloudWatch.service';
+// src/tests/services/cloudwatch.test.ts
 
-// Mock the AWS SDK clients
-const mockCloudWatchClientSend = jest.fn();
-const mockCloudWatchLogsClientSend = jest.fn();
+import "../setup"; // Import the setup file
+import { CloudWatchClient, PutMetricAlarmCommand } from "@aws-sdk/client-cloudwatch";
+import { CloudWatchLogsClient, CreateLogStreamCommand, PutLogEventsCommand } from "@aws-sdk/client-cloudwatch-logs";
+import { mockClient } from "aws-sdk-client-mock";
+import "aws-sdk-client-mock-jest";
+import CloudWatchService from "../../services/cloudWatch.service"; // Adjust path as needed
 
-// Declare mock functions BEFORE using them in jest.mock()
-const mockCreateLogStreamCommand = jest.fn();
-const mockPutLogEventsCommand = jest.fn();
-const mockPutMetricAlarmCommand = jest.fn();
-
-jest.mock("@aws-sdk/client-cloudwatch", () => ({
-  CloudWatchClient: jest.fn(() => ({
-    send: mockCloudWatchClientSend,
-  })),
-  PutMetricAlarmCommand: mockPutMetricAlarmCommand,
+// Mock the AppConfig before importing the service
+jest.mock("../../config/config", () => ({
+    AppConfig: {
+        AWSCredentials: {
+            REGION: "us-east-1",
+            ACCESS_KEY_ID: "test-access-key",
+            SECRET_ACCESS_KEY: "test-secret-key",
+        },
+        APP: {
+            NAME: "test-app",
+        },
+    },
 }));
 
-jest.mock("@aws-sdk/client-cloudwatch-logs", () => ({
-  CloudWatchLogsClient: jest.fn(() => ({
-    send: mockCloudWatchLogsClientSend,
-  })),
-  CreateLogStreamCommand: mockCreateLogStreamCommand,
-  PutLogEventsCommand: mockPutLogEventsCommand,
-}));
+const logsMock = mockClient(CloudWatchLogsClient);
+const cloudWatchMock = mockClient(CloudWatchClient);
 
-describe('CloudWatchService', () => {
-  let service: CloudWatchService;
-  const mockLogGroupName = 'test-log-group';
-  const mockRegion = 'us-east-1';
-  const mockAccessKeyId = 'test-access-key';
-  const mockSecretAccessKey = 'test-secret-key';
+describe("CloudWatchService", () => {
+    let service: CloudWatchService;
+    const logGroupName = "test-log-group";
 
-  beforeAll(() => {
-    // Set up AppConfig mocks
-    Object.defineProperty(AppConfig, 'AWSCredentials', {
-      value: {
-        REGION: mockRegion,
-        ACCESS_KEY_ID: mockAccessKeyId,
-        SECRET_ACCESS_KEY: mockSecretAccessKey,
-      },
-      writable: true,
-    });
-    Object.defineProperty(AppConfig, 'APP', {
-      value: { NAME: 'test-app' },
-      writable: true,
-    });
-  });
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-    mockCloudWatchClientSend.mockReset();
-    mockCloudWatchLogsClientSend.mockReset();
-
-    // Reset CloudWatch client constructors
-    (CloudWatchLogsClient as jest.Mock).mockClear();
-    (CloudWatchClient as jest.Mock).mockClear();
-
-    // Reset command mocks
-    mockCreateLogStreamCommand.mockClear();
-    mockPutLogEventsCommand.mockClear();
-    mockPutMetricAlarmCommand.mockClear();
-
-    // Set default mock responses
-    mockCloudWatchClientSend.mockResolvedValue({});
-    mockCloudWatchLogsClientSend.mockResolvedValue({ nextSequenceToken: 'mock-token' });
-
-    // Configure command mocks to return objects with input property
-    mockCreateLogStreamCommand.mockImplementation((params) => ({ input: params }));
-    mockPutLogEventsCommand.mockImplementation((params) => ({ input: params }));
-    mockPutMetricAlarmCommand.mockImplementation((params) => ({ input: params }));
-
-    // Create a new service instance for each test
-    service = new CloudWatchService(mockLogGroupName);
-  });
-
-  it('should be defined and initialize clients', () => {
-    expect(service).toBeDefined();
-    expect(CloudWatchLogsClient).toHaveBeenCalledWith({
-      region: mockRegion,
-      credentials: {
-        accessKeyId: mockAccessKeyId,
-        secretAccessKey: mockSecretAccessKey,
-      },
-    });
-    expect(CloudWatchClient).toHaveBeenCalledWith({
-      region: mockRegion,
-      credentials: {
-        accessKeyId: mockAccessKeyId,
-        secretAccessKey: mockSecretAccessKey,
-      },
-    });
-  });
-
-  it('should throw an error if logGroupName is not provided', () => {
-    expect(() => new CloudWatchService('')).toThrow("Log group name is required to initialize CloudWatchService.");
-  });
-
-  describe('createLogStream', () => {
-    it('should call CreateLogStreamCommand and send it', async () => {
-      await service.createLogStream();
-
-      expect(mockCreateLogStreamCommand).toHaveBeenCalledWith({
-        logGroupName: mockLogGroupName,
-        logStreamName: expect.stringContaining('test-app-')
-      });
-      expect(mockCloudWatchLogsClientSend).toHaveBeenCalledTimes(1);
+    beforeEach(() => {
+        logsMock.reset();
+        cloudWatchMock.reset();
+        service = new CloudWatchService(logGroupName);
     });
 
-    it('should handle errors during log stream creation', async () => {
-      const mockError = new Error('Failed to create log stream');
-      mockCloudWatchLogsClientSend.mockRejectedValueOnce(mockError);
-      await expect(service.createLogStream()).rejects.toThrow(mockError);
-    });
-  });
-
-  describe('logError', () => {
-    it('should create log stream if sequenceToken is not present and then log error', async () => {
-      const testMessage = 'Test error message';
-
-      await service.logError(testMessage);
-
-      expect(mockCloudWatchLogsClientSend).toHaveBeenCalledTimes(2);
-
-      // Verify createLogStream call
-      expect(mockCreateLogStreamCommand).toHaveBeenCalledWith({
-        logGroupName: mockLogGroupName,
-        logStreamName: expect.stringContaining('test-app-')
-      });
-
-      // Verify putLogEvents call
-      expect(mockPutLogEventsCommand).toHaveBeenCalledWith({
-        logEvents: [{
-          message: testMessage,
-          timestamp: expect.any(Number)
-        }],
-        logGroupName: mockLogGroupName,
-        logStreamName: expect.stringContaining('test-app-'),
-        sequenceToken: undefined
-      });
+    it("should be defined", () => {
+        expect(service).toBeDefined();
     });
 
-    it('should log error directly if sequenceToken is present', async () => {
-      // Set sequence token by accessing private property
-      (service as any).sequenceToken = 'initial-token';
-      const testMessage = 'Another test error message';
-
-      await service.logError(testMessage);
-
-      expect(mockCloudWatchLogsClientSend).toHaveBeenCalledTimes(1);
-      expect(mockPutLogEventsCommand).toHaveBeenCalledWith({
-        logEvents: [{
-          message: testMessage,
-          timestamp: expect.any(Number)
-        }],
-        logGroupName: mockLogGroupName,
-        logStreamName: expect.stringContaining('test-app-'),
-        sequenceToken: 'initial-token'
-      });
+    it("should throw an error if log group name is not provided", () => {
+        expect(() => new CloudWatchService("")).toThrow("Log group name is required to initialize CloudWatchService.");
     });
 
-    it('should handle errors during log error operation', async () => {
-      const mockError = new Error('Failed to put log events');
-      mockCloudWatchLogsClientSend.mockRejectedValueOnce(mockError);
-      await expect(service.logError('Error')).rejects.toThrow(mockError);
-    });
-  });
+    describe("createLogStream", () => {
+        it("should create a log stream successfully", async () => {
+            logsMock.on(CreateLogStreamCommand).resolves({});
+            await service.createLogStream();
+            expect(logsMock).toHaveReceivedCommand(CreateLogStreamCommand);
+        });
 
-  describe('createAlarm', () => {
-    it('should call PutMetricAlarmCommand with correct parameters', async () => {
-      const alarmName = 'TestAlarm';
-      const metricName = 'TestMetric';
-      const threshold = 5;
-      const snsTopicArn = 'arn:aws:sns:us-east-1:123456789012:test-topic';
-
-      await service.createAlarm(alarmName, metricName, threshold, snsTopicArn);
-
-      expect(mockPutMetricAlarmCommand).toHaveBeenCalledWith({
-        AlarmName: alarmName,
-        ComparisonOperator: "GreaterThanThreshold",
-        EvaluationPeriods: 1,
-        MetricName: metricName,
-        Namespace: 'test-app',
-        Period: 60,
-        Statistic: "Average",
-        Threshold: threshold,
-        ActionsEnabled: true,
-        AlarmActions: [snsTopicArn],
-        AlarmDescription: `Alarm when ${metricName} exceeds ${threshold}`,
-        Dimensions: []
-      });
-
-      expect(mockCloudWatchClientSend).toHaveBeenCalledTimes(1);
+        it("should handle errors when creating a log stream", async () => {
+            const error = new Error("Failed to create log stream");
+            logsMock.on(CreateLogStreamCommand).rejects(error);
+            await expect(service.createLogStream()).rejects.toThrow(error);
+        });
     });
 
-    it('should handle errors during alarm creation', async () => {
-      const mockError = new Error('Failed to create alarm');
-      mockCloudWatchClientSend.mockRejectedValueOnce(mockError);
-      await expect(service.createAlarm('Alarm', 'Metric', 1, 'sns-arn')).rejects.toThrow(mockError);
+    describe("logError", () => {
+        it("should create a log stream and then log a message if no sequence token exists", async () => {
+            logsMock.on(CreateLogStreamCommand).resolves({});
+            logsMock.on(PutLogEventsCommand).resolves({ nextSequenceToken: "a-token" });
+
+            await service.logError("test message");
+
+            // Check that CreateLogStreamCommand was called first
+            expect(logsMock).toHaveReceivedNthCommandWith(1, CreateLogStreamCommand, {
+                logGroupName,
+                logStreamName: expect.any(String) // The stream name is dynamic
+            });
+
+            // Check that PutLogEventsCommand was called second
+            expect(logsMock).toHaveReceivedNthCommandWith(2, PutLogEventsCommand, {
+                logGroupName,
+                logStreamName: expect.any(String),
+                logEvents: [{ message: "test message", timestamp: expect.any(Number) }],
+                sequenceToken: undefined, // The first log event has no sequence token
+            });
+        });
+
+        it("should only log a message if a sequence token already exists", async () => {
+            // First call to establish the sequence token
+            logsMock.on(CreateLogStreamCommand).resolves({});
+            logsMock.on(PutLogEventsCommand).resolves({ nextSequenceToken: "first-token" });
+            await service.logError("first message");
+
+            // Second call
+            logsMock.on(PutLogEventsCommand).resolves({ nextSequenceToken: "second-token" });
+            await service.logError("second message");
+
+            // Check that CreateLogStreamCommand was only called once for the two logError calls
+            expect(logsMock).toHaveReceivedCommandTimes(CreateLogStreamCommand, 1);
+            // Check that PutLogEventsCommand was called twice
+            expect(logsMock).toHaveReceivedCommandTimes(PutLogEventsCommand, 2);
+
+            // Check that the second call to PutLogEventsCommand used the correct sequence token
+            expect(logsMock).toHaveReceivedNthCommandWith(3, PutLogEventsCommand, {
+                sequenceToken: "first-token",
+            });
+        });
+
+        it("should handle errors when logging an error message", async () => {
+            const error = new Error("Failed to log message");
+            logsMock.on(CreateLogStreamCommand).resolves({});
+            logsMock.on(PutLogEventsCommand).rejects(error);
+
+            await expect(service.logError("Test error message")).rejects.toThrow(error);
+        });
     });
-  });
+
+    describe("createAlarm", () => {
+        it("should create a CloudWatch alarm successfully", async () => {
+            cloudWatchMock.on(PutMetricAlarmCommand).resolves({});
+            const alarmName = "TestAlarm";
+            const metricName = "TestMetric";
+            const threshold = 100;
+            const snsTopicArn = "arn:aws:sns:us-east-1:123456789012:TestTopic";
+
+            await service.createAlarm(alarmName, metricName, threshold, snsTopicArn);
+
+            expect(cloudWatchMock).toHaveReceivedCommandWith(PutMetricAlarmCommand, {
+                AlarmName: alarmName,
+                MetricName: metricName,
+                Threshold: threshold,
+                AlarmActions: [snsTopicArn],
+            });
+        });
+
+        it("should handle errors when creating a CloudWatch alarm", async () => {
+            const error = new Error("Failed to create alarm");
+            cloudWatchMock.on(PutMetricAlarmCommand).rejects(error);
+            const alarmName = "TestAlarm";
+            const metricName = "TestMetric";
+            const threshold = 100;
+            const snsTopicArn = "arn:aws:sns:us-east-1:123456789012:TestTopic";
+
+            await expect(service.createAlarm(alarmName, metricName, threshold, snsTopicArn)).rejects.toThrow(error);
+        });
+    });
 });

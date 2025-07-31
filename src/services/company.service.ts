@@ -1,16 +1,16 @@
 //src/services/company.service.ts
 
 
-import { CompMst } from "../entity/anushree/company.entity";
+import { CompMst } from "../entity/anushreeDb/company.entity";
 import { CompanyProvider } from "../providers/company.provider";
 import { AppDataSource } from "../providers/data-source.provider";
 import { Filters } from "../types/filter.types";
 
 export class CompanyService {
     private companyProvider: CompanyProvider;
-  
+
     constructor(private dataSourceInstance: AppDataSource) {
-        this.companyProvider = new CompanyProvider(this.dataSourceInstance); 
+        this.companyProvider = new CompanyProvider(this.dataSourceInstance);
     }
 
     async initialize(): Promise<void> {

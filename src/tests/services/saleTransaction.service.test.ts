@@ -2,7 +2,7 @@
 import { SaleTransactionService } from '../../services/saleTransaction.service';
 import { SaleTransactionProvider } from '../../providers/saleTransaction.provider';
 import { PhoenixDataSource } from '../../providers/phoenix.data-source.provider';
-import { SaleTransaction } from '../../entity/phoenix/SaleTransaction';
+import { SaleTransaction } from '../../entity/phoenixDb/saleTransaction.entity';
 
 // Mock SaleTransactionProvider
 jest.mock('../../providers/saleTransaction.provider');

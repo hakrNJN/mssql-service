@@ -1,4 +1,3 @@
-
 // src/tests/controllers/series.controller.test.ts
 import { Request, Response } from 'express';
 import { SeriesController } from '../../controllers/series.controller';

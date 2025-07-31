@@ -1,13 +1,12 @@
 //src/controllers/purchasePipeLine.controller.ts
 
 import { Request, Response } from 'express';
-import { AppConfig } from '../config/config'; // Assuming you might use AppConfig for purchase-related logic
 import { objectDecorators } from '../decorators/objectDecorators'; // Assuming this is used for trimWhitespace etc.
-import { SpTblFinishInWardOutWard } from '../entity/anushree/SpTblFinishInWardOutWard.entity';
-import { PurchasePipeLine as PurchasePipeLineEntity } from '../entity/phoenix/PurchasePipeLine'; // Alias the entity
+import { SpTblFinishInWardOutWard } from '../entity/anushreeDb/spTblFinishInWardOutWard.entity';
+import { PurchasePipeLine as PurchasePipeLineEntity } from '../entity/phoenixDb/purchasePipeLine.entity'; // Alias the entity
 import { HttpException } from '../exceptions/httpException';
-import { PurchaseParcelStatusService } from '../services/PurchaseInwardOutWard.service'; // This service now handles both providers
-import { EqualFilter, Filters, InFilter, LikeFilter, NotLikeFilter } from '../types/filter.types'; // Import filter types
+import { PurchaseParcelStatusService } from '../services/purchaseInwardOutWard.service'; // This service now handles both providers
+import { EqualFilter, Filters, LikeFilter } from '../types/filter.types'; // Import filter types
 import { ApiResponse } from '../utils/api-response';
 
 // Declaration merging for any methods added by decorators (e.g., trimWhitespace)
@@ -95,7 +94,7 @@ export class PurchasePipeLineController {
         // filters.Dat = { greaterThanOrEqual: new Date('2021-08-01') } as any; // Cast as any if filter type doesn't have it
 
         try {
-            const result = await this.purchaseParcelStatusService.getEntriesByFilter(company!,startDate!,endDate!, customer!, filters, offset, limit);
+            const result = await this.purchaseParcelStatusService.getEntriesByFilter(company!, startDate!, endDate!, customer!, filters, offset, limit);
 
             if (result && result.length > 0) {
                 ApiResponse.success({
@@ -108,7 +107,6 @@ export class PurchasePipeLineController {
                 throw HttpException.NotFound(`No purchase pipeline entries found matching criteria.`);
             }
         } catch (error) {
-            console.error("Error in getEntriesByFilter:", error); // Log the actual error for debugging
             if (error instanceof HttpException) {
                 throw error;
             }
@@ -127,12 +125,12 @@ export class PurchasePipeLineController {
             startDate?: string; // YYYY-MM-DD
             endDate?: string;   // YYYY-MM-DD
         };
-        if (isNaN(purTrnId) ) {
+        if (isNaN(purTrnId)) {
             throw HttpException.BadRequest('Invalid PurTrnId or Type provided.');
         }
 
         try {
-            const result = await this.purchaseParcelStatusService.GetEntrybyId(company!,startDate!,endDate!, customer!, purTrnId);
+            const result = await this.purchaseParcelStatusService.GetEntrybyId(company!, startDate!, endDate!, customer!, purTrnId);
 
             if (result) {
                 ApiResponse.success({
@@ -145,7 +143,6 @@ export class PurchasePipeLineController {
                 throw HttpException.NotFound(`Purchase pipeline entry not found for PurTrnId: ${purTrnId}.`);
             }
         } catch (error) {
-            console.error("Error in getEntryById:", error);
             throw HttpException.InternalServerError(`Something Went Wrong while fetching purchase pipeline entry`, error);
         }
     };
@@ -175,7 +172,6 @@ export class PurchasePipeLineController {
                 throw HttpException.InternalServerError('Failed to create purchase pipeline entry.');
             }
         } catch (error) {
-            console.error("Error in insertEntry:", error);
             throw HttpException.InternalServerError(`Something Went Wrong while inserting purchase pipeline entry`, error);
         }
     };
@@ -207,7 +203,6 @@ export class PurchasePipeLineController {
                 throw HttpException.NotFound(`Purchase pipeline entry not found for update with PurTrnId: ${purTrnId}, or no changes made.`);
             }
         } catch (error) {
-            console.error("Error in updateEntry:", error);
             throw HttpException.InternalServerError(`Something Went Wrong while updating purchase pipeline entry`, error);
         }
     };

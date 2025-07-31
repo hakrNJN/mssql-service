@@ -1,6 +1,6 @@
 // src/tests/account.provider.test.ts
 import { container } from 'tsyringe';
-import { Mast } from '../../entity/anushree/accounts.entity';
+import { Mast } from '../../entity/anushreeDb/accounts.entity';
 import winston from 'winston';
 import { AccountProvider } from '../../providers/account.provider';
 import { AppDataSource } from '../../providers/data-source.provider';

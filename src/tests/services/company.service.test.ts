@@ -1,9 +1,8 @@
-
 // src/tests/services/company.service.test.ts
 import { CompanyService } from '../../services/company.service';
 import { CompanyProvider } from '../../providers/company.provider';
 import { AppDataSource } from '../../providers/data-source.provider';
-import { CompMst } from '../../entity/anushree/company.entity';
+import { CompMst } from '../../entity/anushreeDb/company.entity';
 import { Filters, EqualFilter } from '../../types/filter.types';
 
 // Mock CompanyProvider

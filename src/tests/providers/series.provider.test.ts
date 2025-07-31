@@ -1,8 +1,7 @@
-
 // src/tests/providers/series.provider.test.ts
 import { SeriesProvider } from '../../providers/series.provider';
 import { AppDataSource } from '../../providers/data-source.provider';
-import { SerMst } from '../../entity/anushree/series.entity';
+import { SerMst } from '../../entity/anushreeDb/series.entity';
 import { applyFilters } from '../../utils/query-utils';
 
 // Mock query-utils

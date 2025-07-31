@@ -1,14 +1,14 @@
 // src/tests/controllers/purchasePipeLine.controller.test.ts
 import { Request, Response } from 'express';
 import { PurchasePipeLineController } from '../../controllers/purchasePipeLine.controller';
-import { PurchaseParcelStatusService } from '../../services/PurchaseInwardOutWard.service';
-import { ApiResponse } from '../../utils/api-response';
+import { SpTblFinishInWardOutWard } from '../../entity/anushreeDb/spTblFinishInWardOutWard.entity';
+import { PurchasePipeLine } from '../../entity/phoenixDb/purchasePipeLine.entity';
 import { HttpException } from '../../exceptions/httpException';
-import { SpTblFinishInWardOutWard } from '../../entity/anushree/SpTblFinishInWardOutWard.entity';
-import { PurchasePipeLine } from '../../entity/phoenix/PurchasePipeLine';
+import { PurchaseParcelStatusService } from '../../services/purchaseInwardOutWard.service';
+import { ApiResponse } from '../../utils/api-response';
 
 // Mock PurchaseParcelStatusService and ApiResponse
-jest.mock('../../services/PurchaseInwardOutWard.service');
+jest.mock('../../services/purchaseInwardOutward.service');
 jest.mock('../../utils/api-response');
 
 describe('PurchasePipeLineController', () => {

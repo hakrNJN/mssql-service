@@ -1,14 +1,14 @@
 // src/providers/year.provider.ts
 import { Repository } from "typeorm";
-import { YearMst } from "../entity/anushree/years.entity";
+import { YearMst } from "../entity/anushreeDb/years.entity";
 import { BaseProviderInterface } from "../interface/base.provider";
 import { Filters } from "../types/filter.types";
 import { applyFilters } from "../utils/query-utils"; // Import AppDataSource
 import { AppDataSource } from "./data-source.provider";
 
-export interface YearsProvider extends BaseProviderInterface<YearMst, Filters<YearMst>> {} 
+export interface YearsProvider extends BaseProviderInterface<YearMst, Filters<YearMst>> { }
 
-export class YearsProvider implements YearsProvider{ // Export the class
+export class YearsProvider implements YearsProvider { // Export the class
     private yearRepository: Repository<YearMst> | null = null;
     private dataSourceInstance: AppDataSource; // Hold an instance of AppDataSource
 
@@ -22,7 +22,7 @@ export class YearsProvider implements YearsProvider{ // Export the class
         }
         return this.yearRepository;
     }
-    
+
     async initializeRepository(): Promise<void> { // Initialize the repository
         const dataSource = await this.dataSourceInstance.init(); // Ensure DataSource is initialized
         this.yearRepository = dataSource.getRepository(YearMst);
@@ -34,7 +34,7 @@ export class YearsProvider implements YearsProvider{ // Export the class
         const years = await filteredQueryBuilder.getMany();
         return years;
     }
-   
+
     async getAllYears(): Promise<YearMst[]> {
         try {
             return this._getRepository().find();

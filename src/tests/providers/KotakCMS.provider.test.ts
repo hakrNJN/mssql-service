@@ -1,8 +1,8 @@
 // src/tests/providers/KotakCMS.provider.test.ts
-import { KotakCMSProvider } from '../../providers/KotakCMS.provider';
+import { KotakCMSProvider } from '../../providers/kotakCMS.provider';
 import { AppDataSource } from '../../providers/data-source.provider';
-import { Vwkotakcmsonline } from '../../entity/anushree/KotakCMS.entity';
-import { SerMst } from '../../entity/anushree/series.entity';
+import { Vwkotakcmsonline } from '../../entity/anushreeDb/kotakCMS.entity';
+import { SerMst } from '../../entity/anushreeDb/series.entity';
 import { ILogger } from '../../interface/logger.interface';
 
 // Mock the logger

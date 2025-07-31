@@ -5,6 +5,8 @@ import { App } from './App';
 import { AppConfig } from './config/config';
 import { DataSourceService } from "./services/dataSource.service";
 import { registerDependencies } from "./utils/registerDependencies";
+import { ILogger } from './interface/logger.interface';
+import { WINSTON_LOGGER } from './utils/logger';
 
 // Register all dependencies
 registerDependencies();
@@ -13,6 +15,7 @@ registerDependencies();
 // const logger = container.resolve<winston.Logger>(WINSTON_LOGGER);
 
 async function startServer() {
+  const logger = container.resolve<ILogger>(WINSTON_LOGGER);
   try {
     const dataSourceService = container.resolve(DataSourceService);
     const app = container.resolve(App);
@@ -23,7 +26,7 @@ async function startServer() {
     });
 
   } catch (error) {
-    console.error('Error starting server:', error);
+    logger.error('Error starting server:', error);
     process.exit(1);
   }
 }

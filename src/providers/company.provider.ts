@@ -1,6 +1,6 @@
 // src/providers/year.provider.ts
 import { Repository } from "typeorm";
-import { CompMst } from "../entity/anushree/company.entity";
+import { CompMst } from "../entity/anushreeDb/company.entity";
 import { BaseProviderInterface } from "../interface/base.provider";
 import { Filters } from "../types/filter.types";
 import { applyFilters } from "../utils/query-utils";
@@ -8,9 +8,9 @@ import { AppDataSource } from "./data-source.provider";
 
 export interface CompanyProvider extends BaseProviderInterface<CompMst, Filters<CompMst>> { }
 
-export class CompanyProvider  implements CompanyProvider{ 
+export class CompanyProvider implements CompanyProvider {
     private yearRepository: Repository<CompMst> | null = null;;
-    private dataSourceInstance: AppDataSource; 
+    private dataSourceInstance: AppDataSource;
 
 
     constructor(dataSourceInstance: AppDataSource) { // Inject AppDataSource in constructor
@@ -23,7 +23,7 @@ export class CompanyProvider  implements CompanyProvider{
         }
         return this.yearRepository;
     }
-    
+
     async initializeRepository(): Promise<void> { // Initialize the repository
         const dataSource = await this.dataSourceInstance.init(); // Ensure DataSource is initialized
         this.yearRepository = dataSource.getRepository(CompMst);

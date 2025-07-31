@@ -1,5 +1,5 @@
 import { Column, Entity, OneToMany, PrimaryColumn } from "typeorm";
-import { SaleTransactionDetails } from "./saleTransactionDetail";
+import { SaleTransactionDetails } from "./saleTransactionDetail.entity";
 
 // @Entity({ name: "SaleTransactions", database: "pheonixdb", schema: "dbo" })  // Map the entity to the view name
 @Entity("SaleTransaction",)  // Map the entity to the view name

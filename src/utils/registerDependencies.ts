@@ -1,22 +1,21 @@
 // src/utils/registerDependencies.ts
 import { join } from 'path'; // Import path
 import { container } from "tsyringe";
-import winston from 'winston';
 import { AppConfig } from '../config/config';
 import EventDrivenController from "../controllers/eventDriven.controller";
+import { KotakCMSController } from '../controllers/kotakCMS.controller';
+import { PurchasePipeLineController } from '../controllers/purchasePipeLine.controller';
+import { ILogger } from '../interface/logger.interface';
 import { AppDataSource } from "../providers/data-source.provider";
 import FileService from "../providers/fileService.provider";
 import { PhoenixDataSource } from "../providers/phoenix.data-source.provider";
 import { DataSourceService } from "../services/dataSource.service";
 import FeaturesService from "../services/feature.service";
+import { KotakCMSService } from '../services/kotakCMS.service';
 import PublisherRabbitMQService from "../services/publisher.RabbitMQ.service";
+import { PurchaseParcelStatusService } from '../services/purchaseInwardOutWard.service';
 import RabbitMQClientService from "../services/rabbitMQ.service";
-import { PurchaseParcelStatusService } from '../services/PurchaseInwardOutWard.service';
-import { KotakCMSService } from '../services/KotakCMS.Service';
 import { Logger, WINSTON_LOGGER } from "./logger";
-import { ILogger } from '../interface/logger.interface';
-import { KotakCMSController } from '../controllers/KotakCMS.controller';
-import { PurchasePipeLineController } from '../controllers/purchasePipeLine.controller';
 
 // Define a token for FileService if you want to use interface injection.
 // export const FILE_SERVICE_TOKEN = Symbol('FileServiceToken') as InjectionToken<FileService>; // Not strictly needed here
@@ -72,7 +71,7 @@ export function registerDependencies(): void {
     )
   });
 
-    container.register(PurchaseParcelStatusService, {
+  container.register(PurchaseParcelStatusService, {
     useFactory: (c) => {
       const dataSourceInstance = c.resolve(AppDataSource);
       const service = new PurchaseParcelStatusService(dataSourceInstance);
@@ -84,7 +83,7 @@ export function registerDependencies(): void {
     useFactory: (c) => new PurchasePipeLineController(c.resolve(PurchaseParcelStatusService))
   });
 
-   // --- Register KotakCMSService and KotakCMSController ---
+  // --- Register KotakCMSService and KotakCMSController ---
 
   // Register KotakCMSService
   container.register(KotakCMSService, {

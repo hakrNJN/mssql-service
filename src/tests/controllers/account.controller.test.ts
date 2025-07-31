@@ -1,11 +1,10 @@
-
 // src/tests/controllers/account.controller.test.ts
 import { Request, Response } from 'express';
 import { AccountController } from '../../controllers/account.controller';
 import { AccountService } from '../../services/account.service';
 import { ApiResponse } from '../../utils/api-response';
 import { HttpException } from '../../exceptions/httpException';
-import { Mast } from '../../entity/anushree/accounts.entity';
+import { Mast } from '../../entity/anushreeDb/accounts.entity';
 
 // Mock AccountService and ApiResponse
 jest.mock('../../services/account.service');

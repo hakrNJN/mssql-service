@@ -1,6 +1,6 @@
 // src/entity/anushree/SerMst.entity.ts
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { Vwkotakcmsonline } from "./KotakCMS.entity"; // Import Vwkotakcmsonline
+import { Vwkotakcmsonline } from "./kotakCMS.entity"; // Import Vwkotakcmsonline
 
 @Entity("SerMst")
 export class SerMst {

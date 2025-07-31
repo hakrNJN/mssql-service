@@ -1,7 +1,7 @@
 // src/tests/providers/saleTransaction.provider.test.ts
 import { SaleTransactionProvider } from '../../providers/saleTransaction.provider';
 import { PhoenixDataSource } from '../../providers/phoenix.data-source.provider';
-import { SaleTransaction } from '../../entity/phoenix/SaleTransaction';
+import { SaleTransaction } from '../../entity/phoenixDb/saleTransaction.entity';
 import { Repository } from 'typeorm';
 import { ILogger } from '../../interface/logger.interface';
 

@@ -1,9 +1,9 @@
 // src/tests/providers/inwardOutward.provider.test.ts
-import { InWardOutWardProvider } from '../../providers/inwardOutward.provider';
-import { AppDataSource } from '../../providers/data-source.provider';
-import { SpTblFinishInWardOutWard } from '../../entity/anushree/SpTblFinishInWardOutWard.entity';
-import { ILogger } from '../../interface/logger.interface';
+import { SpTblFinishInWardOutWard } from '../../entity/anushreeDb/spTblFinishInWardOutWard.entity';
 import { HttpException } from '../../exceptions/httpException';
+import { ILogger } from '../../interface/logger.interface';
+import { AppDataSource } from '../../providers/data-source.provider';
+import { InWardOutWardProvider } from '../../providers/inwardOutward.provider';
 
 // Mock the logger
 const mockLogger: ILogger = {
@@ -133,7 +133,7 @@ describe('InWardOutWardProvider', () => {
       const mockData = new SpTblFinishInWardOutWard();
       mockRepository.findOne.mockResolvedValue(mockData);
 
-      const result = await provider.getEntryByIdFromSPData('conum', 'fdat', 'tdat', 'accId', 1, 1);
+      const result = await provider.getEntryByIdFromSPData('conum', 'fdat', 'tdat', 'accId', 1);
 
       expect(result).toEqual(mockData);
       expect(mockQueryRunner.connect).toHaveBeenCalled();

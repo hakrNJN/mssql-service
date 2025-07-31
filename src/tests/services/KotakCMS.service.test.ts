@@ -1,11 +1,11 @@
 // src/tests/services/KotakCMS.service.test.ts
-import { KotakCMSService } from '../../services/KotakCMS.Service';
-import { KotakCMSProvider } from '../../providers/KotakCMS.provider';
+import { Vwkotakcmsonline } from '../../entity/anushreeDb/kotakCMS.entity';
 import { AppDataSource } from '../../providers/data-source.provider';
-import { Vwkotakcmsonline } from '../../entity/anushree/KotakCMS.entity';
+import { KotakCMSProvider } from '../../providers/kotakCMS.provider';
+import { KotakCMSService } from '../../services/kotakCMS.service';
 
 // Mock KotakCMSProvider
-jest.mock('../../providers/KotakCMS.provider');
+jest.mock('../../providers/kotakCMS.provider');
 
 describe('KotakCMSService', () => {
   let service: KotakCMSService;

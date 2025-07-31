@@ -1,6 +1,6 @@
 //src/services/account.service.ts
 
-import { Mast } from "../entity/anushree/accounts.entity";
+import { Mast } from "../entity/anushreeDb/accounts.entity";
 import { AccountProvider } from "../providers/account.provider";
 import { AppDataSource } from "../providers/data-source.provider";
 import { EqualFilter, Filters } from "../types/filter.types";

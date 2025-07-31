@@ -1,8 +1,7 @@
-
 // src/tests/providers/purchasePipeLine.provider.test.ts
 import { PurchasePileLine } from '../../providers/purchasePipeLine.provider';
 import { AppDataSource } from '../../providers/data-source.provider';
-import { PurchasePipeLine as PurchasePipeLineEntity } from '../../entity/phoenix/PurchasePipeLine';
+import { PurchasePipeLine as PurchasePipeLineEntity } from '../../entity/phoenixDb/purchasePipeLine.entity';
 import { applyFilters } from '../../utils/query-utils';
 import { ILogger } from '../../interface/logger.interface';
 

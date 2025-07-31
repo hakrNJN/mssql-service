@@ -1,6 +1,6 @@
 //src/services/saleTransaction.service.ts
 
-import { SaleTransaction } from "../entity/phoenix/SaleTransaction";
+import { SaleTransaction } from "../entity/phoenixDb/saleTransaction.entity";
 import { PhoenixDataSource } from "../providers/phoenix.data-source.provider";
 import { SaleTransactionProvider } from "../providers/saleTransaction.provider";
 

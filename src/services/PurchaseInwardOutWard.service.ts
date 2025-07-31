@@ -1,12 +1,11 @@
 //src/services/PurchaseInwardOutWard.service.ts
 
-import { SpTblFinishInWardOutWard } from "../entity/anushree/SpTblFinishInWardOutWard.entity";
-import { PurchasePipeLine } from "../entity/phoenix/PurchasePipeLine";
+import { SpTblFinishInWardOutWard } from "../entity/anushreeDb/spTblFinishInWardOutWard.entity";
+import { PurchasePipeLine } from "../entity/phoenixDb/purchasePipeLine.entity";
 import { AppDataSource } from "../providers/data-source.provider";
 import { InWardOutWardProvider } from "../providers/inwardOutward.provider"; // This provider now handles the SP
 import { PurchasePileLine as PurchasePileLineProvider } from "../providers/purchasePipeLine.provider";
 import { Filters } from "../types/filter.types";
-import { HttpException } from "../exceptions/httpException"; // Import for throwing NotImplemented
 
 export class PurchaseParcelStatusService {
     private inwardOutWardProvider: InWardOutWardProvider;
@@ -54,7 +53,7 @@ export class PurchaseParcelStatusService {
     }
 
     async UpdateEntry(PurTrnId: number, data: Partial<PurchasePipeLine>): Promise<PurchasePipeLine | null> {
-        return this.purchasePileLineProvider.update(PurTrnId,  data);
+        return this.purchasePileLineProvider.update(PurTrnId, data);
     }
 }
 

@@ -1,15 +1,14 @@
 //src/providers/inwardOutward.provider.ts
 import { container } from "tsyringe";
-import { Repository, SelectQueryBuilder, QueryRunner } from "typeorm"; // Import QueryRunner
+import { QueryRunner, Repository } from "typeorm"; // Import QueryRunner
 import { objectDecorators } from "../decorators/objectDecorators";
-import { SpTblFinishInWardOutWard } from "../entity/anushree/SpTblFinishInWardOutWard.entity";
+import { SpTblFinishInWardOutWard } from "../entity/anushreeDb/spTblFinishInWardOutWard.entity";
+import { HttpException } from "../exceptions/httpException";
 import { BaseProviderInterface } from "../interface/base.provider";
 import { ILogger } from "../interface/logger.interface";
 import { Filters } from "../types/filter.types";
 import { WINSTON_LOGGER } from "../utils/logger";
-import { applyFilters } from "../utils/query-utils";
 import { AppDataSource } from "./data-source.provider";
-import { HttpException } from "../exceptions/httpException";
 
 // Defining a specific interface for the InWardOutWardProvider that includes the SP parameters
 export interface InWardOutWardProvider extends BaseProviderInterface<SpTblFinishInWardOutWard, Filters<SpTblFinishInWardOutWard>> { // BaseProviderInterface expects one generic T
@@ -183,14 +182,14 @@ export class InWardOutWardProvider implements InWardOutWardProvider { // Ensure 
             // then you just query SpTblFinishInWardOutWard directly.
             // If not, then the SP populates SpTblFinishInWardOutWard, and you *still* need to join.
             // Given the original SQL provided, it seems `SpTblFinishInWardOutWard` is one part,
-            // and `PurchasePipeLine` is another that you join to.
+            // and `PurchasePipeLine` is another, requiring a join.
 
             // Let's stick to the previous `getEntriesByFilter` logic, assuming `SpTblFinishInWardOutWard` is a base table/view,
             // and `PurchasePipeLine` is another, requiring a join.
 
             // Re-adding the join logic from the previous solution for `getEntriesByFilter`
             // and ensuring it uses `queryRunner.manager.getRepository`
-            const PurchasePipeLine = (await import("../entity/phoenix/PurchasePipeLine")).PurchasePipeLine; // Dynamic import to avoid circular dependency if this is in a common module.
+            const PurchasePipeLine = (await import("../entity/phoenixDb/purchasePipeLine.entity")).PurchasePipeLine; // Dynamic import to avoid circular dependency if this is in a common module.
 
             queryBuilder.leftJoin(PurchasePipeLine, 'D', 'T.Purtrnid = D.Purtrnid AND T.Type = D.Type');
 
@@ -225,7 +224,7 @@ export class InWardOutWardProvider implements InWardOutWardProvider { // Ensure 
                         // For simplicity, assuming filters are primarily for T (SpTblFinishInWardOutWard)
                         // If you have filters for D, you'll need to specify `D.${key}`
                         if (filterValue) {
-                             if (filterValue.equal !== undefined) {
+                            if (filterValue.equal !== undefined) {
                                 queryBuilder.andWhere(`T.${key} = :${key}_equal`, { [`${key}_equal`]: filterValue.equal });
                             } else if (filterValue.like !== undefined) {
                                 queryBuilder.andWhere(`T.${key} LIKE :${key}_like`, { [`${key}_like`]: `%${filterValue.like}%` });
@@ -260,7 +259,7 @@ export class InWardOutWardProvider implements InWardOutWardProvider { // Ensure 
             this.logger.error("Error fetching Inward Outward entries with custom filter and SP execution", error);
             throw new Error(error instanceof Error ? error.message : String(error));
         } finally {
-            await queryRunner.release(); // Release the query runner connection
+            await queryRunner.release();
         }
     }
 

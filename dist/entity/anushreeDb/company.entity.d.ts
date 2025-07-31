@@ -1,0 +1,32 @@
+export declare class CompMst {
+    id: number;
+    Name: string;
+    Type?: string;
+    Owner?: string;
+    Short?: string;
+    CompGrp?: string;
+    Add1?: string;
+    Add2?: string;
+    Add3?: string;
+    City?: string;
+    Phone?: string;
+    Mobile?: string;
+    Fax?: string;
+    Email?: string;
+    WebSite?: string;
+    PanNo?: string;
+    TanNo?: string;
+    TinNo?: string;
+    CST?: string;
+    GST?: string;
+    Acc_year?: string;
+    AF_Date?: Date;
+    AT_Date?: Date;
+    Status?: string;
+    Bank?: string;
+    AcNo?: string;
+    Branch?: string;
+    IFSCCode?: string;
+    State?: string;
+    PinCode?: string;
+}

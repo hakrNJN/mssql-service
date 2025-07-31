@@ -1,17 +1,23 @@
 //src/controllers/KotakCMS.controller.ts
 
 import { Request, Response } from 'express';
+import { container } from 'tsyringe';
 import { HttpException } from '../exceptions/httpException';
-import { KotakCMSService } from '../services/KotakCMS.Service'; // Correct import
+import { KotakCMSService } from '../services/kotakCMS.service';
 import { ApiResponse } from '../utils/api-response';
+import { ILogger } from '../interface/logger.interface';
+import { WINSTON_LOGGER } from '../utils/logger';
 // No need for filter types or Vwkotakcmsonline entity import here, as it's handled by service/provider
 // If Vwkotakcmsonline is needed for response typing, keep it. I'll keep it for clarity.
 
 export class KotakCMSController {
     private kotakCMSService: KotakCMSService;
 
+    private logger: ILogger;
+
     constructor(kotakCMSService: KotakCMSService) {
         this.kotakCMSService = kotakCMSService;
+        this.logger = container.resolve<ILogger>(WINSTON_LOGGER);
     }
 
     // Method to get all Kotak CMS records with filters
@@ -70,7 +76,7 @@ export class KotakCMSController {
                 throw HttpException.NotFound(`No Kotak CMS records found matching criteria.`);
             }
         } catch (error) {
-            console.error("Error in getAllKotakCMS:", error);
+            this.logger.error("Error in getAllKotakCMS:", error);
             if (error instanceof HttpException) {
                 throw error;
             } else {

@@ -1,18 +1,18 @@
 //src/controllers/company.controller.ts
 import { Request, Response } from 'express';
-import { CompMst } from '../entity/anushree/company.entity';
+import { CompMst } from '../entity/anushreeDb/company.entity';
 import { HttpException } from '../exceptions/httpException';
 import { CompanyService } from '../services/company.service';
 import { EqualFilter, Filters } from '../types/filter.types';
 import { ApiResponse } from '../utils/api-response';
 
-export class CompanyController { 
+export class CompanyController {
 
-    private companyService : CompanyService;
+    private companyService: CompanyService;
 
-    constructor(companyService : CompanyService) {
+    constructor(companyService: CompanyService) {
         this.companyService = companyService;
-         this.companyService.initialize()
+        this.companyService.initialize()
     }
 
     public getCompanies = async (req: Request, res: Response): Promise<void> => {
@@ -36,9 +36,9 @@ export class CompanyController {
             if (error instanceof HttpException) {
                 throw error;
             }
-            throw HttpException.InternalServerError(`Something Went Wrong`,error);
+            throw HttpException.InternalServerError(`Something Went Wrong`, error);
         }
-        
+
     }
 
     public getCompanyById = async (req: Request, res: Response): Promise<void> => {
@@ -46,7 +46,7 @@ export class CompanyController {
         const limit = parseInt(req.query.limit as string) || 10;
         const startIndex = (page - 1) * limit;
         const endIndex = page * limit;
-        const comapnyId =parseInt( req.params.id as string)
+        const comapnyId = parseInt(req.params.id as string)
         try {
             const result = await this.companyService.getCompanyById(comapnyId)
             if (result) {
@@ -75,7 +75,7 @@ export class CompanyController {
         const GSTIN = req.params.gstin as string
 
         const filters: Filters<CompMst> = {
-            GST:{equal:GSTIN} as EqualFilter<string>
+            GST: { equal: GSTIN } as EqualFilter<string>
         }
 
         try {

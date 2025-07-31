@@ -2,7 +2,7 @@
 import { container } from "tsyringe";
 import { DeleteResult, Repository, SelectQueryBuilder, UpdateResult } from "typeorm"; // Import UpdateResult, DeleteResult
 import { objectDecorators } from "../decorators/objectDecorators";
-import { PurchasePipeLine as PurchasePipeLineEntity } from "../entity/phoenix/PurchasePipeLine"; // Alias the entity
+import { PurchasePipeLine as PurchasePipeLineEntity } from "../entity/phoenixDb/purchasePipeLine.entity"; // Alias the entity
 import { BaseProviderInterface } from "../interface/base.provider";
 import { ILogger } from "../interface/logger.interface";
 import { Filters } from "../types/filter.types";
@@ -162,16 +162,16 @@ export class PurchasePileLine implements PurchasePileLineInterface {
     }
 
     // New specific update method if you need to update by Purtrnid and Type directly
-    // async updateByPurtrnIdAndType(PurtrnId: number, type: number, data: Partial<PurchasePipeLineEntity>): Promise<boolean> {
+    // async updateByPurtrnIdAndType(Purtrnid: number, type: number, data: Partial<PurchasePipeLineEntity>): Promise<boolean> {
     //     try {
     //         const updateData = { ...data, UpdDate: new Date() }; // Add current date for UpdDate
     //         const updateResult: UpdateResult = await this._getRepository().update(
-    //             { Purtrnid: PurtrnId, Type: type }, // Update by Purtrnid and Type
+    //             { Purtrnid: Purtrnid, Type: type }, // Update by Purtrnid and Type
     //             updateData
     //         );
     //         return (updateResult.affected ?? 0) > 0; // Fix: Use nullish coalescing
     //     } catch (error) {
-    //         this.logger.error(`Error updating Purchase Pipe Line with PurtrnId ${PurtrnId} and Type ${type}`, error);
+    //         this.logger.error(`Error updating Purchase Pipe Line with Purtrnid ${Purtrnid} and Type ${type}`, error);
     //         throw new Error(error as string);
     //     }
     // }

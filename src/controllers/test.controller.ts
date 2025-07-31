@@ -1,8 +1,16 @@
 import { Request, Response } from 'express';
+import { container } from 'tsyringe';
 import { HttpException } from '../exceptions/httpException';
 import { ApiResponse } from '../utils/api-response';
+import { ILogger } from '../interface/logger.interface';
+import { WINSTON_LOGGER } from '../utils/logger';
 
 export class TestController {
+    private logger: ILogger;
+
+    constructor() {
+        this.logger = container.resolve<ILogger>(WINSTON_LOGGER);
+    }
 
     public getAllTests = async (req: Request, res: Response): Promise<void> => {
         console.log('getting req')
@@ -43,7 +51,7 @@ export class TestController {
                 throw HttpException.NotFound(`Tests not found`);
             }
         } catch (error) {
-            console.error('Error getting all tests:', error);
+            this.logger.error('Error getting all tests:', error);
             if (error instanceof HttpException) {
                 throw error;
             } else {
