@@ -3,8 +3,8 @@ export class AppConfig {
     private static readonly RABBITMQ_CONFIG = {
         url: process.env.MESSAGE_BROKER_URL || "localhost",
         port: process.env.MESSAGE_BROKER_PORT ? parseInt(process.env.MESSAGE_BROKER_PORT) : 5672,
-        username: process.env.MESSAGE_BROKER_USER || "guest",
-        password: process.env.MESSAGE_BROKER_PASS || "guest",
+        username: process.env.MESSAGE_BROKER_USER,
+        password: process.env.MESSAGE_BROKER_PASS,
         vHost: process.env.MESSAGE_BROKER_HOST || "/",
     }
 
@@ -21,8 +21,8 @@ export class AppConfig {
         type: "mssql",
         host: process.env.DB_HOST || "192.168.1.1",
         port: process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 1433,
-        username: process.env.DB_USER || "sa",
-        password: process.env.DB_PASS || "password",
+        username: process.env.DB_USER,
+        password: process.env.DB_PASS,
         database: process.env.DB_NAME || "test",
         synchronize: false,
         logging: true,
@@ -40,7 +40,6 @@ export class AppConfig {
     public static readonly Cloud_Log = {
         enabled: process.env.USE_CLOUD_LOG || false,
         logGroup: process.env.LOG_GROUP_NAME || `${this.APP.NAME}_LOG_GROUP`,
-        logLevel: process.env.LOG_LEVEL || 'info',
     }
     
     public static readonly logLevel = process.env.LOG_LEVEL || "info";

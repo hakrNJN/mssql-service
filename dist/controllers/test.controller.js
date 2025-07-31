@@ -8,7 +8,7 @@ const logger_1 = require("../utils/logger");
 class TestController {
     constructor() {
         this.getAllTests = async (req, res) => {
-            console.log('getting req');
+            this.logger.info('getting req');
             try {
                 // Simulate fetching data with pagination (replace with actual logic)
                 const page = parseInt(req.query.page) || 1;

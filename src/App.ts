@@ -22,18 +22,23 @@ class App {
   public dataSourceService: DataSourceService;
   private eventDrivenController: EventDrivenController;
   private featuresService: FeaturesService;
-  private featureController!: FeatureController;
+  private featureController: FeatureController;
 
   constructor(
     dataSourceService: DataSourceService,
-    @inject(WINSTON_LOGGER) logger: winston.Logger
+    @inject(WINSTON_LOGGER) logger: winston.Logger,
+    @inject(ExpressApp) expressAppInstance: ExpressApp,
+    @inject(FeaturesService) featuresService: FeaturesService,
+    @inject(EventDrivenController) eventDrivenController: EventDrivenController,
+    @inject(FeatureController) featureController: FeatureController
   ) {
     this.dataSourceService = dataSourceService;
     this.logger = logger;
-    this.expressAppInstance = new ExpressApp();
+    this.expressAppInstance = expressAppInstance;
     this.app = this.expressAppInstance.app;
-    this.featuresService = container.resolve(FeaturesService); // Resolve FeaturesService in constructor - keep this
-    this.eventDrivenController = container.resolve(EventDrivenController);
+    this.featuresService = featuresService;
+    this.eventDrivenController = eventDrivenController;
+    this.featureController = featureController;
     this.initControllers();
     // initializeRoutes(); // REMOVE from constructor - move to init()
     this.initializeErrorHandling(); // Keep error handling in constructor if it doesn't depend on featuresService
@@ -45,8 +50,8 @@ class App {
   }
 
   private initControllers(): void {
-    // const featuresService = container.resolve(FeaturesService); // Removed redundant resolution
-    this.featureController = new FeatureController(this.featuresService); // Use the instance variable
+    // The featureController is now injected directly into the App class constructor.
+    // No need to instantiate or resolve it here.
     // this.app.use('/features', this.featureController.handleRequest);
   }
 

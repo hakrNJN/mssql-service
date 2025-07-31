@@ -40,6 +40,7 @@ class CloudWatchService {
             await this.logsClient.send(command); // Use logsClient for log stream operations
         }
         catch (error) {
+            // Fallback to console.error if CloudWatch logging fails
             console.error("Error creating log stream:", error);
             throw error;
         }
@@ -64,6 +65,7 @@ class CloudWatchService {
             this.sequenceToken = response.nextSequenceToken;
         }
         catch (error) {
+            // Fallback to console.error if CloudWatch logging fails
             console.error("Error logging message to CloudWatch:", error);
             throw error;
         }

@@ -51,6 +51,7 @@ class CloudWatchService {
             const command = new CreateLogStreamCommand(params);
             await this.logsClient.send(command); // Use logsClient for log stream operations
         } catch (error) {
+            // Fallback to console.error if CloudWatch logging fails
             console.error("Error creating log stream:", error);
             throw error;
         }
@@ -77,6 +78,7 @@ class CloudWatchService {
             const response = await this.logsClient.send(command); // Use logsClient for log event operations
             this.sequenceToken = response.nextSequenceToken;
         } catch (error) {
+            // Fallback to console.error if CloudWatch logging fails
             console.error("Error logging message to CloudWatch:", error);
             throw error;
         }

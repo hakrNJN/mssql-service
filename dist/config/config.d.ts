@@ -11,8 +11,8 @@ export declare class AppConfig {
         readonly type: "mssql";
         readonly host: string;
         readonly port: number;
-        readonly username: string;
-        readonly password: string;
+        readonly username: string | undefined;
+        readonly password: string | undefined;
         readonly database: string;
         readonly synchronize: false;
         readonly logging: true;
@@ -28,7 +28,6 @@ export declare class AppConfig {
     static readonly Cloud_Log: {
         enabled: string | boolean;
         logGroup: string;
-        logLevel: string;
     };
     static readonly logLevel: string;
     static readonly allowedFormsForSaleSeries: string[];

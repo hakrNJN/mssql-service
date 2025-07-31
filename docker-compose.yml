@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  mssql-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      # Mount .env file for environment variables
+      - ./.env:/usr/src/app/.env
+      # Mount feature.config.yml for feature toggling
+      - ./src/config/feature.config.yml:/usr/src/app/src/config/feature.config.yml
+      # Mount a directory for local logs (if applicable)
+      # Ensure the logs directory exists on your host machine
+      - ./logs:/usr/src/app/logs
+    environment:
+      # You can define default environment variables here, but they will be overridden
+      # by the .env file mounted via volume if they exist in both.
+      NODE_ENV: development
+    # Optional: Restart policy
+    restart: unless-stopped

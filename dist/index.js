@@ -19,7 +19,7 @@ async function startServer() {
         const app = tsyringe_1.container.resolve(App_1.App);
         await app.init(); // Call app.init() to handle async initialization - This is crucial and correct
         app.listen(config_1.AppConfig.APP.PORT, () => {
-            console.info(`${config_1.AppConfig.APP.NAME} server is running on port ${config_1.AppConfig.APP.PORT} in ${config_1.AppConfig.APP.ENVIRONMENT} environment`);
+            logger.info(`${config_1.AppConfig.APP.NAME} server is running on port ${config_1.AppConfig.APP.PORT} in ${config_1.AppConfig.APP.ENVIRONMENT} environment`);
         });
     }
     catch (error) {

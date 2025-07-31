@@ -15,17 +15,11 @@ const stringDecorators_1 = require("../decorators/stringDecorators");
 const httpException_1 = require("../exceptions/httpException");
 const account_service_1 = require("../services/account.service");
 const api_response_1 = require("../utils/api-response");
+const pagination_1 = require("../utils/pagination");
 let AccountController = class AccountController {
     constructor(accountService) {
         this.getAllAccounts = async (req, res) => {
-            const page = parseInt(req.query.page) || 1;
-            const limit = parseInt(req.query.limit) || 100;
-            const startIndex = (page - 1) * limit;
-            const endIndex = page * limit;
-            const paginationMetadata = {
-                page: page,
-                perPage: limit,
-            };
+            const { startIndex, endIndex, paginationMetadata } = (0, pagination_1.getPaginationParams)(req);
             try {
                 const result = await this.accountService.getAccounts(startIndex, endIndex);
                 if (result) {
@@ -49,14 +43,7 @@ let AccountController = class AccountController {
             }
         };
         this.getAllCustomers = async (req, res) => {
-            const page = parseInt(req.query.page) || 1;
-            const limit = parseInt(req.query.limit) || 100;
-            const startIndex = (page - 1) * limit;
-            const endIndex = page * limit;
-            const paginationMetadata = {
-                page: page,
-                perPage: limit,
-            };
+            const { startIndex, endIndex, paginationMetadata } = (0, pagination_1.getPaginationParams)(req);
             try {
                 const result = await this.accountService.getCustomers(startIndex, endIndex);
                 if (result) {
@@ -80,14 +67,7 @@ let AccountController = class AccountController {
             }
         };
         this.getAllAgents = async (req, res) => {
-            const page = parseInt(req.query.page) || 1;
-            const limit = parseInt(req.query.limit) || 100;
-            const startIndex = (page - 1) * limit;
-            const endIndex = page * limit;
-            const paginationMetadata = {
-                page: page,
-                perPage: limit,
-            };
+            const { startIndex, endIndex, paginationMetadata } = (0, pagination_1.getPaginationParams)(req);
             try {
                 const result = await this.accountService.getAgents(startIndex, endIndex);
                 if (result) {
@@ -111,14 +91,7 @@ let AccountController = class AccountController {
             }
         };
         this.getAllTransporters = async (req, res) => {
-            const page = parseInt(req.query.page) || 1;
-            const limit = parseInt(req.query.limit) || 100;
-            const startIndex = (page - 1) * limit;
-            const endIndex = page * limit;
-            const paginationMetadata = {
-                page: page,
-                perPage: limit,
-            };
+            const { startIndex, endIndex, paginationMetadata } = (0, pagination_1.getPaginationParams)(req);
             try {
                 const result = await this.accountService.getTransporters(startIndex, endIndex);
                 if (result) {
@@ -142,10 +115,7 @@ let AccountController = class AccountController {
             }
         };
         this.getAccountById = async (req, res) => {
-            const page = parseInt(req.query.page) || 1;
-            const limit = parseInt(req.query.limit) || 100;
-            const startIndex = (page - 1) * limit;
-            const endIndex = page * limit;
+            const { paginationMetadata } = (0, pagination_1.getPaginationParams)(req);
             const accountId = parseInt(req.params.id);
             try {
                 const result = await this.accountService.getAccountById(accountId);
@@ -190,10 +160,7 @@ let AccountController = class AccountController {
         //     }
         // }
         this.getCustomerByGST = async (req, res) => {
-            const page = parseInt(req.query.page) || 1;
-            const limit = parseInt(req.query.limit) || 100;
-            const startIndex = (page - 1) * limit;
-            const endIndex = page * limit;
+            const { paginationMetadata } = (0, pagination_1.getPaginationParams)(req);
             const gst = req.params.gst;
             try {
                 const result = await this.accountService.getCustomerByGST(gst);
@@ -217,10 +184,7 @@ let AccountController = class AccountController {
             }
         };
         this.getAgentWithCustomers = async (req, res) => {
-            const page = parseInt(req.query.page) || 1;
-            const limit = parseInt(req.query.limit) || 100;
-            const startIndex = (page - 1) * limit;
-            const endIndex = page * limit;
+            const { paginationMetadata } = (0, pagination_1.getPaginationParams)(req);
             const agentId = parseInt(req.params.id);
             try {
                 const result = await this.accountService.getAgentByIdWithCustomers(agentId);

@@ -1,13 +1,15 @@
 //src/controllers/feature.controller.ts
 import { NextFunction, Request, Response } from 'express'; // Import express types
+import { inject, injectable } from 'tsyringe';
 import { IFeatureController } from '../interface/feature.interface';
 import FeaturesService from '../services/feature.service';
 
+@injectable()
 class FeatureController implements IFeatureController {
     private featuresService: FeaturesService;
     private handlers: { [method: string]: (req: Request, res: Response) => Promise<void> }; // Explicit handler type
 
-    constructor(featuresService: FeaturesService) {
+    constructor(@inject(FeaturesService) featuresService: FeaturesService) {
         this.featuresService = featuresService;
         this.handleRequest = this.handleRequest.bind(this); // Bind if you need 'this' context
         this.handlers = {

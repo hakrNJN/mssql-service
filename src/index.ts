@@ -22,7 +22,7 @@ async function startServer() {
     await app.init(); // Call app.init() to handle async initialization - This is crucial and correct
 
     app.listen(AppConfig.APP.PORT, () => {
-      console.info(`${AppConfig.APP.NAME} server is running on port ${AppConfig.APP.PORT} in ${AppConfig.APP.ENVIRONMENT} environment`);
+      logger.info(`${AppConfig.APP.NAME} server is running on port ${AppConfig.APP.PORT} in ${AppConfig.APP.ENVIRONMENT} environment`);
     });
 
   } catch (error) {

@@ -29,13 +29,14 @@ const feature_service_1 = __importDefault(require("./services/feature.service"))
 const logger_1 = require("./utils/logger");
 // const logger = container.resolve<winston.Logger>(WINSTON_LOGGER);
 let App = class App {
-    constructor(dataSourceService, logger) {
+    constructor(dataSourceService, logger, expressAppInstance, featuresService, eventDrivenController, featureController) {
         this.dataSourceService = dataSourceService;
         this.logger = logger;
-        this.expressAppInstance = new express_provider_1.default();
+        this.expressAppInstance = expressAppInstance;
         this.app = this.expressAppInstance.app;
-        this.featuresService = tsyringe_1.container.resolve(feature_service_1.default); // Resolve FeaturesService in constructor - keep this
-        this.eventDrivenController = tsyringe_1.container.resolve(eventDriven_controller_1.default);
+        this.featuresService = featuresService;
+        this.eventDrivenController = eventDrivenController;
+        this.featureController = featureController;
         this.initControllers();
         // initializeRoutes(); // REMOVE from constructor - move to init()
         this.initializeErrorHandling(); // Keep error handling in constructor if it doesn't depend on featuresService
@@ -45,8 +46,8 @@ let App = class App {
         this.initializeRoutes(); // THEN initialize routes - now it's guaranteed featuresService is ready
     }
     initControllers() {
-        // const featuresService = container.resolve(FeaturesService); // Removed redundant resolution
-        this.featureController = new feature_controller_1.default(this.featuresService); // Use the instance variable
+        // The featureController is now injected directly into the App class constructor.
+        // No need to instantiate or resolve it here.
         // this.app.use('/features', this.featureController.handleRequest);
     }
     initializeRoutes() {
@@ -77,7 +78,14 @@ exports.App = App;
 exports.App = App = __decorate([
     (0, tsyringe_1.injectable)(),
     __param(1, (0, tsyringe_1.inject)(logger_1.WINSTON_LOGGER)),
-    __metadata("design:paramtypes", [dataSource_service_1.DataSourceService, winston_1.default.Logger])
+    __param(2, (0, tsyringe_1.inject)(express_provider_1.default)),
+    __param(3, (0, tsyringe_1.inject)(feature_service_1.default)),
+    __param(4, (0, tsyringe_1.inject)(eventDriven_controller_1.default)),
+    __param(5, (0, tsyringe_1.inject)(feature_controller_1.default)),
+    __metadata("design:paramtypes", [dataSource_service_1.DataSourceService, winston_1.default.Logger, express_provider_1.default,
+        feature_service_1.default,
+        eventDriven_controller_1.default,
+        feature_controller_1.default])
 ], App);
 // import { Application } from 'express';
 // import { errorHandler } from './middleware/errorHandler';

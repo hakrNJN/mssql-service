@@ -37,16 +37,18 @@ class Logger {
                 const formattedMessage = `${level}: ${message} ${args.join(' ')}`; // Simple format
                 if (level === 'error' || level === 'warn' || level === 'info') { // Log only error, warn and info to CloudWatch
                     cloudWatchService.logError(formattedMessage).catch(error => {
-                        console.error("Error logging to CloudWatch:", error); // Fallback console log in case of CloudWatch error
+                        // Fallback to console.error if CloudWatch logging fails
+                        console.error("Error logging to CloudWatch:", error);
                     });
                 }
                 else {
-                    console.log(formattedMessage); // For debug, verbose, etc., fallback to console
+                    // Fallback to console.log for non-error/warn/info levels when CloudWatch is enabled
+                    console.log(formattedMessage);
                 }
             },
-            error: (message, ...args) => cloudWatchService.logError(`ERROR: ${message} ${args.join(' ')}`).catch(error => console.error("Error logging to CloudWatch:", error)),
-            warn: (message, ...args) => cloudWatchService.logError(`WARN: ${message} ${args.join(' ')}`).catch(error => console.error("Error logging to CloudWatch:", error)),
-            info: (message, ...args) => cloudWatchService.logError(`INFO: ${message} ${args.join(' ')}`).catch(error => console.error("Error logging to CloudWatch:", error)),
+            error: (message, ...args) => cloudWatchService.logError(`ERROR: ${message} ${args.join(' ')}`).catch(error => console.error("Error logging to CloudWatch:", error)), // Fallback to console.error if CloudWatch logging fails
+            warn: (message, ...args) => cloudWatchService.logError(`WARN: ${message} ${args.join(' ')}`).catch(error => console.error("Error logging to CloudWatch:", error)), // Fallback to console.error if CloudWatch logging fails
+            info: (message, ...args) => cloudWatchService.logError(`INFO: ${message} ${args.join(' ')}`).catch(error => console.error("Error logging to CloudWatch:", error)), // Fallback to console.error if CloudWatch logging fails
             debug: (message, ...args) => console.log(`DEBUG: ${message} ${args.join(' ')}`), // Fallback to console for debug
             verbose: (message, ...args) => console.log(`VERBOSE: ${message} ${args.join(' ')}`), // Fallback to console for verbose
             http: (message, ...args) => console.log(`HTTP: ${message} ${args.join(' ')}`), // Fallback to console for http

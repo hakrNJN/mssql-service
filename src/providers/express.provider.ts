@@ -1,8 +1,10 @@
 //src/providers/express.provider.ts
+import { injectable } from 'tsyringe';
 import cors from 'cors';
 import express, { Application } from 'express';
 import helmet from 'helmet';
 
+@injectable()
 export default class ExpressApp {
     public app: Application;
 

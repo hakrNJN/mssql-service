@@ -13,7 +13,7 @@ export class TestController {
     }
 
     public getAllTests = async (req: Request, res: Response): Promise<void> => {
-        console.log('getting req')
+        this.logger.info('getting req')
         try {
             // Simulate fetching data with pagination (replace with actual logic)
             const page = parseInt(req.query.page as string) || 1;
