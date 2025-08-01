@@ -100,7 +100,7 @@ export class AccountProvider {
     }
 
     async getAccountById(id: number): Promise<Mast | null> {
-        return this._getRepository().findOneBy({ id });
+        return await this._getRepository().findOneBy({ id });
     }
 
     // Additional CRUD Methods

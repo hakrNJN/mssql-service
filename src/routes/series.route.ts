@@ -17,7 +17,7 @@ const seriesRoute = (dataSource: AppDataSource): Router => { // Accept dataSourc
   const seriesController = new SeriesController(seriesService);
 
   // Define routes here, calling controller methods
-  router.get('/', seriesController.getAllSeries);
+  router.get('/all', seriesController.getAllSeries);
   router.get('/getirnseries', seriesController.getIrnSeries);
   router.get('/:id', seriesController.getSeriesById);
 

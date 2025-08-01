@@ -37,14 +37,14 @@ export class YearsProvider implements YearsProvider { // Export the class
 
     async getAllYears(): Promise<YearMst[]> {
         try {
-            return this._getRepository().find();
+            return await this._getRepository().find();
         } catch (error) {
             throw new Error(error as string)
         }
     }
 
     async getYearById(id: number): Promise<YearMst | null> {
-        return this._getRepository().findOneBy({ id });
+        return await this._getRepository().findOneBy({ id });
     }
 
     // Additional CRUD Methods

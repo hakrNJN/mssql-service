@@ -27,8 +27,8 @@ export class PhoenixDataSource {
                 password: DB_CONFIG.password,
                 database: 'pheonixDB',//DB_CONFIG.database,//Main Database
                 synchronize: DB_CONFIG.synchronize,
-                logging: DB_CONFIG.logging,        
-                entities: ["src/entity/phoenix/*.ts" ],//[YearMst, CompMst],
+                logging: DB_CONFIG.logging,
+                entities: ["src/entity/**/*.entity.ts"],//[YearMst, CompMst],
                 subscribers: [],
                 migrations: [],
                 connectionTimeout: 1500000,

@@ -34,7 +34,7 @@ export class SeriesController {
                     res,
                     req,
                     data: result,
-                    message: `All Avalable Series Retrived`// Include pagination metadata
+                    message: `All Available Series Retrieved`// Include pagination metadata
                 });
             } else {
                 throw HttpException.NotFound(`Series not found`);
@@ -58,7 +58,7 @@ export class SeriesController {
                     res,
                     req,
                     data: result,
-                    message: `Series retrived for id ${seriesId}`// Include pagination metadata
+                    message: `Series retrieved for id ${seriesId}`// Include pagination metadata
                 });
             } else {
                 throw HttpException.NotFound(`Series not found`);
@@ -81,7 +81,7 @@ export class SeriesController {
             throw HttpException.BadRequest(`Company is required`);
         }
         if (!type) {
-            throw HttpException.BadRequest(`tyoe is required`);
+            throw HttpException.BadRequest(`type is required`);
         }
         if (!yearid) {
             throw HttpException.BadRequest(`yearId is required`);
@@ -141,7 +141,7 @@ export class SeriesController {
                     res,
                     req,
                     data: result,
-                    message: `IRN Series retrived`// Include pagination metadata
+                    message: `IRN Series retrieved`// Include pagination metadata
                 });
             } else {
                 throw HttpException.NotFound(`Series not found`);

@@ -15,7 +15,8 @@ export class SaleTransactionController {
 
     public getTransactionById = async (req: Request, res: Response): Promise<void> => {
 
-        const SalTrnId =parseInt( req.params.id as string)
+        const SalTrnId = parseInt(req.params.id as string)
+        console.log(SalTrnId, "SalTrnId from request params");
         try {
             const result = await this.saleTransactionService.getTransactionById(SalTrnId)
             if (result) {
@@ -23,7 +24,7 @@ export class SaleTransactionController {
                     res,
                     req,
                     data: result,
-                    message: `Transaction retrived for id ${SalTrnId}`// Include pagination metadata
+                    message: `Transaction retrieved for id ${SalTrnId}`// Include pagination metadata
                 });
             } else {
                 throw HttpException.NotFound(`Transactions not found`);

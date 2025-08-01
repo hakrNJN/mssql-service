@@ -1,7 +1,7 @@
 {
   "name": "mssql-service",
   "version": "1.0.0",
-  "description": "Database Service with TyoepeORM and MSSQL Database",
+  "description": "Database Service with TypeORM and MSSQL Database",
   "main": "index.js",
   "scripts": {
     "test": "jest",

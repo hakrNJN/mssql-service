@@ -15,7 +15,7 @@ const accountRoute = (dataSource: AppDataSource): Router => {
 
     const accountController = new AccountController(accountService);
 
-    router.get('/', accountController.getAllAccounts);
+    router.get('/all', accountController.getAllAccounts);
     router.get('/transports', accountController.getAllTransporters);
     router.get('/customers', accountController.getAllCustomers);
     router.get('/agents', accountController.getAllAgents);

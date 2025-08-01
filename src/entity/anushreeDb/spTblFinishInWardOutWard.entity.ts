@@ -37,29 +37,29 @@ export class SpTblFinishInWardOutWard {
     @Column()
     Category!: string;
 
-    // @Column({ nullable: true })
-    // GRPName?: null | string;
+    @Column({ nullable: true })
+    GRPName?: string;
 
     @Column({ nullable: true })
-    Add1?: null | string;
+    Add1?: string;
 
     @Column({ nullable: true })
-    Add2?: null | string;
+    Add2?: string;
 
     @Column({ nullable: true })
-    City?: null | string;
+    City?: string;
 
     @Column({ nullable: true })
-    State?: null | string;
+    State?: string;
 
     @Column({ nullable: true })
-    Mobile?: null | string;
+    Mobile?: string;
 
     @Column({ nullable: true })
-    Phone?: null | string;
+    Phone?: string;
 
     @Column({ nullable: true })
-    ConsPerson?: null | string;
+    ConsPerson?: string;
 
     @Column()
     BillAmount!: number;
@@ -84,9 +84,9 @@ export class SpTblFinishInWardOutWard {
 
     @Column()
     AgentName!: string;
-    @Column()
 
-    AgentCity!: string;
+    @Column({ nullable: true })
+    AgentCity?: string;
 
     @Column()
     TrnMode!: string;
@@ -125,10 +125,10 @@ export class SpTblFinishInWardOutWard {
     Company!: string;
 
     @Column({ nullable: true })
-    CAdd1?: null | string;;
+    CAdd1?: string;;
 
     @Column({ nullable: true })
-    CAdd2?: null | string;
+    CAdd2?: string;
 
     @Column()
     BalPcs!: Number;

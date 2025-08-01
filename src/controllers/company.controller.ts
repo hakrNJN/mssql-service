@@ -26,7 +26,7 @@ export class CompanyController {
                     res,
                     req,
                     data: result,
-                    message: `All Avalable Company Retrived`// Include pagination metadata
+                    message: `All Available Company Retrieved`// Include pagination metadata
                 });
             } else {
                 throw HttpException.NotFound(`Companies not found`);
@@ -53,7 +53,7 @@ export class CompanyController {
                     res,
                     req,
                     data: result,
-                    message: `Company retrived for id ${comapnyId}`// Include pagination metadata
+                    message: `Company retrieved for id ${comapnyId}`// Include pagination metadata
                 });
             } else {
                 throw HttpException.NotFound(`Company not found`);
@@ -84,7 +84,7 @@ export class CompanyController {
                     res,
                     req,
                     data: result,
-                    message: `Company retrived for GSTIN ${GSTIN}`// Include pagination metadata
+                    message: `Company retrieved for GSTIN ${GSTIN}`// Include pagination metadata
                 });
             } else {
                 throw HttpException.NotFound(`Company not found`);

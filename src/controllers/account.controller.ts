@@ -14,7 +14,7 @@ export interface AccountController {
 
 @stringDecorators
 export class AccountController {
-    private accountService : AccountService;
+    private accountService: AccountService;
     constructor(accountService: AccountService) {
         this.accountService = accountService;
     }
@@ -22,14 +22,14 @@ export class AccountController {
     public getAllAccounts = async (req: Request, res: Response): Promise<void> => {
         const { startIndex, endIndex, paginationMetadata } = getPaginationParams(req);
         try {
-            const result = await this.accountService.getAccounts(startIndex,endIndex)
+            const result = await this.accountService.getAccounts(startIndex, endIndex)
             if (result) {
                 ApiResponse.success({
                     res,
                     req,
                     data: result,
-                    message: `All Avalable Accounts Retrived`,// Include pagination metadata
-                    metadata:paginationMetadata,
+                    message: `All Available Accounts Retrieved`,// Include pagination metadata
+                    metadata: paginationMetadata,
                 });
             } else {
                 throw HttpException.NotFound(`Account not found`);
@@ -45,14 +45,14 @@ export class AccountController {
     public getAllCustomers = async (req: Request, res: Response): Promise<void> => {
         const { startIndex, endIndex, paginationMetadata } = getPaginationParams(req);
         try {
-            const result = await this.accountService.getCustomers(startIndex,endIndex)
+            const result = await this.accountService.getCustomers(startIndex, endIndex)
             if (result) {
                 ApiResponse.success({
                     res,
                     req,
                     data: result,
-                    message: `All Avalable Accounts Retrived`,// Include pagination metadata
-                    metadata:paginationMetadata,
+                    message: `All Available Accounts Retrieved`,// Include pagination metadata
+                    metadata: paginationMetadata,
                 });
             } else {
                 throw HttpException.NotFound(`Account not found`);
@@ -68,14 +68,14 @@ export class AccountController {
     public getAllAgents = async (req: Request, res: Response): Promise<void> => {
         const { startIndex, endIndex, paginationMetadata } = getPaginationParams(req);
         try {
-            const result = await this.accountService.getAgents(startIndex,endIndex)
+            const result = await this.accountService.getAgents(startIndex, endIndex)
             if (result) {
                 ApiResponse.success({
                     res,
                     req,
                     data: result,
-                    message: `All Avalable Accounts Retrived`,// Include pagination metadata
-                    metadata:paginationMetadata,
+                    message: `All Available Accounts Retrieved`,// Include pagination metadata
+                    metadata: paginationMetadata,
                 });
             } else {
                 throw HttpException.NotFound(`Account not found`);
@@ -91,14 +91,14 @@ export class AccountController {
     public getAllTransporters = async (req: Request, res: Response): Promise<void> => {
         const { startIndex, endIndex, paginationMetadata } = getPaginationParams(req);
         try {
-            const result = await this.accountService.getTransporters(startIndex,endIndex)
+            const result = await this.accountService.getTransporters(startIndex, endIndex)
             if (result) {
                 ApiResponse.success({
                     res,
                     req,
                     data: result,
-                    message: `All Avalable Accounts Retrived`,// Include pagination metadata
-                    metadata:paginationMetadata,
+                    message: `All Available Accounts Retrieved`,// Include pagination metadata
+                    metadata: paginationMetadata,
                 });
             } else {
                 throw HttpException.NotFound(`Account not found`);
@@ -121,7 +121,7 @@ export class AccountController {
                     res,
                     req,
                     data: result,
-                    message:`Account retrived for id ${accountId}`,// Include pagination metadata
+                    message: `Account retrieved for id ${accountId}`,// Include pagination metadata
                 });
             } else {
                 throw HttpException.NotFound(`Account not found`);
@@ -166,7 +166,7 @@ export class AccountController {
                     res,
                     req,
                     data: result,
-                    message:`Account retrived for gst id ${gst}`,// Include pagination metadata
+                    message: `Account retrived for gst id ${gst}`,// Include pagination metadata
                 });
             } else {
                 throw HttpException.NotFound(`Account not found`);
@@ -189,7 +189,7 @@ export class AccountController {
                     res,
                     req,
                     data: result,
-                    message:`Account retrived for id ${agentId}`,// Include pagination metadata
+                    message: `Account retrived for id ${agentId}`,// Include pagination metadata
                 });
             } else {
                 throw HttpException.NotFound(`Account not found`);

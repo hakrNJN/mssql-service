@@ -38,14 +38,14 @@ export class CompanyProvider implements CompanyProvider {
 
     async getAllCompanies(): Promise<CompMst[]> {
         try {
-            return this._getRepository().find();
+            return await this._getRepository().find();
         } catch (error) {
             throw new Error(error as string)
         }
     }
 
     async getCompanyById(id: number): Promise<CompMst | null> {
-        return this._getRepository().findOneBy({ id });
+        return await this._getRepository().findOneBy({ id });
     }
 
     // Additional CRUD Methods

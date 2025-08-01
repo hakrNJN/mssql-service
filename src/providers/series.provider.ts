@@ -39,11 +39,9 @@ export class SeriesProvider implements SeriesProvider {
     }
 
     async getAllSeries(): Promise<SerMst[]> {
-        console.log(`request at this level1`);
         try {
-            const result = await this._getRepository().find();
-            console.log(`request at this level2`, result);
-            return result;
+            return await this._getRepository().find();
+
         } catch (error) {
             console.log(`request at this level3`, error);
             throw new Error(error as string)

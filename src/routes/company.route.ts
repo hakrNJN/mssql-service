@@ -15,7 +15,7 @@ const companyRoute = (dataSource: AppDataSource): Router => {
 
   const companyController = new CompanyController(companyService);
 
-  router.get('/', companyController.getCompanies);
+  router.get('/all', companyController.getCompanies);
       router.get('/id/:id', companyController.getCompanyById);
   router.get('/gstin/:gstin', companyController.getCompanyByGSTIN);
   

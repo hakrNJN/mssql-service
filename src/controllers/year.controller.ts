@@ -4,13 +4,13 @@ import { HttpException } from '../exceptions/httpException';
 import { YearService } from '../services/years.service';
 import { ApiResponse } from '../utils/api-response';
 
-export class YearController { 
+export class YearController {
 
     private yearService: YearService;
 
     constructor(yearService: YearService) {
         this.yearService = yearService;
-         this.yearService.initialize()
+        this.yearService.initialize()
     }
 
     public getYears = async (req: Request, res: Response): Promise<void> => {
@@ -25,7 +25,7 @@ export class YearController {
                     res,
                     req,
                     data: result,
-                    message: `All Avalable Years Retrived`// Include pagination metadata
+                    message: `All Available Years Retrieved`// Include pagination metadata
                 });
             } else {
                 throw HttpException.NotFound(`Years not found`);
@@ -37,7 +37,7 @@ export class YearController {
                 throw HttpException.InternalServerError(`Something Went Wrong`, error);
             }
         }
-        
+
     }
 
     public getYearById = async (req: Request, res: Response): Promise<void> => {
@@ -45,7 +45,7 @@ export class YearController {
         const limit = parseInt(req.query.limit as string) || 10;
         const startIndex = (page - 1) * limit;
         const endIndex = page * limit;
-        const yearId =parseInt( req.params.id as string)
+        const yearId = parseInt(req.params.id as string)
         try {
             const result = await this.yearService.getYearsById(yearId)
             if (result) {
@@ -53,7 +53,7 @@ export class YearController {
                     res,
                     req,
                     data: result,
-                    message: `Year retrived for id ${yearId}`// Include pagination metadata
+                    message: `Year retrieved for id ${yearId}`// Include pagination metadata
                 });
             } else {
                 throw HttpException.NotFound(`Years not found`);
@@ -65,5 +65,5 @@ export class YearController {
                 throw HttpException.InternalServerError(`Something Went Wrong`);
             }
         }
-}
+    }
 }

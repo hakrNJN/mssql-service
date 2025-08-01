@@ -17,7 +17,7 @@ const yearRoute = (dataSource: AppDataSource): Router => { // Accept dataSource 
   const yearController = new YearController(yearService);
 
   // Define routes here, calling controller methods
-  router.get('/', yearController.getYears);
+  router.get('/all', yearController.getYears);
   router.get('/:id', yearController.getYearById);
 
   return router; // Return the router
