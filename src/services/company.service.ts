@@ -15,12 +15,7 @@ export class CompanyService {
         @inject(CompanyProvider) companyProvider: CompanyProvider
     ) {
         this.companyProvider = companyProvider;
-        this.initialize(); // Initialize the repository when the service is constructed
-    }
-
-    private async initialize(): Promise<void> {
-        await this.companyProvider.initializeRepository();
-    }
+        }
 
     async getCompaniesWithFilters(filters?: Filters<CompMst>): Promise<CompMst[]> {
         return this.companyProvider.getAllCompaniesWithFilters(filters);

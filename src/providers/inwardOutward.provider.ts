@@ -8,7 +8,8 @@ import { BaseProviderInterface } from "../interface/base.provider";
 import { ILogger } from "../interface/logger.interface";
 import { Filters } from "../types/filter.types";
 import { WINSTON_LOGGER } from "../utils/logger";
-import { AppDataSource } from "./data-source.provider";
+import { DataSource } from "typeorm";
+import { MAIN_DATA_SOURCE } from "../services/dataSourceManager.service";
 
 // Defining a specific interface for the InWardOutWardProvider that includes the SP parameters
 export interface InWardOutWardProvider extends BaseProviderInterface<SpTblFinishInWardOutWard, Filters<SpTblFinishInWardOutWard>> { // BaseProviderInterface expects one generic T
@@ -39,12 +40,16 @@ export interface InWardOutWardProvider extends BaseProviderInterface<SpTblFinish
 @objectDecorators
 export class InWardOutWardProvider implements InWardOutWardProvider { // Ensure it implements the interface
     private inwardOutwardRepository: Repository<SpTblFinishInWardOutWard> | null = null;
-    private dataSourceInstance: AppDataSource;
     private readonly logger: ILogger;
+    private readonly mainDataSource: DataSource;
 
-    constructor(@inject(AppDataSource) dataSourceInstance: AppDataSource, @inject(WINSTON_LOGGER) logger: ILogger) {
-        this.dataSourceInstance = dataSourceInstance;
+    constructor(
+        @inject(MAIN_DATA_SOURCE) mainDataSource: DataSource,
+        @inject(WINSTON_LOGGER) logger: ILogger
+    ) {
+        this.mainDataSource = mainDataSource;
         this.logger = logger;
+        this.initializeRepository();
     }
 
     private _getRepository(): Repository<SpTblFinishInWardOutWard> {
@@ -54,9 +59,8 @@ export class InWardOutWardProvider implements InWardOutWardProvider { // Ensure 
         return this.inwardOutwardRepository;
     }
 
-    async initializeRepository(): Promise<void> {
-        const dataSource = this.dataSourceInstance.getDataSource();
-        this.inwardOutwardRepository = dataSource.getRepository(SpTblFinishInWardOutWard);
+    public initializeRepository(): void {
+        this.inwardOutwardRepository = this.mainDataSource.getRepository(SpTblFinishInWardOutWard);
     }
 
     // New method to execute the stored procedure
@@ -144,7 +148,7 @@ export class InWardOutWardProvider implements InWardOutWardProvider { // Ensure 
         offset?: number,
         limit?: number
     ): Promise<any[]> {
-        const dataSource = this.dataSourceInstance.getDataSource();
+        const dataSource = this.mainDataSource;
         if (!dataSource) {
             throw new Error("DataSource is not initialized.");
         }
@@ -272,7 +276,7 @@ export class InWardOutWardProvider implements InWardOutWardProvider { // Ensure 
         accountId: string,
         purtrnId: number,
     ): Promise<SpTblFinishInWardOutWard | null> {
-        const dataSource = this.dataSourceInstance.getDataSource();
+        const dataSource = this.mainDataSource;
         if (!dataSource) {
             throw new Error("DataSource is not initialized.");
         }

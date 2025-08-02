@@ -7,19 +7,24 @@ import { ILogger } from "../interface/logger.interface";
 import { Filters } from "../types/filter.types";
 import { WINSTON_LOGGER } from "../utils/logger";
 import { applyFilters } from "../utils/query-utils";
-import { AppDataSource } from "./data-source.provider";
+import { DataSource } from "typeorm";
+import { MAIN_DATA_SOURCE } from "../services/dataSourceManager.service";
 
 export interface SeriesProvider extends BaseProviderInterface<SerMst, Filters<SerMst>> { }
 
 @injectable()
 export class SeriesProvider implements SeriesProvider {
-    private seriesRepository: Repository<SerMst> | null = null;;
-    private dataSourceInstance: AppDataSource;
+    private seriesRepository: Repository<SerMst> | null = null;
     private readonly logger: ILogger;
+    private readonly mainDataSource: DataSource;
 
-    constructor(@inject(AppDataSource) dataSourceInstance: AppDataSource, @inject(WINSTON_LOGGER) logger: ILogger) { // Inject AppDataSource and ILogger in constructor
-        this.dataSourceInstance = dataSourceInstance;
+    constructor(
+        @inject(MAIN_DATA_SOURCE) mainDataSource: DataSource,
+        @inject(WINSTON_LOGGER) logger: ILogger
+    ) {
+        this.mainDataSource = mainDataSource;
         this.logger = logger;
+        this.initializeRepository();
     }
 
     private _getRepository(): Repository<SerMst> {
@@ -29,9 +34,8 @@ export class SeriesProvider implements SeriesProvider {
         return this.seriesRepository;
     }
 
-    async initializeRepository(): Promise<void> { // Initialize the repository
-        const dataSource = this.dataSourceInstance.getDataSource(); // Ensure DataSource is initialized
-        this.seriesRepository = dataSource.getRepository(SerMst);
+    private initializeRepository(): void {
+        this.seriesRepository = this.mainDataSource.getRepository(SerMst);
     }
 
     async getAllSeriesWithFilters(filters?: Filters<SerMst>): Promise<SerMst[]> {

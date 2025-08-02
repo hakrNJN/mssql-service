@@ -9,7 +9,8 @@ import { ILogger } from "../interface/logger.interface";
 // import { Filters } from "../types/filter.types"; // REMOVED: Not using generic filters directly here
 import { WINSTON_LOGGER } from "../utils/logger";
 // Removed applyFilters as we're building a custom query
-import { AppDataSource } from "./data-source.provider";
+import { DataSource } from "typeorm";
+import { MAIN_DATA_SOURCE } from "../services/dataSourceManager.service";
 
 // Interface now contains only the specific methods needed for KotakCMS
 export interface KotakCMSProvider { // Interface no longer extends BaseProviderInterface
@@ -34,12 +35,16 @@ export interface KotakCMSProvider { // Interface no longer extends BaseProviderI
 export class KotakCMSProvider implements KotakCMSProvider { // Class implements its own interface
     private kotakCMSRepository: Repository<Vwkotakcmsonline> | null = null;
     private serMstRepository: Repository<SerMst> | null = null;
-    private dataSourceInstance: AppDataSource;
     private readonly logger: ILogger;
+    private readonly mainDataSource: DataSource;
 
-    constructor(@inject(AppDataSource) dataSourceInstance: AppDataSource, @inject(WINSTON_LOGGER) logger: ILogger) {
-        this.dataSourceInstance = dataSourceInstance;
+    constructor(
+        @inject(MAIN_DATA_SOURCE) mainDataSource: DataSource,
+        @inject(WINSTON_LOGGER) logger: ILogger
+    ) {
+        this.mainDataSource = mainDataSource;
         this.logger = logger;
+        this.initializeRepository();
     }
 
     private _getKotakCMSRepository(): Repository<Vwkotakcmsonline> {
@@ -56,10 +61,9 @@ export class KotakCMSProvider implements KotakCMSProvider { // Class implements 
         return this.serMstRepository;
     }
 
-    async initializeRepository(): Promise<void> {
-        const dataSource = this.dataSourceInstance.getDataSource();
-        this.kotakCMSRepository = dataSource.getRepository(Vwkotakcmsonline);
-        this.serMstRepository = dataSource.getRepository(SerMst);
+    public initializeRepository(): void {
+        this.kotakCMSRepository = this.mainDataSource.getRepository(Vwkotakcmsonline);
+        this.serMstRepository = this.mainDataSource.getRepository(SerMst);
     }
 
     // Explicit implementation for getById if kept (from previously, not from BaseProviderInterface)

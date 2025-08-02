@@ -12,12 +12,7 @@ export class SeriesService {
         @inject(SeriesProvider) seriesProvider: SeriesProvider
     ) {
         this.seriesProvider = seriesProvider;
-        this.initialize(); // Initialize the repository when the service is constructed
-    }
-
-    private async initialize(): Promise<void> {
-        await this.seriesProvider.initializeRepository();
-    }
+        }
 
     async getAllSeries(): Promise<SerMst[]> {
         return this.seriesProvider.getAllSeries();

@@ -3,7 +3,6 @@ import { Router } from 'express';
 import { container } from 'tsyringe';
 // No direct winston import needed here if ILogger is used
 import { ILogger } from '../interface/logger.interface';
-import { DataSourceService } from '../services/dataSource.service';
 import FeaturesService from '../services/feature.service';
 import { WINSTON_LOGGER } from '../utils/logger';
 import accountRoute from './account.route';
@@ -14,14 +13,14 @@ import seriesRoute from './series.route';
 import yearRoute from './year.route';
 
 // Import your new route factory functions
-import kotakCMSRoute from './kotakCMS.route';
+import kotakCMSRoute from './KotakCMS.route';
 import purchasePipeLineRoute from './purchasePipeLine.route'; // Corrected import path
 
 
 const router: Router = Router();
 
 // Function to create apiRoutes and accept dataSourceService and featuresService
-const apiRoutes = (dataSourceService: DataSourceService, featuresService: FeaturesService): Router => {
+const apiRoutes = (featuresService: FeaturesService): Router => {
     const logger = container.resolve<ILogger>(WINSTON_LOGGER);
 
     try {

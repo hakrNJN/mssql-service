@@ -8,7 +8,8 @@ import { BaseProviderInterface } from "../interface/base.provider";
 import { ILogger } from "../interface/logger.interface";
 import { Filters } from "../types/filter.types";
 import { WINSTON_LOGGER } from "../utils/logger";
-import { PhoenixDataSource } from "./phoenix.data-source.provider";
+import { DataSource } from "typeorm";
+import { PHOENIX_DATA_SOURCE } from "../services/dataSourceManager.service";
 
 export interface SaleTransactionProvider extends BaseProviderInterface<SaleTransaction, Filters<SaleTransaction>> {
     trimWhitespace<T>(obj: T): T;
@@ -17,12 +18,16 @@ export interface SaleTransactionProvider extends BaseProviderInterface<SaleTrans
 @objectDecorators
 export class SaleTransactionProvider {
     private SaleTransactionRepository: Repository<SaleTransaction> | null = null; // Changed ViewEntity to Repository
-    private dataSourceInstance: PhoenixDataSource;
     private readonly logger: ILogger;
+    private readonly phoenixDataSource: DataSource;
 
-    constructor(@inject(PhoenixDataSource) dataSourceInstance: PhoenixDataSource, @inject(WINSTON_LOGGER) logger: ILogger) {
-        this.dataSourceInstance = dataSourceInstance;
+    constructor(
+        @inject(PHOENIX_DATA_SOURCE) phoenixDataSource: DataSource,
+        @inject(WINSTON_LOGGER) logger: ILogger
+    ) {
+        this.phoenixDataSource = phoenixDataSource;
         this.logger = logger;
+        this.initializeRepository();
     }
 
     private _getRepository(): Repository<SaleTransaction> { // Changed ViewEntity to Repository
@@ -32,9 +37,8 @@ export class SaleTransactionProvider {
         return this.SaleTransactionRepository;
     }
 
-    async initializeRepository(): Promise<void> { // Initialize the repository
-        const dataSource = this.dataSourceInstance.getDataSource(); // Ensure DataSource is initialized
-        this.SaleTransactionRepository = dataSource.getRepository(SaleTransaction);
+    public initializeRepository(): void { // Initialize the repository
+        this.SaleTransactionRepository = this.phoenixDataSource.getRepository(SaleTransaction);
     }
 
     async getTransactionById(id: number): Promise<SaleTransaction | null> {

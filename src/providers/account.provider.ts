@@ -40,10 +40,7 @@ export class AccountProvider {
         return this.accountRepository;
     }
 
-    // async initializeRepository(): Promise<void> { // Initialize the repository
-    //     const dataSource = this.dataSourceInstance.getDataSource(); // Get the initialized DataSource
-    //     this.accountRepository = dataSource.getRepository(Mast);
-    // }
+    
 
     async getAllAccountWithFilters(filters?: Filters<Mast>, offset?: number, limit?: number): Promise<Mast[]> {
         try {

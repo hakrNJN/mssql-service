@@ -8,7 +8,7 @@ import { errorHandler } from './middleware/errorHandler';
 import { timeTrackerMiddleware } from './middleware/TimeTracker.middleware';
 import ExpressApp from './providers/express.provider';
 import apiRoutes from './routes';
-import { DataSourceService } from './services/dataSource.service';
+import { DataSourceManager } from './services/dataSourceManager.service';
 import FeaturesService from './services/feature.service';
 import { AccountService } from './services/account.service';
 import { CompanyService } from './services/company.service';
@@ -22,7 +22,6 @@ class App {
   public app: Application;
   private readonly logger: winston.Logger;
   private expressAppInstance: ExpressApp;
-  public dataSourceService: DataSourceService;
   private eventDrivenController: EventDrivenController;
   private featuresService: FeaturesService;
   private featureController: FeatureController;
@@ -31,7 +30,7 @@ class App {
   private seriesService: SeriesService;
 
   constructor(
-    dataSourceService: DataSourceService,
+    @inject(DataSourceManager) private dataSourceManager: DataSourceManager,
     @inject(WINSTON_LOGGER) logger: winston.Logger,
     @inject(ExpressApp) expressAppInstance: ExpressApp,
     @inject(FeaturesService) featuresService: FeaturesService,
@@ -41,7 +40,7 @@ class App {
     @inject(CompanyService) companyService: CompanyService,
     @inject(SeriesService) seriesService: SeriesService
   ) {
-    this.dataSourceService = dataSourceService;
+    
     this.logger = logger;
     this.expressAppInstance = expressAppInstance;
     this.app = this.expressAppInstance.app;
@@ -58,9 +57,7 @@ class App {
 
   public async init(): Promise<void> { // in init()
     await this.featuresService.initialize(); // Initialize FeaturesService FIRST in init()
-    // await this.accountService.initialize(); // Initialize AccountService - No longer needed as initialization is handled in constructor
-    // await this.companyService.initialize(); // Initialize CompanyService - No longer needed as initialization is handled in constructor
-    // await this.seriesService.initialize(); // Initialize SeriesService - No longer needed as initialization is handled in constructor
+    await this.dataSourceManager.initializeDataSources();
     this.initializeRoutes(); // THEN initialize routes - now it's guaranteed featuresService is ready
   }
 
@@ -71,7 +68,7 @@ class App {
   }
 
   private initializeRoutes(): void {
-    this.app.use('/api', timeTrackerMiddleware, apiRoutes(this.dataSourceService, this.featuresService)); // Passing the instance variable here
+    this.app.use('/api', timeTrackerMiddleware, apiRoutes(this.featuresService));
   }
 
   public async startEventListeners(): Promise<void> {

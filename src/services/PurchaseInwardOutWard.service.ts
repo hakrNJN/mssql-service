@@ -19,13 +19,7 @@ export class PurchaseParcelStatusService {
     ) {
         this.inwardOutWardProvider = inwardOutWardProvider;
         this.purchasePileLineProvider = purchasePileLineProvider;
-        this.initialize();
-    }
-
-    private async initialize(): Promise<void> {
-        await this.inwardOutWardProvider.initializeRepository();
-        await this.purchasePileLineProvider.initializeRepository();
-    }
+        }
 
     // Updated method signature to include SP parameters
     async getEntriesByFilter(

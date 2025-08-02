@@ -14,12 +14,7 @@ export class KotakCMSService {
         @inject(KotakCMSProvider) kotakCMSProvider: KotakCMSProvider
     ) {
         this.kotakCMSProvider = kotakCMSProvider;
-        this.initialize();
-    }
-
-    private async initialize(): Promise<void> {
-        await this.kotakCMSProvider.initializeRepository();
-    }
+        }
 
     // This method is now responsible for the complex query and its specific parameters
     async getKotakCMSData( // Renamed from getKotakCMSWithFilters to match provider method

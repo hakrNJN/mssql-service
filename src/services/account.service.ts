@@ -14,12 +14,7 @@ export class AccountService {
         @inject(AccountProvider) accountProvider: AccountProvider
     ) {
         this.accountProvider = accountProvider;
-        // this.initialize(); // Initialize the repository when the service is constructed
-    }
-
-    private async initialize(): Promise<void> {
-        await this.accountProvider.initializeRepository();
-    }
+        }
 
     async getAccountById(id: number): Promise<Mast | null> {
         return this.accountProvider.getAccountById(id);

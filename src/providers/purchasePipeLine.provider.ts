@@ -8,7 +8,8 @@ import { ILogger } from "../interface/logger.interface";
 import { Filters } from "../types/filter.types";
 import { WINSTON_LOGGER } from "../utils/logger";
 import { applyFilters } from "../utils/query-utils";
-import { AppDataSource } from "./data-source.provider";
+import { DataSource } from "typeorm";
+import { PHOENIX_DATA_SOURCE } from "../services/dataSourceManager.service";
 
 // Renamed the interface to avoid conflict with the entity class
 export interface PurchasePileLineInterface extends BaseProviderInterface<PurchasePipeLineEntity, Filters<PurchasePipeLineEntity>> {
@@ -37,13 +38,18 @@ export interface PurchasePileLineInterface extends BaseProviderInterface<Purchas
 @objectDecorators
 export class PurchasePileLine implements PurchasePileLineInterface {
     private purchasePipeLineRepository: Repository<PurchasePipeLineEntity> | null = null;
-    private dataSourceInstance: AppDataSource;
     private readonly logger: ILogger;
+    private readonly phoenixDataSource: DataSource;
 
-    constructor(@inject(AppDataSource) dataSourceInstance: AppDataSource, @inject(WINSTON_LOGGER) logger: ILogger) {
-        this.dataSourceInstance = dataSourceInstance;
+    constructor(
+        @inject(PHOENIX_DATA_SOURCE) phoenixDataSource: DataSource,
+        @inject(WINSTON_LOGGER) logger: ILogger
+    ) {
+        this.phoenixDataSource = phoenixDataSource;
         this.logger = logger;
+        this.initializeRepository();
     }
+
     async getAll(offset?: number, limit?: number): Promise<PurchasePipeLineEntity[]> {
         try {
             const queryBuilder = this._getRepository().createQueryBuilder('purchasePipeline');
@@ -72,9 +78,8 @@ export class PurchasePileLine implements PurchasePileLineInterface {
         return this.purchasePipeLineRepository;
     }
 
-    async initializeRepository(): Promise<void> {
-        const dataSource = this.dataSourceInstance.getDataSource();
-        this.purchasePipeLineRepository = dataSource.getRepository(PurchasePipeLineEntity);
+    public async initializeRepository(): Promise<void> {
+        this.purchasePipeLineRepository = this.phoenixDataSource.getRepository(PurchasePipeLineEntity);
     }
 
     // Renamed from getAllWithFilters to getAll to satisfy BaseProviderInterface

@@ -7,19 +7,24 @@ import { ILogger } from "../interface/logger.interface";
 import { Filters } from "../types/filter.types";
 import { WINSTON_LOGGER } from "../utils/logger";
 import { applyFilters } from "../utils/query-utils";
-import { AppDataSource } from "./data-source.provider";
+import { DataSource } from "typeorm";
+import { MAIN_DATA_SOURCE } from "../services/dataSourceManager.service";
 
 export interface CompanyProvider extends BaseProviderInterface<CompMst, Filters<CompMst>> { }
 
 @injectable()
 export class CompanyProvider implements CompanyProvider {
-    private companyRepository: Repository<CompMst> | null = null;;
-    private dataSourceInstance: AppDataSource;
+    private companyRepository: Repository<CompMst> | null = null;
     private readonly logger: ILogger;
+    private readonly mainDataSource: DataSource;
 
-    constructor(@inject(AppDataSource) dataSourceInstance: AppDataSource, @inject(WINSTON_LOGGER) logger: ILogger) { // Inject AppDataSource and ILogger in constructor
-        this.dataSourceInstance = dataSourceInstance;
+    constructor(
+        @inject(MAIN_DATA_SOURCE) mainDataSource: DataSource,
+        @inject(WINSTON_LOGGER) logger: ILogger
+    ) {
+        this.mainDataSource = mainDataSource;
         this.logger = logger;
+        this.initializeRepository();
     }
 
     private _getRepository(): Repository<CompMst> {
@@ -29,9 +34,8 @@ export class CompanyProvider implements CompanyProvider {
         return this.companyRepository;
     }
 
-    async initializeRepository(): Promise<void> { // Initialize the repository
-        const dataSource = this.dataSourceInstance.getDataSource(); // Ensure DataSource is initialized
-        this.companyRepository = dataSource.getRepository(CompMst);
+    public initializeRepository(): void {
+        this.companyRepository = this.mainDataSource.getRepository(CompMst);
     }
 
     async getAllCompaniesWithFilters(filters?: Filters<CompMst>): Promise<CompMst[]> {

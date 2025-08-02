@@ -4,7 +4,7 @@ import { container } from "tsyringe";
 import { App } from './App';
 import { AppConfig } from './config/config';
 import { ILogger } from './interface/logger.interface';
-import { DataSourceService } from "./services/dataSource.service";
+import { DataSourceManager } from "./services/dataSourceManager.service";
 import { WINSTON_LOGGER } from './utils/logger';
 import { registerDependencies } from "./utils/registerDependencies";
 
@@ -13,7 +13,7 @@ registerDependencies();
 
 async function startServer() {
   const logger = container.resolve<ILogger>(WINSTON_LOGGER);
-  const dataSourceService = container.resolve(DataSourceService);
+  const dataSourceManager = container.resolve(DataSourceManager);
   const app = container.resolve(App);
   let server: any; // Declare server variable
 
@@ -40,7 +40,7 @@ async function startServer() {
     }
 
     // Close database connections
-    await dataSourceService.closeDataSources();
+    await dataSourceManager.closeDataSources();
 
     logger.info('Application shut down.');
     process.exit(0);

@@ -14,12 +14,7 @@ export class SaleTransactionService {
         @inject(SaleTransactionProvider) saleTransactionProvider: SaleTransactionProvider
     ) {
         this.saleTransactionProvider = saleTransactionProvider;
-        this.initialize();
-    }
-
-    private async initialize(): Promise<void> {
-        await this.saleTransactionProvider.initializeRepository();
-    }
+        }
 
     async getTransactionById(id: number):Promise<SaleTransaction | null > {
         return this.saleTransactionProvider.getTransactionById(id);

@@ -7,19 +7,24 @@ import { ILogger } from "../interface/logger.interface";
 import { Filters } from "../types/filter.types";
 import { WINSTON_LOGGER } from "../utils/logger";
 import { applyFilters } from "../utils/query-utils";
-import { AppDataSource } from "./data-source.provider";
+import { DataSource } from "typeorm";
+import { MAIN_DATA_SOURCE } from "../services/dataSourceManager.service";
 
 export interface YearsProvider extends BaseProviderInterface<YearMst, Filters<YearMst>> { }
 
 @injectable()
 export class YearsProvider implements YearsProvider { // Export the class
     private yearRepository: Repository<YearMst> | null = null;
-    private dataSourceInstance: AppDataSource; // Hold an instance of AppDataSource
     private readonly logger: ILogger;
+    private readonly mainDataSource: DataSource;
 
-    constructor(@inject(AppDataSource) dataSourceInstance: AppDataSource, @inject(WINSTON_LOGGER) logger: ILogger) { // Inject AppDataSource and ILogger in constructor
-        this.dataSourceInstance = dataSourceInstance;
+    constructor(
+        @inject(MAIN_DATA_SOURCE) mainDataSource: DataSource,
+        @inject(WINSTON_LOGGER) logger: ILogger
+    ) {
+        this.mainDataSource = mainDataSource;
         this.logger = logger;
+        this.initializeRepository();
     }
 
     private _getRepository(): Repository<YearMst> {
@@ -29,9 +34,8 @@ export class YearsProvider implements YearsProvider { // Export the class
         return this.yearRepository;
     }
 
-    async initializeRepository(): Promise<void> { // Initialize the repository
-        const dataSource = this.dataSourceInstance.getDataSource(); // Ensure DataSource is initialized
-        this.yearRepository = dataSource.getRepository(YearMst);
+    private initializeRepository(): void { // Initialize the repository
+        this.yearRepository = this.mainDataSource.getRepository(YearMst);
     }
 
     async getAllYearsWithFilters(filters?: Filters<YearMst>): Promise<YearMst[]> {

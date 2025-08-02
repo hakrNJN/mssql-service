@@ -9,7 +9,7 @@ export interface BaseProviderInterface<Entity extends ObjectLiteral, FilterType 
     trimWhitespace?<T>(obj: T): T;
 
     // dataSourceInstance: AppDataSource;
-    initializeRepository(): Promise<void>;
+    
     // _getRepository(): Repository<Entity>; // Make _getRepository public if you want to access it from outside, but usually private is better for encapsulation
     getAllWithFilters(filters?: FilterType, offset?: number, limit?: number): Promise<Entity[]>;
     getAll(offset?: number, limit?: number): Promise<Entity[]>;

@@ -13,12 +13,7 @@ export class YearService {
         @inject(YearsProvider) yearsProvider: YearsProvider
     ) {
         this.yearsProvider = yearsProvider;
-        this.initialize();
-    }
-
-    private async initialize(): Promise<void> {
-        await this.yearsProvider.initializeRepository();
-    }
+        }
 
     async getYearsWithFilters(filters?: Filters<YearMst>): Promise<YearMst[]> {
         return this.yearsProvider.getAllYearsWithFilters(filters);

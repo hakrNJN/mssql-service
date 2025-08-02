@@ -7,13 +7,12 @@ import { PurchasePipeLineController } from '../controllers/purchasePipeLine.cont
 import { ILogger } from '../interface/logger.interface';
 import { AccountProvider } from '../providers/account.provider';
 import { CompanyProvider } from '../providers/company.provider';
-import { AppDataSource } from "../providers/data-source.provider";
 import FileService from "../providers/fileService.provider";
-import { PhoenixDataSource } from "../providers/phoenix.data-source.provider";
+
 import { SeriesProvider } from '../providers/series.provider';
 import { AccountService } from "../services/account.service";
 import { CompanyService } from '../services/company.service';
-import { DataSourceService } from "../services/dataSource.service";
+
 import {
   DataSourceManager,
   MAIN_DATA_SOURCE,
@@ -44,9 +43,7 @@ export function registerDependencies(): void {
   });
 
   // Register DataSourceService
-  container.register(DataSourceService, { useClass: DataSourceService });
-  container.register(AppDataSource, { useClass: AppDataSource });
-  container.register(PhoenixDataSource, { useClass: PhoenixDataSource });
+  
 
   // 1. Register the manager as a singleton. It will be created once.
   container.registerSingleton(DataSourceManager);
