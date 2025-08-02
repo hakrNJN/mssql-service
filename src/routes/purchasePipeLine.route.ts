@@ -1,20 +1,21 @@
 // src/routes/purchasePipeLine.routes.ts
 import { Router } from 'express';
+import { container } from 'tsyringe';
 import { PurchasePipeLineController } from '../controllers/purchasePipeLine.controller';
-import { AppDataSource } from '../providers/data-source.provider'; // Import AppDataSource
-import { PurchaseParcelStatusService } from '../services/purchaseInwardOutWard.service'; // Corrected service path/name
 
 // Define the route factory function
-const purchasePipeLineRoute = (dataSource: AppDataSource): Router => {
+const purchasePipeLineRoute = (): Router => {
     const router: Router = Router();
 
     // Initialize PurchaseParcelStatusService with the provided dataSource
-    const purchaseParcelStatusService = new PurchaseParcelStatusService(dataSource);
-    // Call initialize method for the service to set up its repository
-    purchaseParcelStatusService.initialize(); // Assuming this is sync or safely handled. Consider awaiting if needed.
+    // const purchaseParcelStatusService = new PurchaseParcelStatusService(dataSource);
+    // // Call initialize method for the service to set up its repository
+    // purchaseParcelStatusService.initialize(); // Assuming this is sync or safely handled. Consider awaiting if needed.
 
-    // Initialize PurchasePipeLineController with the initialized service
-    const purchasePipeLineController = new PurchasePipeLineController(purchaseParcelStatusService);
+    // // Initialize PurchasePipeLineController with the initialized service
+    // const purchasePipeLineController = new PurchasePipeLineController(purchaseParcelStatusService);
+
+    const purchasePipeLineController = container.resolve(PurchasePipeLineController);
 
     // Route for getting all entries with filters (joined view)
     router.get('/entries', purchasePipeLineController.getEntriesByFilter);

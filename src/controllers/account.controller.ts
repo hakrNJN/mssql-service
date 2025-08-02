@@ -1,6 +1,7 @@
 //src/controllers/series.controller.ts
 
 import { Request, Response } from 'express'
+import { inject, injectable } from "tsyringe";
 import { stringDecorators } from '../decorators/stringDecorators'
 import { HttpException } from '../exceptions/httpException'
 import { AccountService } from '../services/account.service'
@@ -13,9 +14,10 @@ export interface AccountController {
 }
 
 @stringDecorators
+@injectable()
 export class AccountController {
     private accountService: AccountService;
-    constructor(accountService: AccountService) {
+    constructor(@inject(AccountService) accountService: AccountService) {
         this.accountService = accountService;
     }
 

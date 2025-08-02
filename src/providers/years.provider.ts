@@ -1,19 +1,25 @@
 // src/providers/year.provider.ts
+import { inject, injectable } from "tsyringe";
 import { Repository } from "typeorm";
 import { YearMst } from "../entity/anushreeDb/years.entity";
 import { BaseProviderInterface } from "../interface/base.provider";
+import { ILogger } from "../interface/logger.interface";
 import { Filters } from "../types/filter.types";
-import { applyFilters } from "../utils/query-utils"; // Import AppDataSource
+import { WINSTON_LOGGER } from "../utils/logger";
+import { applyFilters } from "../utils/query-utils";
 import { AppDataSource } from "./data-source.provider";
 
 export interface YearsProvider extends BaseProviderInterface<YearMst, Filters<YearMst>> { }
 
+@injectable()
 export class YearsProvider implements YearsProvider { // Export the class
     private yearRepository: Repository<YearMst> | null = null;
     private dataSourceInstance: AppDataSource; // Hold an instance of AppDataSource
+    private readonly logger: ILogger;
 
-    constructor(dataSourceInstance: AppDataSource) { // Inject AppDataSource in constructor
+    constructor(@inject(AppDataSource) dataSourceInstance: AppDataSource, @inject(WINSTON_LOGGER) logger: ILogger) { // Inject AppDataSource and ILogger in constructor
         this.dataSourceInstance = dataSourceInstance;
+        this.logger = logger;
     }
 
     private _getRepository(): Repository<YearMst> {
@@ -24,7 +30,7 @@ export class YearsProvider implements YearsProvider { // Export the class
     }
 
     async initializeRepository(): Promise<void> { // Initialize the repository
-        const dataSource = await this.dataSourceInstance.init(); // Ensure DataSource is initialized
+        const dataSource = this.dataSourceInstance.getDataSource(); // Ensure DataSource is initialized
         this.yearRepository = dataSource.getRepository(YearMst);
     }
 

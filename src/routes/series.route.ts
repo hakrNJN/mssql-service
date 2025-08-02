@@ -1,20 +1,21 @@
 //src/routes/year.route.ts
 import { Router } from 'express';
+import { container } from 'tsyringe';
 import { SeriesController } from '../controllers/series.controller';
-import { AppDataSource } from '../providers/data-source.provider';
-import { SeriesService } from '../services/series.service';
 
 // Adjust path if needed
 
-const seriesRoute = (dataSource: AppDataSource): Router => { // Accept dataSource as argument
+const seriesRoute = (): Router => { // Accept dataSource as argument
   const router: Router = Router();
 
   // Initialize YearService with dataSource
-  const seriesService = new SeriesService(dataSource);
-  seriesService.initialize(); // Initialize YearService (repository)
+  // const seriesService = new SeriesService(dataSource);
+  // seriesService.initialize(); // Initialize YearService (repository)
 
-  // Create YearController instance with the initialized YearService
-  const seriesController = new SeriesController(seriesService);
+  // // Create YearController instance with the initialized YearService
+  // const seriesController = new SeriesController(seriesService);
+
+  const seriesController = container.resolve(SeriesController);
 
   // Define routes here, calling controller methods
   router.get('/all', seriesController.getAllSeries);

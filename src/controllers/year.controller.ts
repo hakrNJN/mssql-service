@@ -4,13 +4,16 @@ import { HttpException } from '../exceptions/httpException';
 import { YearService } from '../services/years.service';
 import { ApiResponse } from '../utils/api-response';
 
+import { inject, injectable } from "tsyringe";
+
+@injectable()
 export class YearController {
 
     private yearService: YearService;
 
-    constructor(yearService: YearService) {
+    constructor(@inject(YearService) yearService: YearService) {
         this.yearService = yearService;
-        this.yearService.initialize()
+        // this.yearService.initialize() // Removed: Service initializes itself
     }
 
     public getYears = async (req: Request, res: Response): Promise<void> => {

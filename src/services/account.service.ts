@@ -1,18 +1,23 @@
 //src/services/account.service.ts
 
+import { inject, injectable } from "tsyringe";
 import { Mast } from "../entity/anushreeDb/accounts.entity";
 import { AccountProvider } from "../providers/account.provider";
-import { AppDataSource } from "../providers/data-source.provider";
+
 import { EqualFilter, Filters } from "../types/filter.types";
 
+@injectable()
 export class AccountService {
     private accountProvider: AccountProvider;
 
-    constructor(private dataSourceInstance: AppDataSource) {
-        this.accountProvider = new AccountProvider(this.dataSourceInstance);
+    constructor(
+        @inject(AccountProvider) accountProvider: AccountProvider
+    ) {
+        this.accountProvider = accountProvider;
+        // this.initialize(); // Initialize the repository when the service is constructed
     }
 
-    async initialize(): Promise<void> {
+    private async initialize(): Promise<void> {
         await this.accountProvider.initializeRepository();
     }
 

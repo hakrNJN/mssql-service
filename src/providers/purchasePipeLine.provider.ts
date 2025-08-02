@@ -1,5 +1,5 @@
 //src/providers/purchasePileLine.provider.ts
-import { container } from "tsyringe";
+import { inject } from "tsyringe";
 import { DeleteResult, Repository, SelectQueryBuilder, UpdateResult } from "typeorm"; // Import UpdateResult, DeleteResult
 import { objectDecorators } from "../decorators/objectDecorators";
 import { PurchasePipeLine as PurchasePipeLineEntity } from "../entity/phoenixDb/purchasePipeLine.entity"; // Alias the entity
@@ -40,9 +40,9 @@ export class PurchasePileLine implements PurchasePileLineInterface {
     private dataSourceInstance: AppDataSource;
     private readonly logger: ILogger;
 
-    constructor(dataSourceInstance: AppDataSource) {
+    constructor(@inject(AppDataSource) dataSourceInstance: AppDataSource, @inject(WINSTON_LOGGER) logger: ILogger) {
         this.dataSourceInstance = dataSourceInstance;
-        this.logger = container.resolve<ILogger>(WINSTON_LOGGER);
+        this.logger = logger;
     }
     async getAll(offset?: number, limit?: number): Promise<PurchasePipeLineEntity[]> {
         try {
@@ -73,7 +73,7 @@ export class PurchasePileLine implements PurchasePileLineInterface {
     }
 
     async initializeRepository(): Promise<void> {
-        const dataSource = await this.dataSourceInstance.init();
+        const dataSource = this.dataSourceInstance.getDataSource();
         this.purchasePipeLineRepository = dataSource.getRepository(PurchasePipeLineEntity);
     }
 
@@ -151,7 +151,7 @@ export class PurchasePileLine implements PurchasePileLineInterface {
                 { id: id }, // Update by the entity's primary key 'id'
                 updateData
             );
-            if ((updateResult.affected ?? 0) > 0) { 
+            if ((updateResult.affected ?? 0) > 0) {
                 return await this.getById(id); // Return the updated entity
             }
             return null; // Explicitly return null if not updated

@@ -2,21 +2,27 @@
 
 import { SpTblFinishInWardOutWard } from "../entity/anushreeDb/spTblFinishInWardOutWard.entity";
 import { PurchasePipeLine } from "../entity/phoenixDb/purchasePipeLine.entity";
-import { AppDataSource } from "../providers/data-source.provider";
 import { InWardOutWardProvider } from "../providers/inwardOutward.provider"; // This provider now handles the SP
 import { PurchasePileLine as PurchasePileLineProvider } from "../providers/purchasePipeLine.provider";
 import { Filters } from "../types/filter.types";
 
+import { inject, injectable } from "tsyringe";
+
+@injectable()
 export class PurchaseParcelStatusService {
     private inwardOutWardProvider: InWardOutWardProvider;
     private purchasePileLineProvider: PurchasePileLineProvider;
 
-    constructor(private dataSourceInstance: AppDataSource) {
-        this.inwardOutWardProvider = new InWardOutWardProvider(this.dataSourceInstance);
-        this.purchasePileLineProvider = new PurchasePileLineProvider(this.dataSourceInstance);
+    constructor(
+        @inject(InWardOutWardProvider) inwardOutWardProvider: InWardOutWardProvider,
+        @inject(PurchasePileLineProvider) purchasePileLineProvider: PurchasePileLineProvider
+    ) {
+        this.inwardOutWardProvider = inwardOutWardProvider;
+        this.purchasePileLineProvider = purchasePileLineProvider;
+        this.initialize();
     }
 
-    async initialize(): Promise<void> {
+    private async initialize(): Promise<void> {
         await this.inwardOutWardProvider.initializeRepository();
         await this.purchasePileLineProvider.initializeRepository();
     }
@@ -61,7 +67,7 @@ export class PurchaseParcelStatusService {
 
 // import { SpTblFinishInWardOutWard } from "../entity/anushree/SpTblFinishInWardOutWard.entity";
 // import { PurchasePipeLine } from "../entity/phoenix/PurchasePipeLine"; // Import PurchasePipeLine Entity
-// import { AppDataSource } from "../providers/data-source.provider";
+// 
 // import { InWardOutWardProvider } from "../providers/inwardOutward.provider";
 // import { PurchasePileLine as PurchasePileLineProvider } from "../providers/purchasePipeLine.provider"; // Import the aliased provider
 // import { Filters } from "../types/filter.types";

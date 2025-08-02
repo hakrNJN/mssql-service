@@ -1,22 +1,25 @@
 // src/providers/year.provider.ts
-import { injectable } from 'tsyringe';
+import { inject, injectable } from 'tsyringe';
 import { Repository } from "typeorm";
 import { SerMst } from "../entity/anushreeDb/series.entity";
 import { BaseProviderInterface } from "../interface/base.provider";
+import { ILogger } from "../interface/logger.interface";
 import { Filters } from "../types/filter.types";
+import { WINSTON_LOGGER } from "../utils/logger";
 import { applyFilters } from "../utils/query-utils";
 import { AppDataSource } from "./data-source.provider";
 
 export interface SeriesProvider extends BaseProviderInterface<SerMst, Filters<SerMst>> { }
+
 @injectable()
 export class SeriesProvider implements SeriesProvider {
     private seriesRepository: Repository<SerMst> | null = null;;
     private dataSourceInstance: AppDataSource;
-    // private readonly logger: ILogger;
+    private readonly logger: ILogger;
 
-    constructor(dataSourceInstance: AppDataSource) { // Inject AppDataSource in constructor
+    constructor(@inject(AppDataSource) dataSourceInstance: AppDataSource, @inject(WINSTON_LOGGER) logger: ILogger) { // Inject AppDataSource and ILogger in constructor
         this.dataSourceInstance = dataSourceInstance;
-        //  this.logger = container.resolve<ILogger>(WINSTON_LOGGER);
+        this.logger = logger;
     }
 
     private _getRepository(): Repository<SerMst> {
@@ -27,15 +30,20 @@ export class SeriesProvider implements SeriesProvider {
     }
 
     async initializeRepository(): Promise<void> { // Initialize the repository
-        const dataSource = await this.dataSourceInstance.init(); // Ensure DataSource is initialized
+        const dataSource = this.dataSourceInstance.getDataSource(); // Ensure DataSource is initialized
         this.seriesRepository = dataSource.getRepository(SerMst);
     }
 
     async getAllSeriesWithFilters(filters?: Filters<SerMst>): Promise<SerMst[]> {
-        const queryBuilder = this._getRepository().createQueryBuilder('series');
-        const filteredQueryBuilder = applyFilters(queryBuilder, filters, 'series'); // Call the imported utility function
-        const series = await filteredQueryBuilder.getMany();
-        return series;
+        try {
+            const queryBuilder = this._getRepository().createQueryBuilder('series');
+            const filteredQueryBuilder = applyFilters(queryBuilder, filters, 'series'); // Call the imported utility function
+            const series = await filteredQueryBuilder.getMany();
+            return series;
+        } catch (error) {
+            this.logger.error("Error fetching All Series with Filter", error);
+            throw new Error(error as string)
+        }
     }
 
     async getAllSeries(): Promise<SerMst[]> {
@@ -43,7 +51,7 @@ export class SeriesProvider implements SeriesProvider {
             return await this._getRepository().find();
 
         } catch (error) {
-            console.log(`request at this level3`, error);
+            this.logger.error("Error fetching All Series", error);
             throw new Error(error as string)
         }
     }

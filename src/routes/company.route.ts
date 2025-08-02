@@ -1,19 +1,20 @@
 //src/routes/companu.route.ts
 import { Router } from 'express';
+import { container } from 'tsyringe';
 import { CompanyController } from '../controllers/company.controller';
-import { AppDataSource } from '../providers/data-source.provider';
-import { CompanyService } from '../services/company.service';
 
 // Adjust path if needed
 
-const companyRoute = (dataSource: AppDataSource): Router => {
+const companyRoute = (): Router => {
   const router: Router = Router();
 
     // Initialize Company Service with dataSource
-  const companyService = new CompanyService(dataSource);
-  companyService.initialize(); 
+  // const companyService = new CompanyService(dataSource);
+  // companyService.initialize(); 
 
-  const companyController = new CompanyController(companyService);
+  // const companyController = new CompanyController(companyService);
+  
+  const companyController = container.resolve(CompanyController);
 
   router.get('/all', companyController.getCompanies);
       router.get('/id/:id', companyController.getCompanyById);

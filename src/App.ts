@@ -58,9 +58,9 @@ class App {
 
   public async init(): Promise<void> { // in init()
     await this.featuresService.initialize(); // Initialize FeaturesService FIRST in init()
-    await this.accountService.initialize(); // Initialize AccountService
-    await this.companyService.initialize(); // Initialize CompanyService
-    await this.seriesService.initialize(); // Initialize SeriesService
+    // await this.accountService.initialize(); // Initialize AccountService - No longer needed as initialization is handled in constructor
+    // await this.companyService.initialize(); // Initialize CompanyService - No longer needed as initialization is handled in constructor
+    // await this.seriesService.initialize(); // Initialize SeriesService - No longer needed as initialization is handled in constructor
     this.initializeRoutes(); // THEN initialize routes - now it's guaranteed featuresService is ready
   }
 
@@ -92,9 +92,10 @@ class App {
     }
   }
 
-  public listen(port: string | number, callback?: () => void): void {
-    this.app.listen(port, callback);
+  public listen(port: string | number, callback?: () => void): any {
+    const server = this.app.listen(port, callback);
     this.startEventListeners();
+    return server;
   }
 
   private initializeErrorHandling(): void {

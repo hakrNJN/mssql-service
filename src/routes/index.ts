@@ -14,7 +14,7 @@ import seriesRoute from './series.route';
 import yearRoute from './year.route';
 
 // Import your new route factory functions
-import kotakCMSRoute from './kotakCMS.route'; // Corrected import path
+import kotakCMSRoute from './kotakCMS.route';
 import purchasePipeLineRoute from './purchasePipeLine.route'; // Corrected import path
 
 
@@ -26,18 +26,18 @@ const apiRoutes = (dataSourceService: DataSourceService, featuresService: Featur
 
     try {
 
-        router.use('/year', yearRoute(dataSourceService.getAppDataSource()));
-        router.use('/company', companyRoute(dataSourceService.getAppDataSource()));
-        router.use('/series', seriesRoute(dataSourceService.getAppDataSource()));
-        router.use('/accounts', accountRoute(dataSourceService.getAppDataSource()));
+        router.use('/year', yearRoute());
+        router.use('/company', companyRoute());
+        router.use('/series', seriesRoute());
+        router.use('/accounts', accountRoute());
 
         // Use purchasePipeLineRoute and pass AppDataSource
-        router.use('/purchase-pipeline', purchasePipeLineRoute(dataSourceService.getAppDataSource()));
+        router.use('/purchase-pipeline', purchasePipeLineRoute());
 
         // Use kotakCMSRoute and pass AppDataSource
-        router.use('/kotak-cms', kotakCMSRoute(dataSourceService.getAppDataSource()));
+        router.use('/kotak-cms', kotakCMSRoute());
 
-        router.use('/transaction/sale/', saleTransactionRoute(dataSourceService.getPhoenixDataSource()));
+        router.use('/transaction/sale/', saleTransactionRoute());
 
 
         // Load features and then create feature route
@@ -49,7 +49,7 @@ const apiRoutes = (dataSourceService: DataSourceService, featuresService: Featur
                 logger.info("Fetch Data Feature is disabled.");
             }
 
-            router.use('/features', featureRoute(featuresService));
+            router.use('/features', featureRoute());
 
             // other routes (e.use('/other', otherRoute()); )
 

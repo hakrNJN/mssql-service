@@ -14,7 +14,7 @@ export class DataSourceService {
     constructor(
         @inject(AppDataSource) appDataSource: AppDataSource, // Inject AppDataSource
         @inject(PhoenixDataSource) phoenixDataSource: PhoenixDataSource,// Inject PhoenixDataSource
-         @inject(WINSTON_LOGGER) logger: winston.Logger 
+        @inject(WINSTON_LOGGER) logger: winston.Logger
     ) {
         this.appDataSource = appDataSource;
         this.phoenixDataSource = phoenixDataSource;
@@ -22,8 +22,8 @@ export class DataSourceService {
     }
 
     async initializeDataSources(): Promise<void> {
-        await this.appDataSource.init();
-        await this.phoenixDataSource.init();
+        // await this.appDataSource.init();
+        // await this.phoenixDataSource.init();
         this.logger.info("DataSources initialized!");
     }
 
@@ -33,5 +33,12 @@ export class DataSourceService {
 
     getPhoenixDataSource(): PhoenixDataSource {
         return this.phoenixDataSource;
+    }
+
+    async closeDataSources(): Promise<void> {
+        this.logger.info("Closing data sources...");
+        await this.appDataSource.close();
+        await this.phoenixDataSource.close();
+        this.logger.info("Data sources closed.");
     }
 }

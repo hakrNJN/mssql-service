@@ -1,10 +1,6 @@
-//src/services/series.service.ts
-
-
-
-import { injectable } from 'tsyringe';
+import { inject, injectable } from 'tsyringe';
 import { SerMst } from "../entity/anushreeDb/series.entity";
-import { AppDataSource } from "../providers/data-source.provider";
+
 import { SeriesProvider } from "../providers/series.provider";
 import { Filters } from "../types/filter.types";
 
@@ -12,11 +8,14 @@ import { Filters } from "../types/filter.types";
 export class SeriesService {
     private seriesProvider: SeriesProvider;
 
-    constructor(private dataSourceInstance: AppDataSource) {
-        this.seriesProvider = new SeriesProvider(this.dataSourceInstance)
+    constructor(
+        @inject(SeriesProvider) seriesProvider: SeriesProvider
+    ) {
+        this.seriesProvider = seriesProvider;
+        this.initialize(); // Initialize the repository when the service is constructed
     }
 
-    async initialize(): Promise<void> {
+    private async initialize(): Promise<void> {
         await this.seriesProvider.initializeRepository();
     }
 

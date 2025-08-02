@@ -1,17 +1,23 @@
 //src/services/saleTransaction.service.ts
 
 import { SaleTransaction } from "../entity/phoenixDb/saleTransaction.entity";
-import { PhoenixDataSource } from "../providers/phoenix.data-source.provider";
+
 import { SaleTransactionProvider } from "../providers/saleTransaction.provider";
 
+import { inject, injectable } from "tsyringe";
+
+@injectable()
 export class SaleTransactionService {
     private saleTransactionProvider: SaleTransactionProvider;
 
-    constructor(private dataSourceInstance: PhoenixDataSource) {
-        this.saleTransactionProvider = new SaleTransactionProvider(this.dataSourceInstance)
+    constructor(
+        @inject(SaleTransactionProvider) saleTransactionProvider: SaleTransactionProvider
+    ) {
+        this.saleTransactionProvider = saleTransactionProvider;
+        this.initialize();
     }
 
-    async initialize(): Promise<void> {
+    private async initialize(): Promise<void> {
         await this.saleTransactionProvider.initializeRepository();
     }
 

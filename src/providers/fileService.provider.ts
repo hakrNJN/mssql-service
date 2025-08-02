@@ -6,7 +6,7 @@ import { IFileService } from '../interface/feature.interface';
 import { ILogger } from '../interface/logger.interface';
 import FeaturesModel from '../model/feature.model';
 import { WINSTON_LOGGER } from '../utils/logger';
-import { FEATURE_CONFIG_FILE_PATH } from '../utils/registerDependencies';
+import { FEATURE_CONFIG_PATH } from '../utils/registerDependencies';
 
 
 import { injectable } from 'tsyringe';
@@ -19,7 +19,7 @@ class FileService implements IFileService {
 
 
     constructor(
-        filePath: string,
+        @inject(FEATURE_CONFIG_PATH) filePath: string,
         @inject(WINSTON_LOGGER) logger: ILogger
     ) {
         this.filePath = filePath;

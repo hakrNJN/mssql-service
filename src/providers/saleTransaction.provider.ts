@@ -1,6 +1,6 @@
 //src/providers/saleTransaction.provider.ts
 
-import { container } from "tsyringe";
+import { inject } from "tsyringe";
 import { Repository } from "typeorm"; // Changed ViewEntity to Repository
 import { objectDecorators } from "../decorators/objectDecorators";
 import { SaleTransaction } from '../entity/phoenixDb/saleTransaction.entity';
@@ -20,9 +20,9 @@ export class SaleTransactionProvider {
     private dataSourceInstance: PhoenixDataSource;
     private readonly logger: ILogger;
 
-    constructor(dataSourceInstance: PhoenixDataSource) { // Inject PhoenixDataSource in constructor
+    constructor(@inject(PhoenixDataSource) dataSourceInstance: PhoenixDataSource, @inject(WINSTON_LOGGER) logger: ILogger) {
         this.dataSourceInstance = dataSourceInstance;
-        this.logger = container.resolve<ILogger>(WINSTON_LOGGER);
+        this.logger = logger;
     }
 
     private _getRepository(): Repository<SaleTransaction> { // Changed ViewEntity to Repository
@@ -33,7 +33,7 @@ export class SaleTransactionProvider {
     }
 
     async initializeRepository(): Promise<void> { // Initialize the repository
-        const dataSource = await this.dataSourceInstance.init(); // Ensure DataSource is initialized
+        const dataSource = this.dataSourceInstance.getDataSource(); // Ensure DataSource is initialized
         this.SaleTransactionRepository = dataSource.getRepository(SaleTransaction);
     }
 

@@ -1,17 +1,23 @@
 //src/services/kotakCMS.service.ts
 import { Vwkotakcmsonline } from "../entity/anushreeDb/kotakCMS.entity";
-import { AppDataSource } from "../providers/data-source.provider";
-import { KotakCMSProvider } from "../providers/kotakCMS.provider";
+
+import { KotakCMSProvider } from "../providers/KotakCMS.provider";
 // import { Filters } from "../types/filter.types"; // No longer directly used in service method signature
 
+import { inject, injectable } from "tsyringe";
+
+@injectable()
 export class KotakCMSService {
     private kotakCMSProvider: KotakCMSProvider;
 
-    constructor(private dataSourceInstance: AppDataSource) {
-        this.kotakCMSProvider = new KotakCMSProvider(this.dataSourceInstance);
+    constructor(
+        @inject(KotakCMSProvider) kotakCMSProvider: KotakCMSProvider
+    ) {
+        this.kotakCMSProvider = kotakCMSProvider;
+        this.initialize();
     }
 
-    async initialize(): Promise<void> {
+    private async initialize(): Promise<void> {
         await this.kotakCMSProvider.initializeRepository();
     }
 

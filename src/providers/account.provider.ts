@@ -1,28 +1,37 @@
 // src/providers/account.provider.ts
-import { container } from "tsyringe";
-import { FindManyOptions, Repository, SelectQueryBuilder } from "typeorm";
+import { inject, injectable } from "tsyringe";
+import { DataSource, FindManyOptions, Repository, SelectQueryBuilder } from "typeorm";
 import { objectDecorators } from "../decorators/objectDecorators";
 import { Mast } from "../entity/anushreeDb/accounts.entity";
 import { BaseProviderInterface } from "../interface/base.provider";
 import { ILogger } from "../interface/logger.interface";
+import { MAIN_DATA_SOURCE } from "../services/dataSourceManager.service";
 import { Filters } from "../types/filter.types";
 import { WINSTON_LOGGER } from "../utils/logger";
 import { applyFilters } from "../utils/query-utils";
-import { AppDataSource } from "./data-source.provider";
 export interface AccountProvider extends BaseProviderInterface<Mast, Filters<Mast>> {
     trimWhitespace<T>(obj: T): T;
 }
 
 @objectDecorators
+@injectable()
 export class AccountProvider {
-    private accountRepository: Repository<Mast> | null = null;;
-    private dataSourceInstance: AppDataSource;
+    private accountRepository: Repository<Mast>;
     private readonly logger: ILogger;
 
-    constructor(dataSourceInstance: AppDataSource) { // Inject AppDataSource in constructor
-        this.dataSourceInstance = dataSourceInstance;
-        this.logger = container.resolve<ILogger>(WINSTON_LOGGER);
+    constructor(
+        // Inject the specific DataSource using the token.
+        @inject(MAIN_DATA_SOURCE) dataSource: DataSource,
+        @inject(WINSTON_LOGGER) logger: ILogger
+    ) {
+        this.logger = logger;
+
+        // This is now SAFE because we will ensure the DataSource is initialized
+        // before this provider is ever used.
+        this.accountRepository = dataSource.getRepository(Mast);
+        this.logger.info("AccountProvider repository initialized.");
     }
+
 
     private _getRepository(): Repository<Mast> {
         if (!this.accountRepository) {
@@ -31,10 +40,10 @@ export class AccountProvider {
         return this.accountRepository;
     }
 
-    async initializeRepository(): Promise<void> { // Initialize the repository
-        const dataSource = await this.dataSourceInstance.init(); // Ensure DataSource is initialized
-        this.accountRepository = dataSource.getRepository(Mast);
-    }
+    // async initializeRepository(): Promise<void> { // Initialize the repository
+    //     const dataSource = this.dataSourceInstance.getDataSource(); // Get the initialized DataSource
+    //     this.accountRepository = dataSource.getRepository(Mast);
+    // }
 
     async getAllAccountWithFilters(filters?: Filters<Mast>, offset?: number, limit?: number): Promise<Mast[]> {
         try {

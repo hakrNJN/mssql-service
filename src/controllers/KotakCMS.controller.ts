@@ -4,20 +4,23 @@ import { Request, Response } from 'express';
 import { container } from 'tsyringe';
 import { HttpException } from '../exceptions/httpException';
 import { ILogger } from '../interface/logger.interface';
-import { KotakCMSService } from '../services/kotakCMS.service';
+import { KotakCMSService } from '../services/KotakCMS.Service';
 import { ApiResponse } from '../utils/api-response';
 import { WINSTON_LOGGER } from '../utils/logger';
 // No need for filter types or Vwkotakcmsonline entity import here, as it's handled by service/provider
 // If Vwkotakcmsonline is needed for response typing, keep it. I'll keep it for clarity.
 
+import { inject, injectable } from "tsyringe";
+
+@injectable()
 export class KotakCMSController {
     private kotakCMSService: KotakCMSService;
 
     private logger: ILogger;
 
-    constructor(kotakCMSService: KotakCMSService) {
+    constructor(@inject(KotakCMSService) kotakCMSService: KotakCMSService, @inject(WINSTON_LOGGER) logger: ILogger) {
         this.kotakCMSService = kotakCMSService;
-        this.logger = container.resolve<ILogger>(WINSTON_LOGGER);
+        this.logger = logger;
     }
 
     // Method to get all Kotak CMS records with filters

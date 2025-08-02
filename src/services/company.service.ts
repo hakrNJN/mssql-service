@@ -1,21 +1,24 @@
 //src/services/company.service.ts
 
 
-import { injectable } from 'tsyringe';
+import { inject, injectable } from 'tsyringe';
 import { CompMst } from "../entity/anushreeDb/company.entity";
 import { CompanyProvider } from "../providers/company.provider";
-import { AppDataSource } from "../providers/data-source.provider";
+
 import { Filters } from "../types/filter.types";
 
 @injectable()
 export class CompanyService {
     private companyProvider: CompanyProvider;
 
-    constructor(private dataSourceInstance: AppDataSource) {
-        this.companyProvider = new CompanyProvider(this.dataSourceInstance);
+    constructor(
+        @inject(CompanyProvider) companyProvider: CompanyProvider
+    ) {
+        this.companyProvider = companyProvider;
+        this.initialize(); // Initialize the repository when the service is constructed
     }
 
-    async initialize(): Promise<void> {
+    private async initialize(): Promise<void> {
         await this.companyProvider.initializeRepository();
     }
 

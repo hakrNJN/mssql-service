@@ -1,5 +1,5 @@
 //src/providers/inwardOutward.provider.ts
-import { container } from "tsyringe";
+import { inject } from "tsyringe";
 import { QueryRunner, Repository } from "typeorm"; // Import QueryRunner
 import { objectDecorators } from "../decorators/objectDecorators";
 import { SpTblFinishInWardOutWard } from "../entity/anushreeDb/spTblFinishInWardOutWard.entity";
@@ -42,9 +42,9 @@ export class InWardOutWardProvider implements InWardOutWardProvider { // Ensure 
     private dataSourceInstance: AppDataSource;
     private readonly logger: ILogger;
 
-    constructor(dataSourceInstance: AppDataSource) {
+    constructor(@inject(AppDataSource) dataSourceInstance: AppDataSource, @inject(WINSTON_LOGGER) logger: ILogger) {
         this.dataSourceInstance = dataSourceInstance;
-        this.logger = container.resolve<ILogger>(WINSTON_LOGGER);
+        this.logger = logger;
     }
 
     private _getRepository(): Repository<SpTblFinishInWardOutWard> {
@@ -55,7 +55,7 @@ export class InWardOutWardProvider implements InWardOutWardProvider { // Ensure 
     }
 
     async initializeRepository(): Promise<void> {
-        const dataSource = await this.dataSourceInstance.init();
+        const dataSource = this.dataSourceInstance.getDataSource();
         this.inwardOutwardRepository = dataSource.getRepository(SpTblFinishInWardOutWard);
     }
 

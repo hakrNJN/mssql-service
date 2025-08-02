@@ -6,11 +6,14 @@ import { CompanyService } from '../services/company.service';
 import { EqualFilter, Filters } from '../types/filter.types';
 import { ApiResponse } from '../utils/api-response';
 
+import { inject, injectable } from "tsyringe";
+
+@injectable()
 export class CompanyController {
 
     private companyService: CompanyService;
 
-    constructor(companyService: CompanyService) {
+    constructor(@inject(CompanyService) companyService: CompanyService) {
         this.companyService = companyService;
     }
 

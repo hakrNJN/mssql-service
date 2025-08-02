@@ -5,7 +5,7 @@ import { objectDecorators } from '../decorators/objectDecorators'; // Assuming t
 import { SpTblFinishInWardOutWard } from '../entity/anushreeDb/spTblFinishInWardOutWard.entity';
 import { PurchasePipeLine as PurchasePipeLineEntity } from '../entity/phoenixDb/purchasePipeLine.entity'; // Alias the entity
 import { HttpException } from '../exceptions/httpException';
-import { PurchaseParcelStatusService } from '../services/purchaseInwardOutWard.service'; // This service now handles both providers
+import { PurchaseParcelStatusService } from '../services/PurchaseInwardOutWard.service'; // This service now handles both providers
 import { EqualFilter, Filters, LikeFilter } from '../types/filter.types'; // Import filter types
 import { ApiResponse } from '../utils/api-response';
 
@@ -17,17 +17,19 @@ export interface PurchasePipeLineController {
     // Assuming `trimWhitespace` is primarily on providers/services.
 }
 
+import { inject, injectable } from "tsyringe";
+
 @objectDecorators // If this decorator adds functionality directly to the controller instance
+@injectable()
 export class PurchasePipeLineController {
     private purchaseParcelStatusService: PurchaseParcelStatusService;
 
-    constructor(purchaseParcelStatusService: PurchaseParcelStatusService) {
+    constructor(@inject(PurchaseParcelStatusService) purchaseParcelStatusService: PurchaseParcelStatusService) {
         this.purchaseParcelStatusService = purchaseParcelStatusService;
         // Initialize the service's repositories. Call this once, perhaps in your main app bootstrap,
         // or ensure it's called upon service instantiation in registerDependencies.
         // For a controller, it's generally not responsible for initializing services.
         // The container should handle service instantiation and initialization if needed.
-        // If it's critical for every request, consider an express middleware for initialization.
         // For now, I'll remove it from the constructor, assuming Tsyring or app bootstrap handles it.
         // If you MUST call it here, ensure it's awaited and handled gracefully.
         // This.purchaseParcelStatusService.initialize(); // This should ideally be awaited or managed differently

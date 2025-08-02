@@ -37,9 +37,9 @@ export class KotakCMSProvider implements KotakCMSProvider { // Class implements 
     private dataSourceInstance: AppDataSource;
     private readonly logger: ILogger;
 
-    constructor(@inject(AppDataSource) dataSourceInstance: AppDataSource) {
+    constructor(@inject(AppDataSource) dataSourceInstance: AppDataSource, @inject(WINSTON_LOGGER) logger: ILogger) {
         this.dataSourceInstance = dataSourceInstance;
-        this.logger = container.resolve<ILogger>(WINSTON_LOGGER);
+        this.logger = logger;
     }
 
     private _getKotakCMSRepository(): Repository<Vwkotakcmsonline> {
@@ -57,7 +57,7 @@ export class KotakCMSProvider implements KotakCMSProvider { // Class implements 
     }
 
     async initializeRepository(): Promise<void> {
-        const dataSource = await this.dataSourceInstance.init();
+        const dataSource = this.dataSourceInstance.getDataSource();
         this.kotakCMSRepository = dataSource.getRepository(Vwkotakcmsonline);
         this.serMstRepository = dataSource.getRepository(SerMst);
     }

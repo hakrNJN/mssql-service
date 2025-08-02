@@ -1,19 +1,20 @@
 //src/routes/account.route.ts
 import { Router } from 'express';
+import { container } from 'tsyringe';
 import { AccountController } from '../controllers/account.controller';
-import { AppDataSource } from '../providers/data-source.provider';
-import { AccountService } from '../services/account.service';
 
 // Adjust path if needed
 
-const accountRoute = (dataSource: AppDataSource): Router => {
+const accountRoute = (): Router => {
     const router: Router = Router();
 
     // Initialize AccountService with dataSource
-    const accountService = new AccountService(dataSource);
-    accountService.initialize();
+    // const accountService = new AccountService(dataSource);
+    // accountService.initialize();
 
-    const accountController = new AccountController(accountService);
+    // const accountController = new AccountController(accountService);
+
+    const accountController = container.resolve(AccountController);
 
     router.get('/all', accountController.getAllAccounts);
     router.get('/transports', accountController.getAllTransporters);

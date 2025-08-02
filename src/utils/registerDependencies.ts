@@ -1,27 +1,37 @@
 // src/utils/registerDependencies.ts
-import { join } from 'path'; // Import path
 import { container } from "tsyringe";
 import { AppConfig } from '../config/config';
 import EventDrivenController from "../controllers/eventDriven.controller";
-import { KotakCMSController } from '../controllers/kotakCMS.controller';
+import { KotakCMSController } from '../controllers/KotakCMS.controller';
 import { PurchasePipeLineController } from '../controllers/purchasePipeLine.controller';
 import { ILogger } from '../interface/logger.interface';
+import { AccountProvider } from '../providers/account.provider';
+import { CompanyProvider } from '../providers/company.provider';
 import { AppDataSource } from "../providers/data-source.provider";
 import FileService from "../providers/fileService.provider";
 import { PhoenixDataSource } from "../providers/phoenix.data-source.provider";
+import { SeriesProvider } from '../providers/series.provider';
 import { AccountService } from "../services/account.service";
+import { CompanyService } from '../services/company.service';
 import { DataSourceService } from "../services/dataSource.service";
+import {
+  DataSourceManager,
+  MAIN_DATA_SOURCE,
+  PHOENIX_DATA_SOURCE
+} from "../services/dataSourceManager.service";
 import FeaturesService from "../services/feature.service";
-import { KotakCMSService } from '../services/kotakCMS.service';
+import { KotakCMSService } from '../services/KotakCMS.Service';
 import { NoOpPublisherRabbitMQService } from "../services/noOpPublisherRabbitMQ.service";
 import { NoOpRabbitMQClientService } from "../services/noOpRabbitMQ.service";
 import PublisherRabbitMQService from "../services/publisher.RabbitMQ.service";
-import { PurchaseParcelStatusService } from '../services/purchaseInwardOutWard.service';
+import { PurchaseParcelStatusService } from '../services/PurchaseInwardOutWard.service';
 import RabbitMQClientService from "../services/rabbitMQ.service";
+import { SeriesService } from '../services/series.service';
 import { Logger, WINSTON_LOGGER } from "./logger";
 
 export const RABBITMQ_CLIENT_SERVICE = Symbol('RabbitMQClientService');
 export const PUBLISHER_RABBITMQ_SERVICE = Symbol('PublisherRabbitMQService');
+export const FEATURE_CONFIG_PATH = Symbol('FeatureConfigPath');
 
 export function registerDependencies(): void {
 
@@ -38,10 +48,22 @@ export function registerDependencies(): void {
   container.register(AppDataSource, { useClass: AppDataSource });
   container.register(PhoenixDataSource, { useClass: PhoenixDataSource });
 
+  // 1. Register the manager as a singleton. It will be created once.
+  container.registerSingleton(DataSourceManager);
+
+  // 2. Resolve the manager to get the DataSource instances.
+  const dataSourceManager = container.resolve(DataSourceManager);
+
+  // 3. Register the actual DataSource instances for injection elsewhere.
+  container.register(MAIN_DATA_SOURCE, { useValue: dataSourceManager.mainDataSource });
+  container.register(PHOENIX_DATA_SOURCE, { useValue: dataSourceManager.phoenixDataSource });
+
+  // Register AccountProvider
+  container.register(AccountProvider, { useClass: AccountProvider });
+
   // Register FileService and its dependencies first, as FeaturesService depends on it.
-  container.register(FileService, {
-    useFactory: (c) => new FileService(AppConfig.FEATURE_CONFIG_FILE_PATH, c.resolve(WINSTON_LOGGER))
-  });
+  container.register<string>(FEATURE_CONFIG_PATH, { useValue: AppConfig.FEATURE_CONFIG_FILE_PATH });
+  container.register(FileService, { useClass: FileService });
   container.register(FeaturesService, { useClass: FeaturesService });
 
   const featuresService = container.resolve(FeaturesService);
@@ -75,49 +97,28 @@ export function registerDependencies(): void {
   }
 
   // Register AccountService
-  container.register(AccountService, {
-    useFactory: (c) => {
-      const dataSourceInstance = c.resolve(AppDataSource);
-      const service = new AccountService(dataSourceInstance);
-      return service;
-    }
-  });
+  container.register(AccountService, { useClass: AccountService });
+
+  // Register CompanyProvider and CompanyService
+  container.register(CompanyProvider, { useClass: CompanyProvider });
+  container.register(CompanyService, { useClass: CompanyService });
+
+  // Register SeriesProvider and SeriesService
+  container.register(SeriesProvider, { useClass: SeriesProvider });
+  container.register(SeriesService, { useClass: SeriesService });
 
   // Register Event Controller
-  container.register(EventDrivenController, {
-    useFactory: (c) => new EventDrivenController(
-      c.resolve(RABBITMQ_CLIENT_SERVICE),
-      c.resolve(PUBLISHER_RABBITMQ_SERVICE),
-      c.resolve(FeaturesService),
-      c.resolve(WINSTON_LOGGER)
-    )
-  });
+  container.register(EventDrivenController, { useClass: EventDrivenController });
 
-  container.register(PurchaseParcelStatusService, {
-    useFactory: (c) => {
-      const dataSourceInstance = c.resolve(AppDataSource);
-      const service = new PurchaseParcelStatusService(dataSourceInstance);
-      return service;
-    }
-  });
+  container.register(PurchaseParcelStatusService, { useClass: PurchaseParcelStatusService });
 
-  container.register(PurchasePipeLineController, {
-    useFactory: (c) => new PurchasePipeLineController(c.resolve(PurchaseParcelStatusService))
-  });
+  container.register(PurchasePipeLineController, { useClass: PurchasePipeLineController });
 
   // --- Register KotakCMSService and KotakCMSController ---
 
   // Register KotakCMSService
-  container.register(KotakCMSService, {
-    useFactory: (c) => {
-      const dataSourceInstance = c.resolve(AppDataSource);
-      const service = new KotakCMSService(dataSourceInstance);
-      return service;
-    }
-  });
+  container.register(KotakCMSService, { useClass: KotakCMSService });
 
   // Register KotakCMSController
-  container.register(KotakCMSController, {
-    useFactory: (c) => new KotakCMSController(c.resolve(KotakCMSService))
-  });
+  container.register(KotakCMSController, { useClass: KotakCMSController });
 }
