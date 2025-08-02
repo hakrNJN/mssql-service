@@ -47,7 +47,6 @@ export class PurchasePileLine implements PurchasePileLineInterface {
     ) {
         this.phoenixDataSource = phoenixDataSource;
         this.logger = logger;
-        this.initializeRepository();
     }
 
     async getAll(offset?: number, limit?: number): Promise<PurchasePipeLineEntity[]> {
@@ -73,7 +72,8 @@ export class PurchasePileLine implements PurchasePileLineInterface {
 
     private _getRepository(): Repository<PurchasePipeLineEntity> {
         if (!this.purchasePipeLineRepository) {
-            throw new Error("Purchase Pipe Line repository not initialized. Call initializeRepository() first.");
+            this.purchasePipeLineRepository = this.phoenixDataSource.getRepository(PurchasePipeLineEntity);
+            this.logger.info("PurchasePileLine repository initialized lazily.");
         }
         return this.purchasePipeLineRepository;
     }

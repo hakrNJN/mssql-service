@@ -9,9 +9,10 @@ import { WINSTON_LOGGER } from './utils/logger';
 import { registerDependencies } from "./utils/registerDependencies";
 
 // Register all dependencies
-registerDependencies();
+(async () => {
+  await registerDependencies();
 
-async function startServer() {
+  async function startServer() {
   const logger = container.resolve<ILogger>(WINSTON_LOGGER);
   const dataSourceManager = container.resolve(DataSourceManager);
   const app = container.resolve(App);
@@ -52,3 +53,4 @@ async function startServer() {
 }
 
 startServer();
+})();

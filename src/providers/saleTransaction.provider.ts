@@ -27,18 +27,20 @@ export class SaleTransactionProvider {
     ) {
         this.phoenixDataSource = phoenixDataSource;
         this.logger = logger;
-        this.initializeRepository();
+        
     }
 
-    private _getRepository(): Repository<SaleTransaction> { // Changed ViewEntity to Repository
+    private _getRepository(): Repository<SaleTransaction> {
         if (!this.SaleTransactionRepository) {
-            throw new Error("Sale transaction repository not initialized. Call initializeRepository() first.");
+            this.SaleTransactionRepository = this.phoenixDataSource.getRepository(SaleTransaction);
+            this.logger.info("SaleTransactionProvider repository initialized lazily.");
         }
         return this.SaleTransactionRepository;
     }
 
-    public initializeRepository(): void { // Initialize the repository
-        this.SaleTransactionRepository = this.phoenixDataSource.getRepository(SaleTransaction);
+    public initializeRepository(): void {
+        // This method is no longer needed as repository is initialized lazily.
+        // Keeping it for now to avoid breaking interface contracts if any.
     }
 
     async getTransactionById(id: number): Promise<SaleTransaction | null> {

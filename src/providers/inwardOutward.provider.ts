@@ -49,18 +49,19 @@ export class InWardOutWardProvider implements InWardOutWardProvider { // Ensure 
     ) {
         this.mainDataSource = mainDataSource;
         this.logger = logger;
-        this.initializeRepository();
     }
 
     private _getRepository(): Repository<SpTblFinishInWardOutWard> {
         if (!this.inwardOutwardRepository) {
-            throw new Error("Inward Outward repository not initialized. Call initializeRepository() first.");
+            this.inwardOutwardRepository = this.mainDataSource.getRepository(SpTblFinishInWardOutWard);
+            this.logger.info("InWardOutWardProvider repository initialized lazily.");
         }
         return this.inwardOutwardRepository;
     }
 
     public initializeRepository(): void {
-        this.inwardOutwardRepository = this.mainDataSource.getRepository(SpTblFinishInWardOutWard);
+        // This method is no longer needed as repository is initialized lazily.
+        // Keeping it for now to avoid breaking interface contracts if any.
     }
 
     // New method to execute the stored procedure

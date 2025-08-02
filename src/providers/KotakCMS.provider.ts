@@ -44,26 +44,27 @@ export class KotakCMSProvider implements KotakCMSProvider { // Class implements 
     ) {
         this.mainDataSource = mainDataSource;
         this.logger = logger;
-        this.initializeRepository();
     }
 
     private _getKotakCMSRepository(): Repository<Vwkotakcmsonline> {
         if (!this.kotakCMSRepository) {
-            throw new Error("Kotak CMS repository not initialized. Call initializeRepository() first.");
+            this.kotakCMSRepository = this.mainDataSource.getRepository(Vwkotakcmsonline);
+            this.logger.info("KotakCMSProvider kotakCMSRepository initialized lazily.");
         }
         return this.kotakCMSRepository;
     }
 
     private _getSerMstRepository(): Repository<SerMst> {
         if (!this.serMstRepository) {
-            throw new Error("SerMst repository not initialized. Call initializeRepository() first.");
+            this.serMstRepository = this.mainDataSource.getRepository(SerMst);
+            this.logger.info("KotakCMSProvider serMstRepository initialized lazily.");
         }
         return this.serMstRepository;
     }
 
     public initializeRepository(): void {
-        this.kotakCMSRepository = this.mainDataSource.getRepository(Vwkotakcmsonline);
-        this.serMstRepository = this.mainDataSource.getRepository(SerMst);
+        // This method is no longer needed as repository is initialized lazily.
+        // Keeping it for now to avoid breaking interface contracts if any.
     }
 
     // Explicit implementation for getById if kept (from previously, not from BaseProviderInterface)

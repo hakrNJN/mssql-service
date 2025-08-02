@@ -32,7 +32,7 @@ export const RABBITMQ_CLIENT_SERVICE = Symbol('RabbitMQClientService');
 export const PUBLISHER_RABBITMQ_SERVICE = Symbol('PublisherRabbitMQService');
 export const FEATURE_CONFIG_PATH = Symbol('FeatureConfigPath');
 
-export function registerDependencies(): void {
+export async function registerDependencies(): Promise<void> {
 
   // Register Winston Logger
   container.register<ILogger>(WINSTON_LOGGER, {
@@ -50,6 +50,7 @@ export function registerDependencies(): void {
 
   // 2. Resolve the manager to get the DataSource instances.
   const dataSourceManager = container.resolve(DataSourceManager);
+  
 
   // 3. Register the actual DataSource instances for injection elsewhere.
   container.register(MAIN_DATA_SOURCE, { useValue: dataSourceManager.mainDataSource });

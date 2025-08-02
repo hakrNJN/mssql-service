@@ -24,18 +24,19 @@ export class CompanyProvider implements CompanyProvider {
     ) {
         this.mainDataSource = mainDataSource;
         this.logger = logger;
-        this.initializeRepository();
     }
 
     private _getRepository(): Repository<CompMst> {
         if (!this.companyRepository) {
-            throw new Error("Company repository not initialized. Call initializeRepository() first.");
+            this.companyRepository = this.mainDataSource.getRepository(CompMst);
+            this.logger.info("CompanyProvider repository initialized lazily.");
         }
         return this.companyRepository;
     }
 
     public initializeRepository(): void {
-        this.companyRepository = this.mainDataSource.getRepository(CompMst);
+        // This method is no longer needed as repository is initialized lazily.
+        // Keeping it for now to avoid breaking interface contracts if any.
     }
 
     async getAllCompaniesWithFilters(filters?: Filters<CompMst>): Promise<CompMst[]> {

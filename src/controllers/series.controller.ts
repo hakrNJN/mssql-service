@@ -1,6 +1,7 @@
 //src/controllers/series.controller.ts
 
 import { Request, Response } from 'express'
+import { injectable } from "tsyringe"
 import { AppConfig } from '../config/config'
 import { stringDecorators } from '../decorators/stringDecorators'
 import { SerMst } from '../entity/anushreeDb/series.entity'
@@ -8,13 +9,13 @@ import { HttpException } from '../exceptions/httpException'
 import { SeriesService } from '../services/series.service'
 import { EqualFilter, EqualNullFilter, Filters, InFilter, LikeFilter, NotLikeFilter } from '../types/filter.types'
 import { ApiResponse } from '../utils/api-response'
-
 // Declaration merging to inform TypeScript about the added method
 export interface SeriesController {
     stringToArray(str: string): number[];
 }
 
 @stringDecorators
+@injectable()
 export class SeriesController {
     private seriesService: SeriesService;
     constructor(seriesService: SeriesService) {

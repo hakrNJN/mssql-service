@@ -24,18 +24,20 @@ export class YearsProvider implements YearsProvider { // Export the class
     ) {
         this.mainDataSource = mainDataSource;
         this.logger = logger;
-        this.initializeRepository();
+        
     }
 
     private _getRepository(): Repository<YearMst> {
         if (!this.yearRepository) {
-            throw new Error("Year repository not initialized. Call initializeRepository() first.");
+            this.yearRepository = this.mainDataSource.getRepository(YearMst);
+            this.logger.info("YearsProvider repository initialized lazily.");
         }
         return this.yearRepository;
     }
 
-    private initializeRepository(): void { // Initialize the repository
-        this.yearRepository = this.mainDataSource.getRepository(YearMst);
+    public initializeRepository(): void {
+        // This method is no longer needed as repository is initialized lazily.
+        // Keeping it for now to avoid breaking interface contracts if any.
     }
 
     async getAllYearsWithFilters(filters?: Filters<YearMst>): Promise<YearMst[]> {

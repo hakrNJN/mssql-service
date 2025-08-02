@@ -16,26 +16,22 @@ export interface AccountProvider extends BaseProviderInterface<Mast, Filters<Mas
 @objectDecorators
 @injectable()
 export class AccountProvider {
-    private accountRepository: Repository<Mast>;
+    private accountRepository: Repository<Mast> | null = null;
     private readonly logger: ILogger;
+    private readonly mainDataSource: DataSource;
 
     constructor(
-        // Inject the specific DataSource using the token.
-        @inject(MAIN_DATA_SOURCE) dataSource: DataSource,
+        @inject(MAIN_DATA_SOURCE) mainDataSource: DataSource,
         @inject(WINSTON_LOGGER) logger: ILogger
     ) {
+        this.mainDataSource = mainDataSource;
         this.logger = logger;
-
-        // This is now SAFE because we will ensure the DataSource is initialized
-        // before this provider is ever used.
-        this.accountRepository = dataSource.getRepository(Mast);
-        this.logger.info("AccountProvider repository initialized.");
     }
-
 
     private _getRepository(): Repository<Mast> {
         if (!this.accountRepository) {
-            throw new Error("Account repository not initialized. Call initializeRepository() first.");
+            this.accountRepository = this.mainDataSource.getRepository(Mast);
+            this.logger.info("AccountProvider repository initialized lazily.");
         }
         return this.accountRepository;
     }

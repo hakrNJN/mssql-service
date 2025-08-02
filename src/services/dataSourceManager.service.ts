@@ -18,13 +18,13 @@ export class DataSourceManager {
         // Use the factory to create the instances
         this.mainDataSource = createDataSource(
             AppConfig.DB_CONFIG.database,
-            ["src/entity/anushreeDb/**/*.entity.ts"],
+            ["src/entity/anushreeDb/**/*.entity.ts", "src/entity/phoenixDb/**/*.entity.ts"],
             this.logger
         );
 
         this.phoenixDataSource = createDataSource(
             'pheonixDB', // The specific name for this DB
-            ["src/entity/phoenixDb/**/*.entity.ts"],
+            ["src/entity/anushreeDb/**/*.entity.ts", "src/entity/phoenixDb/**/*.entity.ts"],
             this.logger
         );
     }

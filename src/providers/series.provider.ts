@@ -24,18 +24,19 @@ export class SeriesProvider implements SeriesProvider {
     ) {
         this.mainDataSource = mainDataSource;
         this.logger = logger;
-        this.initializeRepository();
     }
 
     private _getRepository(): Repository<SerMst> {
         if (!this.seriesRepository) {
-            throw new Error("Series repository not initialized. Call initializeRepository() first.");
+            this.seriesRepository = this.mainDataSource.getRepository(SerMst);
+            this.logger.info("SeriesProvider repository initialized lazily.");
         }
         return this.seriesRepository;
     }
 
-    private initializeRepository(): void {
-        this.seriesRepository = this.mainDataSource.getRepository(SerMst);
+    public initializeRepository(): void {
+        // This method is no longer needed as repository is initialized lazily.
+        // Keeping it for now to avoid breaking interface contracts if any.
     }
 
     async getAllSeriesWithFilters(filters?: Filters<SerMst>): Promise<SerMst[]> {
