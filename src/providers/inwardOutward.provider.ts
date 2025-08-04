@@ -9,7 +9,7 @@ import { ILogger } from "../interface/logger.interface";
 import { Filters } from "../types/filter.types";
 import { WINSTON_LOGGER } from "../utils/logger";
 import { DataSource } from "typeorm";
-import { MAIN_DATA_SOURCE } from "../services/dataSourceManager.service";
+import { MAIN_DATA_SOURCE } from "../types/symbols";
 
 // Defining a specific interface for the InWardOutWardProvider that includes the SP parameters
 export interface InWardOutWardProvider extends BaseProviderInterface<SpTblFinishInWardOutWard, Filters<SpTblFinishInWardOutWard>> { // BaseProviderInterface expects one generic T

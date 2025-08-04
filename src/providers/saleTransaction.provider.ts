@@ -9,7 +9,7 @@ import { ILogger } from "../interface/logger.interface";
 import { Filters } from "../types/filter.types";
 import { WINSTON_LOGGER } from "../utils/logger";
 import { DataSource } from "typeorm";
-import { PHOENIX_DATA_SOURCE } from "../services/dataSourceManager.service";
+import { PHOENIX_DATA_SOURCE } from "../types/symbols";
 
 export interface SaleTransactionProvider extends BaseProviderInterface<SaleTransaction, Filters<SaleTransaction>> {
     trimWhitespace<T>(obj: T): T;

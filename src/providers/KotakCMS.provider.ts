@@ -10,7 +10,7 @@ import { ILogger } from "../interface/logger.interface";
 import { WINSTON_LOGGER } from "../utils/logger";
 // Removed applyFilters as we're building a custom query
 import { DataSource } from "typeorm";
-import { MAIN_DATA_SOURCE } from "../services/dataSourceManager.service";
+import { MAIN_DATA_SOURCE } from "../types/symbols";
 
 // Interface now contains only the specific methods needed for KotakCMS
 export interface KotakCMSProvider { // Interface no longer extends BaseProviderInterface

@@ -9,7 +9,7 @@ import { Filters } from "../types/filter.types";
 import { WINSTON_LOGGER } from "../utils/logger";
 import { applyFilters } from "../utils/query-utils";
 import { DataSource } from "typeorm";
-import { PHOENIX_DATA_SOURCE } from "../services/dataSourceManager.service";
+import { PHOENIX_DATA_SOURCE } from "../types/symbols";
 
 // Renamed the interface to avoid conflict with the entity class
 export interface PurchasePileLineInterface extends BaseProviderInterface<PurchasePipeLineEntity, Filters<PurchasePipeLineEntity>> {
