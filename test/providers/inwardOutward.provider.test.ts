@@ -1,20 +1,23 @@
-// src/tests/providers/inwardOutward.provider.test.ts
-import { SpTblFinishInWardOutWard } from '../../entity/anushreeDb/spTblFinishInWardOutWard.entity';
-import { HttpException } from '../../exceptions/httpException';
-import { ILogger } from '../../interface/logger.interface';
-import { InWardOutWardProvider } from '../../providers/inwardOutward.provider';
-import { DataSource, Repository, QueryRunner } from 'typeorm';
+import { DataSource, QueryRunner, Repository, SelectQueryBuilder } from 'typeorm';
+import { SpTblFinishInWardOutWard } from '../../src/entity/anushreeDb/spTblFinishInWardOutWard.entity';
+import { HttpException } from '../../src/exceptions/httpException';
+import { ILogger } from '../../src/interface/logger.interface';
+import { InWardOutWardProvider } from '../../src/providers/inwardOutward.provider';
 
 // Mock the logger
-const mockLogger: jest.Mocked<ILogger> = {
-  info: jest.fn(),
+const mockLogger: ILogger = {
+  log: jest.fn(),
   error: jest.fn(),
   warn: jest.fn(),
+  info: jest.fn(),
   debug: jest.fn(),
-} as jest.Mocked<ILogger>;
+  verbose: jest.fn(),
+  http: jest.fn(),
+  silly: jest.fn(),
+};
 
 // Mock QueryRunner
-const mockQueryRunner: jest.Mocked<QueryRunner> = {
+const mockQueryRunner: any = {
   connect: jest.fn(),
   startTransaction: jest.fn(),
   commitTransaction: jest.fn(),
@@ -24,17 +27,17 @@ const mockQueryRunner: jest.Mocked<QueryRunner> = {
   manager: {
     getRepository: jest.fn(),
   },
-} as jest.Mocked<QueryRunner>;
+};
 
 // Mock TypeORM repository
-const mockRepository: jest.Mocked<Repository<SpTblFinishInWardOutWard>> = {
+const mockRepository: any = {
   findOne: jest.fn(),
   createQueryBuilder: jest.fn(),
-} as jest.Mocked<Repository<SpTblFinishInWardOutWard>>;
+};
 
 describe('InWardOutWardProvider', () => {
   let provider: InWardOutWardProvider;
-  let mockDataSource: jest.Mocked<DataSource>;
+  let mockDataSource: any;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -45,7 +48,7 @@ describe('InWardOutWardProvider', () => {
       initialize: jest.fn(),
       destroy: jest.fn(),
       isInitialized: true,
-    } as unknown as jest.Mocked<DataSource>;
+    };
 
     (mockQueryRunner.manager.getRepository as jest.Mock).mockReturnValue(mockRepository);
 
@@ -91,7 +94,7 @@ describe('InWardOutWardProvider', () => {
   describe('getEntriesByFilter', () => {
     it('should execute SP and return data', async () => {
       const mockData = [{ Purtrnid: 1 }];
-      const mockQueryBuilder = {
+      const mockQueryBuilder: any = {
         leftJoin: jest.fn().mockReturnThis(),
         select: jest.fn().mockReturnThis(),
         where: jest.fn().mockReturnThis(),
@@ -102,7 +105,7 @@ describe('InWardOutWardProvider', () => {
         addOrderBy: jest.fn().mockReturnThis(),
         getRawMany: jest.fn().mockResolvedValue(mockData),
       };
-      mockRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder as any);
+      mockRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
 
       const result = await provider.getEntriesByFilter('conum', 'fdat', 'tdat', 'accId');
 

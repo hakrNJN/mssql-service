@@ -1,6 +1,5 @@
-// src/tests/providers/express.provider.test.ts
-import ExpressApp from '../../providers/express.provider';
-import express from 'express';
+import "reflect-metadata";
+import ExpressApp from '../../src/providers/express.provider';
 
 // Mock the express module
 jest.mock('express', () => {

@@ -1,8 +1,8 @@
-// src/tests/providers/fileService.provider.test.ts
+import "reflect-metadata";
 import * as fs from 'fs/promises';
 import * as yaml from 'js-yaml';
-import { ILogger } from '../../interface/logger.interface';
-import FileService from '../../providers/fileService.provider';
+import { ILogger } from '../../src/interface/logger.interface';
+import FileService from '../../src/providers/fileService.provider';
 
 // Mock fs/promises
 jest.mock('fs/promises', () => ({

@@ -1,22 +1,23 @@
-// src/tests/account.provider.test.ts
-import { container } from 'tsyringe';
-import { Mast } from '../../entity/anushreeDb/accounts.entity';
-import winston from 'winston';
-import { AccountProvider } from '../../providers/account.provider';
-import { AppDataSource } from '../../providers/data-source.provider';
-import { WINSTON_LOGGER } from '../../utils/logger';
-import { applyFilters } from '../../utils/query-utils';
+import { Mast } from '../../src/entity/anushreeDb/accounts.entity';
+import { ILogger } from '../../src/interface/logger.interface';
+import { AccountProvider } from '../../src/providers/account.provider';
+import { DataSource } from "typeorm";
+import { applyFilters } from '../../src/utils/query-utils';
 
 // Mock the logger
-const mockLogger: jest.Mocked<ILogger> = {
+const mockLogger: ILogger = {
   info: jest.fn(),
   error: jest.fn(),
   warn: jest.fn(),
   debug: jest.fn(),
+  log: jest.fn(),
+  verbose: jest.fn(),
+  http: jest.fn(),
+  silly: jest.fn(),
 } as jest.Mocked<ILogger>;
 
 // Mock query-utils
-jest.mock('../../utils/query-utils', () => ({
+jest.mock('../../src/utils/query-utils', () => ({
   applyFilters: jest.fn(),
 }));
 
@@ -35,19 +36,20 @@ const mockRepository = {
 
 describe('AccountProvider', () => {
   let provider: AccountProvider;
-  let mockDataSource: jest.Mocked<AppDataSource>;
+  let mockDataSource: jest.Mocked<DataSource>;
 
   beforeEach(async () => {
     jest.clearAllMocks();
 
-    const mockGetRepository = jest.fn().mockReturnValue(mockRepository);
-    mockDataSource = new AppDataSource(mockLogger) as jest.Mocked<AppDataSource>;
-    (mockDataSource.init as jest.Mock).mockResolvedValue({
-      getRepository: mockGetRepository,
-    });
+    // Mock AppDataSource to return the mockRepository
+    mockDataSource = {
+      getRepository: jest.fn().mockReturnValue(mockRepository),
+    } as unknown as jest.Mocked<DataSource>;
 
-    provider = new AccountProvider(mockDataSource);
-    await provider.initializeRepository();
+    provider = new AccountProvider(mockDataSource, mockLogger);
+    // Mock the trimWhitespace method
+    jest.spyOn(provider, 'trimWhitespace').mockImplementation((data) => data);
+    
   });
 
   it('should be defined', () => {
@@ -56,13 +58,45 @@ describe('AccountProvider', () => {
 
   describe('getAllAccounts', () => {
     it('should get all accounts', async () => {
-      const mockData = [new Mast(), new Mast()];
+      const mockData: Mast[] = [
+        {
+          id: 1,
+          Name: 'Test Account',
+          Add1: '',
+          Add2: '',
+          City: '',
+          State: '',
+          PinCode: 123456,
+          Mobile: '',
+          Email: '',
+          ContPerson: '',
+          PanNo: '',
+          GST: '',
+          Status: '',
+          Bank: '',
+          AcNo: '',
+          IFSCCode: '',
+          BlackList: '',
+          Type: 1,
+          SchdId: 1,
+          Group: 1,
+          AgentId: 1,
+        },
+      ];
       mockRepository.find.mockResolvedValue(mockData);
 
       const result = await provider.getAllAccounts(0, 10);
 
       expect(result).toEqual(mockData);
       expect(mockRepository.find).toHaveBeenCalledWith({ skip: 0, take: 10, order: { id: 'ASC' } });
+    });
+
+    it('should return an empty array if no accounts are found', async () => {
+      mockRepository.find.mockResolvedValue([]);
+
+      const result = await provider.getAllAccounts(0, 10);
+
+      expect(result).toEqual([]);
     });
   });
 
@@ -75,7 +109,7 @@ describe('AccountProvider', () => {
         orderBy: jest.fn().mockReturnThis(),
         getMany: jest.fn().mockResolvedValue(mockData),
       };
-      (applyFilters as jest.Mock).mockReturnValue(mockQueryBuilder as any);
+      (applyFilters as jest.Mock<any, any>).mockReturnValue(mockQueryBuilder as any);
 
       const filters = { Name: { equal: 'Test' } };
       const result = await provider.getAllAccountWithFilters(filters, 0, 10);

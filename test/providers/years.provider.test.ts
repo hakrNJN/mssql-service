@@ -1,35 +1,38 @@
-// src/tests/providers/years.provider.test.ts
-import { YearsProvider } from '../../providers/years.provider';
-import { YearMst } from '../../entity/anushreeDb/years.entity';
-import { applyFilters } from '../../utils/query-utils';
-import { ILogger } from '../../interface/logger.interface';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
+import { YearMst } from '../../src/entity/anushreeDb/years.entity';
+import { ILogger } from '../../src/interface/logger.interface';
+import { YearsProvider } from '../../src/providers/years.provider';
+import { applyFilters } from '../../src/utils/query-utils'; // Corrected import path
 
 // Mock query-utils
-jest.mock('../../utils/query-utils', () => ({
+jest.mock('../../src/utils/query-utils', () => ({
   applyFilters: jest.fn(),
 }));
 
 // Mock the logger
-const mockLogger: jest.Mocked<ILogger> = {
-  info: jest.fn(),
+const mockLogger: ILogger = {
+  log: jest.fn(),
   error: jest.fn(),
   warn: jest.fn(),
+  info: jest.fn(),
   debug: jest.fn(),
-} as jest.Mocked<ILogger>;
+  verbose: jest.fn(),
+  http: jest.fn(),
+  silly: jest.fn(),
+};
 
 // Mock TypeORM repository
-const mockRepository: jest.Mocked<Repository<YearMst>> = {
+const mockRepository: any = {
   find: jest.fn(),
   findOneBy: jest.fn(),
   createQueryBuilder: jest.fn().mockReturnValue({
     getMany: jest.fn(),
   }),
-} as jest.Mocked<Repository<YearMst>>;
+};
 
 describe('YearsProvider', () => {
   let provider: YearsProvider;
-  let mockDataSource: jest.Mocked<DataSource>;
+  let mockDataSource: any;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -39,9 +42,9 @@ describe('YearsProvider', () => {
       initialize: jest.fn(),
       destroy: jest.fn(),
       isInitialized: true,
-    } as unknown as jest.Mocked<DataSource>;
+    };
 
-    provider = new YearsProvider(mockDataSource, mockLogger);
+    provider = new YearsProvider(mockDataSource as DataSource, mockLogger);
   });
 
   it('should be defined', () => {

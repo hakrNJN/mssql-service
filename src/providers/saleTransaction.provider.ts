@@ -49,7 +49,7 @@ export class SaleTransactionProvider {
                 where: { SalTrnId: id },
                 relations: ['products'], // Correct relations is specified
             });
-            return this.trimWhitespace(transaction) || null; // Trimming is applied here
+            return transaction ? this.trimWhitespace(transaction) : null; // Trimming is applied here
         } catch (error) {
             this.logger.error("Error fetching sale transaction:", error);
             return null; // or throw error

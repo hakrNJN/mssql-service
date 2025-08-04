@@ -1,3 +1,4 @@
+import "reflect-metadata";
 //src/providers/purchasePileLine.provider.ts
 import { inject } from "tsyringe";
 import { DeleteResult, Repository, SelectQueryBuilder, UpdateResult } from "typeorm"; // Import UpdateResult, DeleteResult

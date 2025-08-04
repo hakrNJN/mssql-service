@@ -1,31 +1,34 @@
-// src/tests/providers/company.provider.test.ts
-import { CompanyProvider } from '../../providers/company.provider';
-import { CompMst } '../../entity/anushreeDb/company.entity';
-import { applyFilters } from '../../utils/query-utils';
-import { ILogger } from '../../interface/logger.interface';
 import { DataSource, Repository } from 'typeorm';
+import { CompMst } from '../../src/entity/anushreeDb/company.entity';
+import { ILogger } from '../../src/interface/logger.interface';
+import { CompanyProvider } from '../../src/providers/company.provider';
+import { applyFilters } from '../../src/utils/query-utils';
 
 // Mock query-utils
-jest.mock('../../utils/query-utils', () => ({
+jest.mock('../../src/utils/query-utils', () => ({
   applyFilters: jest.fn(),
 }));
 
 // Mock the logger
-const mockLogger: jest.Mocked<ILogger> = {
+const mockLogger: ILogger = {
   info: jest.fn(),
   error: jest.fn(),
   warn: jest.fn(),
   debug: jest.fn(),
+  log: jest.fn(),
+  verbose: jest.fn(),
+  http: jest.fn(),
+  silly: jest.fn(),
 } as jest.Mocked<ILogger>;
 
 // Mock TypeORM repository
-const mockRepository: jest.Mocked<Repository<CompMst>> = {
+const mockRepository: any = {
   find: jest.fn(),
   findOneBy: jest.fn(),
   createQueryBuilder: jest.fn().mockReturnValue({
     getMany: jest.fn(),
   }),
-} as jest.Mocked<Repository<CompMst>>;
+} as any;
 
 describe('CompanyProvider', () => {
   let provider: CompanyProvider;
@@ -42,6 +45,7 @@ describe('CompanyProvider', () => {
     } as unknown as jest.Mocked<DataSource>;
 
     provider = new CompanyProvider(mockDataSource, mockLogger);
+    
   });
 
   it('should be defined', () => {
