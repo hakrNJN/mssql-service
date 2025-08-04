@@ -1,5 +1,4 @@
 //src/providers/KotakCMS.provider.ts
-import { container, inject } from "tsyringe";
 import { Repository } from "typeorm";
 import { objectDecorators } from "../decorators/objectDecorators";
 import { Vwkotakcmsonline } from "../entity/anushreeDb/kotakCMS.entity";
@@ -7,10 +6,8 @@ import { SerMst } from "../entity/anushreeDb/series.entity";
 // import { BaseProviderInterface } from "../interface/base.provider"; // REMOVED: Not implementing generic base interface
 import { ILogger } from "../interface/logger.interface";
 // import { Filters } from "../types/filter.types"; // REMOVED: Not using generic filters directly here
-import { WINSTON_LOGGER } from "../utils/logger";
 // Removed applyFilters as we're building a custom query
 import { DataSource } from "typeorm";
-import { MAIN_DATA_SOURCE } from "../types/symbols";
 
 // Interface now contains only the specific methods needed for KotakCMS
 export interface KotakCMSProvider { // Interface no longer extends BaseProviderInterface
@@ -39,8 +36,8 @@ export class KotakCMSProvider implements KotakCMSProvider { // Class implements 
     private readonly mainDataSource: DataSource;
 
     constructor(
-        @inject(MAIN_DATA_SOURCE) mainDataSource: DataSource,
-        @inject(WINSTON_LOGGER) logger: ILogger
+        mainDataSource: DataSource,
+        logger: ILogger
     ) {
         this.mainDataSource = mainDataSource;
         this.logger = logger;

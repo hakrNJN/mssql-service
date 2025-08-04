@@ -1,10 +1,9 @@
-
-// src/tests/controllers/saleTransaction.controller.test.ts
 import { Request, Response } from 'express';
 import { SaleTransactionController } from '../../controllers/saleTransaction.controller';
 import { HttpException } from '../../exceptions/httpException';
 import { SaleTransactionService } from '../../services/saleTransaction.service';
 import { ApiResponse } from '../../utils/api-response';
+import { ILogger } from '../../interface/logger.interface';
 
 // Mock SaleTransactionService and ApiResponse
 jest.mock('../../services/saleTransaction.service');
@@ -15,11 +14,14 @@ describe('SaleTransactionController', () => {
   let mockService: jest.Mocked<SaleTransactionService>;
   let mockRequest: Partial<Request>;
   let mockResponse: Partial<Response>;
+  let mockLogger: jest.Mocked<ILogger>;
 
   beforeEach(() => {
-    mockService = new SaleTransactionService(null as any) as jest.Mocked<SaleTransactionService>;
-    mockService.initialize = jest.fn().mockResolvedValue(undefined);
-    controller = new SaleTransactionController(mockService);
+    mockLogger = { info: jest.fn(), error: jest.fn(), warn: jest.fn(), debug: jest.fn() } as jest.Mocked<ILogger>;
+    mockService = new SaleTransactionService(null as any, null as any) as jest.Mocked<SaleTransactionService>; // Updated to match new constructor
+    mockService.getTransactionById = jest.fn();
+
+    controller = new SaleTransactionController(mockService, mockLogger);
     mockRequest = {
       params: {},
     };

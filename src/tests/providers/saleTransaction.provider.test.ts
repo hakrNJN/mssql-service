@@ -1,42 +1,37 @@
 // src/tests/providers/saleTransaction.provider.test.ts
 import { SaleTransactionProvider } from '../../providers/saleTransaction.provider';
-import { PhoenixDataSource } from '../../providers/phoenix.data-source.provider';
 import { SaleTransaction } from '../../entity/phoenixDb/saleTransaction.entity';
-import { Repository } from 'typeorm';
 import { ILogger } from '../../interface/logger.interface';
+import { DataSource, Repository } from 'typeorm';
 
 // Mock the logger
-const mockLogger: ILogger = {
-  log: jest.fn(),
+const mockLogger: jest.Mocked<ILogger> = {
+  info: jest.fn(),
   error: jest.fn(),
   warn: jest.fn(),
-  info: jest.fn(),
   debug: jest.fn(),
-  verbose: jest.fn(),
-  http: jest.fn(),
-  silly: jest.fn(),
-};
+} as jest.Mocked<ILogger>;
 
-// Mock PhoenixDataSource
-const mockRepository = {
+// Mock TypeORM repository
+const mockRepository: jest.Mocked<Repository<SaleTransaction>> = {
   findOne: jest.fn(),
-};
-const mockDataSource = {
-  init: jest.fn().mockResolvedValue({
-    getRepository: jest.fn().mockReturnValue(mockRepository),
-  }),
-};
+} as jest.Mocked<Repository<SaleTransaction>>;
 
 describe('SaleTransactionProvider', () => {
   let provider: SaleTransactionProvider;
+  let mockDataSource: jest.Mocked<DataSource>;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     jest.clearAllMocks();
-    const mockDataSourceInstance = mockDataSource as unknown as PhoenixDataSource;
-    provider = new SaleTransactionProvider(mockDataSourceInstance);
-    // Manually inject logger
-    (provider as any).logger = mockLogger;
-    await provider.initializeRepository();
+
+    mockDataSource = {
+      getRepository: jest.fn().mockReturnValue(mockRepository),
+      initialize: jest.fn(),
+      destroy: jest.fn(),
+      isInitialized: true,
+    } as unknown as jest.Mocked<DataSource>;
+
+    provider = new SaleTransactionProvider(mockDataSource, mockLogger);
   });
 
   it('should be defined', () => {

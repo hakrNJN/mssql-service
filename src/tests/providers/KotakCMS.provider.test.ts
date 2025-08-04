@@ -1,24 +1,20 @@
 // src/tests/providers/KotakCMS.provider.test.ts
 import { KotakCMSProvider } from '../../providers/kotakCMS.provider';
-import { AppDataSource } from '../../providers/data-source.provider';
 import { Vwkotakcmsonline } from '../../entity/anushreeDb/kotakCMS.entity';
 import { SerMst } from '../../entity/anushreeDb/series.entity';
 import { ILogger } from '../../interface/logger.interface';
+import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
 
 // Mock the logger
-const mockLogger: ILogger = {
-  log: jest.fn(),
+const mockLogger: jest.Mocked<ILogger> = {
+  info: jest.fn(),
   error: jest.fn(),
   warn: jest.fn(),
-  info: jest.fn(),
   debug: jest.fn(),
-  verbose: jest.fn(),
-  http: jest.fn(),
-  silly: jest.fn(),
-};
+} as jest.Mocked<ILogger>;
 
-// Mock TypeORM
-const mockQueryBuilder = {
+// Mock TypeORM QueryBuilder
+const mockQueryBuilder: jest.Mocked<SelectQueryBuilder<any>> = {
   where: jest.fn().mockReturnThis(),
   andWhere: jest.fn().mockReturnThis(),
   select: jest.fn().mockReturnThis(),
@@ -30,37 +26,36 @@ const mockQueryBuilder = {
   orderBy: jest.fn().mockReturnThis(),
   getMany: jest.fn().mockResolvedValue([]),
   findOne: jest.fn().mockResolvedValue(null),
-};
+} as jest.Mocked<SelectQueryBuilder<any>>;
 
-const mockKotakCMSRepository = {
+// Mock TypeORM Repositories
+const mockKotakCMSRepository: jest.Mocked<Repository<Vwkotakcmsonline>> = {
   findOne: jest.fn(),
   createQueryBuilder: jest.fn(() => mockQueryBuilder),
-};
+} as jest.Mocked<Repository<Vwkotakcmsonline>>;
 
-const mockSerMstRepository = {
+const mockSerMstRepository: jest.Mocked<Repository<SerMst>> = {
   createQueryBuilder: jest.fn(() => mockQueryBuilder),
-};
+} as jest.Mocked<Repository<SerMst>>;
 
-const mockDataSource = {
-  init: jest.fn().mockResolvedValue({
-    getRepository: jest.fn(entity => {
-      if (entity === Vwkotakcmsonline) return mockKotakCMSRepository;
-      if (entity === SerMst) return mockSerMstRepository;
-      return {};
-    }),
+// Mock DataSource
+const mockDataSource: jest.Mocked<DataSource> = {
+  getRepository: jest.fn((entity) => {
+    if (entity === Vwkotakcmsonline) return mockKotakCMSRepository;
+    if (entity === SerMst) return mockSerMstRepository;
+    return {} as any; // Fallback for other entities
   }),
-};
+  initialize: jest.fn(),
+  destroy: jest.fn(),
+  isInitialized: true,
+} as jest.Mocked<DataSource>;
 
 describe('KotakCMSProvider', () => {
   let provider: KotakCMSProvider;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     jest.clearAllMocks();
-    const mockDataSourceInstance = mockDataSource as unknown as AppDataSource;
-    provider = new KotakCMSProvider(mockDataSourceInstance);
-    // Manually inject logger
-    (provider as any).logger = mockLogger;
-    await provider.initializeRepository();
+    provider = new KotakCMSProvider(mockDataSource, mockLogger);
   });
 
   it('should be defined', () => {

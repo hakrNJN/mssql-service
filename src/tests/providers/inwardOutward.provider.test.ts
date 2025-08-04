@@ -2,23 +2,19 @@
 import { SpTblFinishInWardOutWard } from '../../entity/anushreeDb/spTblFinishInWardOutWard.entity';
 import { HttpException } from '../../exceptions/httpException';
 import { ILogger } from '../../interface/logger.interface';
-import { AppDataSource } from '../../providers/data-source.provider';
 import { InWardOutWardProvider } from '../../providers/inwardOutward.provider';
+import { DataSource, Repository, QueryRunner } from 'typeorm';
 
 // Mock the logger
-const mockLogger: ILogger = {
-  log: jest.fn(),
+const mockLogger: jest.Mocked<ILogger> = {
+  info: jest.fn(),
   error: jest.fn(),
   warn: jest.fn(),
-  info: jest.fn(),
   debug: jest.fn(),
-  verbose: jest.fn(),
-  http: jest.fn(),
-  silly: jest.fn(),
-};
+} as jest.Mocked<ILogger>;
 
 // Mock QueryRunner
-const mockQueryRunner = {
+const mockQueryRunner: jest.Mocked<QueryRunner> = {
   connect: jest.fn(),
   startTransaction: jest.fn(),
   commitTransaction: jest.fn(),
@@ -28,41 +24,32 @@ const mockQueryRunner = {
   manager: {
     getRepository: jest.fn(),
   },
-};
+} as jest.Mocked<QueryRunner>;
 
 // Mock TypeORM repository
-const mockRepository = {
+const mockRepository: jest.Mocked<Repository<SpTblFinishInWardOutWard>> = {
   findOne: jest.fn(),
   createQueryBuilder: jest.fn(),
-};
-
-// Mock AppDataSource
-const mockDataSourceInstance = {
-  getRepository: jest.fn((entity) => {
-    // You might want to return different repositories based on the entity if needed
-    return mockRepository;
-  }),
-};
-
-const mockDataSource = {
-  init: jest.fn().mockResolvedValue(mockDataSourceInstance),
-  getDataSource: jest.fn().mockReturnValue({
-    createQueryRunner: () => mockQueryRunner,
-  }),
-};
-
+} as jest.Mocked<Repository<SpTblFinishInWardOutWard>>;
 
 describe('InWardOutWardProvider', () => {
   let provider: InWardOutWardProvider;
+  let mockDataSource: jest.Mocked<DataSource>;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     jest.clearAllMocks();
-    const mockDataSourceInstance = mockDataSource as unknown as AppDataSource;
-    provider = new InWardOutWardProvider(mockDataSourceInstance);
-    // Manually inject logger
-    (provider as any).logger = mockLogger;
+
+    mockDataSource = {
+      getRepository: jest.fn().mockReturnValue(mockRepository),
+      createQueryRunner: jest.fn().mockReturnValue(mockQueryRunner),
+      initialize: jest.fn(),
+      destroy: jest.fn(),
+      isInitialized: true,
+    } as unknown as jest.Mocked<DataSource>;
+
     (mockQueryRunner.manager.getRepository as jest.Mock).mockReturnValue(mockRepository);
-    await provider.initializeRepository();
+
+    provider = new InWardOutWardProvider(mockDataSource, mockLogger);
   });
 
   it('should be defined', () => {

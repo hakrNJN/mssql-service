@@ -1,10 +1,9 @@
 //src/controllers/KotakCMS.controller.ts
 
 import { Request, Response } from 'express';
-import { container } from 'tsyringe';
 import { HttpException } from '../exceptions/httpException';
 import { ILogger } from '../interface/logger.interface';
-import { KotakCMSService } from '../services/KotakCMS.Service';
+import { KotakCMSService } from '../services/kotakCMS.service';
 import { ApiResponse } from '../utils/api-response';
 import { WINSTON_LOGGER } from '../utils/logger';
 // No need for filter types or Vwkotakcmsonline entity import here, as it's handled by service/provider

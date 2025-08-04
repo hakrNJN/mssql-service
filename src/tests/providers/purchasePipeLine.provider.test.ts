@@ -1,21 +1,17 @@
 // src/tests/providers/purchasePipeLine.provider.test.ts
 import { PurchasePileLine } from '../../providers/purchasePipeLine.provider';
-import { AppDataSource } from '../../providers/data-source.provider';
 import { PurchasePipeLine as PurchasePipeLineEntity } from '../../entity/phoenixDb/purchasePipeLine.entity';
 import { applyFilters } from '../../utils/query-utils';
 import { ILogger } from '../../interface/logger.interface';
+import { DataSource, Repository } from 'typeorm';
 
 // Mock the logger
-const mockLogger: ILogger = {
-  log: jest.fn(),
+const mockLogger: jest.Mocked<ILogger> = {
+  info: jest.fn(),
   error: jest.fn(),
   warn: jest.fn(),
-  info: jest.fn(),
   debug: jest.fn(),
-  verbose: jest.fn(),
-  http: jest.fn(),
-  silly: jest.fn(),
-};
+} as jest.Mocked<ILogger>;
 
 // Mock query-utils
 jest.mock('../../utils/query-utils', () => ({
@@ -28,7 +24,7 @@ jest.mock('../../utils/query-utils', () => ({
 }));
 
 // Mock TypeORM repository
-const mockRepository = {
+const mockRepository: jest.Mocked<Repository<PurchasePipeLineEntity>> = {
   find: jest.fn(),
   findOne: jest.fn(),
   create: jest.fn(),
@@ -41,23 +37,23 @@ const mockRepository = {
     take: jest.fn().mockReturnThis(),
     orderBy: jest.fn().mockReturnThis(),
   }),
-};
-
-// Mock AppDataSource
-const mockDataSource = {
-  init: jest.fn().mockResolvedValue({ getRepository: () => mockRepository }),
-};
+} as jest.Mocked<Repository<PurchasePipeLineEntity>>;
 
 describe('PurchasePileLine', () => {
   let provider: PurchasePileLine;
+  let mockDataSource: jest.Mocked<DataSource>;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     jest.clearAllMocks();
-    const mockDataSourceInstance = mockDataSource as unknown as AppDataSource;
-    provider = new PurchasePileLine(mockDataSourceInstance);
-    // Manually inject logger
-    (provider as any).logger = mockLogger;
-    await provider.initializeRepository();
+
+    mockDataSource = {
+      getRepository: jest.fn().mockReturnValue(mockRepository),
+      initialize: jest.fn(),
+      destroy: jest.fn(),
+      isInitialized: true,
+    } as unknown as jest.Mocked<DataSource>;
+
+    provider = new PurchasePileLine(mockDataSource, mockLogger);
   });
 
   it('should be defined', () => {

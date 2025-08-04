@@ -5,6 +5,7 @@ import { HttpException } from '../../exceptions/httpException';
 import { KotakCMSService } from '../../services/kotakCMS.service';
 import { ApiResponse } from '../../utils/api-response';
 import { Vwkotakcmsonline } from '../../entity/anushreeDb/kotakCMS.entity';
+import { ILogger } from '../../interface/logger.interface';
 
 // Mock KotakCMSService and ApiResponse
 jest.mock('../../services/kotakCMS.service');
@@ -15,10 +16,12 @@ describe('KotakCMSController', () => {
   let mockService: jest.Mocked<KotakCMSService>;
   let mockRequest: Partial<Request>;
   let mockResponse: Partial<Response>;
+  let mockLogger: jest.Mocked<ILogger>;
 
   beforeEach(() => {
-    mockService = new KotakCMSService(null as any) as jest.Mocked<KotakCMSService>;
-    controller = new KotakCMSController(mockService);
+    mockLogger = { info: jest.fn(), error: jest.fn(), warn: jest.fn(), debug: jest.fn() } as jest.Mocked<ILogger>;
+    mockService = new KotakCMSService(null as any, null as any) as jest.Mocked<KotakCMSService>; // Updated to match new constructor
+    controller = new KotakCMSController(mockService, mockLogger);
     mockRequest = {
       query: {},
     };

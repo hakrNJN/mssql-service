@@ -1,7 +1,7 @@
 // src/routes/KotakCMS.routes.ts
 import { Router } from 'express';
 import { container } from 'tsyringe';
-import { KotakCMSController } from '../controllers/KotakCMS.controller';
+import { KotakCMSController } from '../controllers/kotakCMS.controller';
 
 const kotakCMSRoute = (): Router => {
     const router: Router = Router();

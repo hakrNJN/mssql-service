@@ -3,7 +3,7 @@
 import { container } from "tsyringe";
 import { AppConfig } from '../config/config';
 import EventDrivenController from "../controllers/eventDriven.controller";
-import { KotakCMSController } from '../controllers/KotakCMS.controller';
+import { KotakCMSController } from '../controllers/kotakCMS.controller';
 import { PurchasePipeLineController } from '../controllers/purchasePipeLine.controller';
 import { ILogger } from '../interface/logger.interface';
 import { AccountService } from "../services/account.service";
@@ -12,7 +12,7 @@ import { CompanyService } from '../services/company.service';
 import { DataSourceManager } from "../services/dataSourceManager.service";
 import { MAIN_DATA_SOURCE, PHOENIX_DATA_SOURCE } from "../types/symbols";
 import FeaturesService from "../services/feature.service";
-import { KotakCMSService } from '../services/KotakCMS.Service';
+import { KotakCMSService } from '../services/kotakCMS.service';
 import { NoOpPublisherRabbitMQService } from "../services/noOpPublisherRabbitMQ.service";
 import { NoOpRabbitMQClientService } from "../services/noOpRabbitMQ.service";
 import PublisherRabbitMQService from "../services/publisher.RabbitMQ.service";

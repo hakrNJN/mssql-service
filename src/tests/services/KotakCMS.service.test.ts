@@ -1,8 +1,10 @@
 // src/tests/services/KotakCMS.service.test.ts
 import { Vwkotakcmsonline } from '../../entity/anushreeDb/kotakCMS.entity';
-import { AppDataSource } from '../../providers/data-source.provider';
 import { KotakCMSProvider } from '../../providers/kotakCMS.provider';
 import { KotakCMSService } from '../../services/kotakCMS.service';
+import { DataSourceManager } from '../../services/dataSourceManager.service';
+import { ILogger } from '../../interface/logger.interface';
+import { DataSource } from 'typeorm';
 
 // Mock KotakCMSProvider
 jest.mock('../../providers/kotakCMS.provider');
@@ -10,29 +12,29 @@ jest.mock('../../providers/kotakCMS.provider');
 describe('KotakCMSService', () => {
   let service: KotakCMSService;
   let mockKotakCMSProvider: jest.Mocked<KotakCMSProvider>;
-  let mockDataSource: jest.Mocked<AppDataSource>;
+  let mockDataSourceManager: jest.Mocked<DataSourceManager>;
+  let mockLogger: jest.Mocked<ILogger>;
+  let mockDataSource: jest.Mocked<DataSource>;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockDataSource = {} as jest.Mocked<AppDataSource>; // Mock AppDataSource
-    mockKotakCMSProvider = new KotakCMSProvider(mockDataSource) as jest.Mocked<KotakCMSProvider>;
-    mockKotakCMSProvider.initializeRepository = jest.fn().mockResolvedValue(undefined);
-    mockKotakCMSProvider.getKotakCMSData = jest.fn();
 
-    service = new KotakCMSService(mockDataSource);
-    // Manually inject the mocked provider
-    (service as any).kotakCMSProvider = mockKotakCMSProvider;
+    mockDataSource = { getRepository: jest.fn() } as unknown as jest.Mocked<DataSource>;
+    mockLogger = { info: jest.fn(), error: jest.fn(), warn: jest.fn(), debug: jest.fn() } as jest.Mocked<ILogger>;
+    mockDataSourceManager = { mainDataSource: mockDataSource, phoenixDataSource: mockDataSource, initializeDataSources: jest.fn(), closeDataSources: jest.fn() } as jest.Mocked<DataSourceManager>;
+
+    // Mock the constructor to return a mocked instance with correct arguments
+    (KotakCMSProvider as jest.Mock).mockImplementation(() => ({
+      getKotakCMSData: jest.fn(),
+    }));
+
+    service = new KotakCMSService(mockDataSourceManager, mockLogger);
+    // Manually inject the mocked provider, as it's now created within the service
+    mockKotakCMSProvider = (service as any).kotakCMSProvider;
   });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
-  });
-
-  describe('initialize', () => {
-    it('should initialize the KotakCMS provider repository', async () => {
-      await service.initialize();
-      expect(mockKotakCMSProvider.initializeRepository).toHaveBeenCalled();
-    });
   });
 
   describe('getKotakCMSData', () => {

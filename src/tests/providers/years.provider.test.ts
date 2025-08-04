@@ -1,36 +1,47 @@
 // src/tests/providers/years.provider.test.ts
 import { YearsProvider } from '../../providers/years.provider';
-import { AppDataSource } from '../../providers/data-source.provider';
 import { YearMst } from '../../entity/anushreeDb/years.entity';
 import { applyFilters } from '../../utils/query-utils';
+import { ILogger } from '../../interface/logger.interface';
+import { DataSource, Repository } from 'typeorm';
 
 // Mock query-utils
 jest.mock('../../utils/query-utils', () => ({
   applyFilters: jest.fn(),
 }));
 
+// Mock the logger
+const mockLogger: jest.Mocked<ILogger> = {
+  info: jest.fn(),
+  error: jest.fn(),
+  warn: jest.fn(),
+  debug: jest.fn(),
+} as jest.Mocked<ILogger>;
+
 // Mock TypeORM repository
-const mockRepository = {
+const mockRepository: jest.Mocked<Repository<YearMst>> = {
   find: jest.fn(),
   findOneBy: jest.fn(),
   createQueryBuilder: jest.fn().mockReturnValue({
     getMany: jest.fn(),
   }),
-};
-
-// Mock AppDataSource
-const mockDataSource = {
-  init: jest.fn().mockResolvedValue({ getRepository: () => mockRepository }),
-};
+} as jest.Mocked<Repository<YearMst>>;
 
 describe('YearsProvider', () => {
   let provider: YearsProvider;
+  let mockDataSource: jest.Mocked<DataSource>;
 
-  beforeEach(async () => {
-    jest.clearAllMocks(); // Corrected typo here
-    const mockDataSourceInstance = mockDataSource as unknown as AppDataSource;
-    provider = new YearsProvider(mockDataSourceInstance);
-    await provider.initializeRepository();
+  beforeEach(() => {
+    jest.clearAllMocks();
+
+    mockDataSource = {
+      getRepository: jest.fn().mockReturnValue(mockRepository),
+      initialize: jest.fn(),
+      destroy: jest.fn(),
+      isInitialized: true,
+    } as unknown as jest.Mocked<DataSource>;
+
+    provider = new YearsProvider(mockDataSource, mockLogger);
   });
 
   it('should be defined', () => {

@@ -1,8 +1,10 @@
 // src/tests/services/saleTransaction.service.test.ts
 import { SaleTransactionService } from '../../services/saleTransaction.service';
 import { SaleTransactionProvider } from '../../providers/saleTransaction.provider';
-import { PhoenixDataSource } from '../../providers/phoenix.data-source.provider';
 import { SaleTransaction } from '../../entity/phoenixDb/saleTransaction.entity';
+import { DataSourceManager } from '../../services/dataSourceManager.service';
+import { ILogger } from '../../interface/logger.interface';
+import { DataSource } from 'typeorm';
 
 // Mock SaleTransactionProvider
 jest.mock('../../providers/saleTransaction.provider');
@@ -10,29 +12,27 @@ jest.mock('../../providers/saleTransaction.provider');
 describe('SaleTransactionService', () => {
   let service: SaleTransactionService;
   let mockSaleTransactionProvider: jest.Mocked<SaleTransactionProvider>;
-  let mockPhoenixDataSource: jest.Mocked<PhoenixDataSource>;
+  let mockDataSourceManager: jest.Mocked<DataSourceManager>;
+  let mockLogger: jest.Mocked<ILogger>;
+  let mockDataSource: jest.Mocked<DataSource>;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockPhoenixDataSource = {} as jest.Mocked<PhoenixDataSource>; // Mock PhoenixDataSource
-    mockSaleTransactionProvider = new SaleTransactionProvider(mockPhoenixDataSource) as jest.Mocked<SaleTransactionProvider>;
-    mockSaleTransactionProvider.initializeRepository = jest.fn().mockResolvedValue(undefined);
+
+    mockDataSource = { getRepository: jest.fn() } as unknown as jest.Mocked<DataSource>;
+    mockLogger = { info: jest.fn(), error: jest.fn(), warn: jest.fn(), debug: jest.fn() } as jest.Mocked<ILogger>;
+    mockDataSourceManager = { mainDataSource: mockDataSource, phoenixDataSource: mockDataSource, initializeDataSources: jest.fn(), closeDataSources: jest.fn() } as jest.Mocked<DataSourceManager>;
+
+    mockSaleTransactionProvider = new SaleTransactionProvider(mockDataSource, mockLogger) as jest.Mocked<SaleTransactionProvider>;
     mockSaleTransactionProvider.getTransactionById = jest.fn();
 
-    service = new SaleTransactionService(mockPhoenixDataSource);
-    // Manually inject the mocked provider
+    service = new SaleTransactionService(mockDataSourceManager, mockLogger);
+    // Manually inject the mocked provider, as it's now created within the service
     (service as any).saleTransactionProvider = mockSaleTransactionProvider;
   });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
-  });
-
-  describe('initialize', () => {
-    it('should initialize the sale transaction provider repository', async () => {
-      await service.initialize();
-      expect(mockSaleTransactionProvider.initializeRepository).toHaveBeenCalled();
-    });
   });
 
   describe('getTransactionById', () => {

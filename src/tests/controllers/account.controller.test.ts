@@ -1,10 +1,10 @@
-// src/tests/controllers/account.controller.test.ts
 import { Request, Response } from 'express';
 import { AccountController } from '../../controllers/account.controller';
 import { AccountService } from '../../services/account.service';
 import { ApiResponse } from '../../utils/api-response';
 import { HttpException } from '../../exceptions/httpException';
 import { Mast } from '../../entity/anushreeDb/accounts.entity';
+import { ILogger } from '../../interface/logger.interface';
 
 // Mock AccountService and ApiResponse
 jest.mock('../../services/account.service');
@@ -15,10 +15,12 @@ describe('AccountController', () => {
   let mockService: jest.Mocked<AccountService>;
   let mockRequest: Partial<Request>;
   let mockResponse: Partial<Response>;
+  let mockLogger: jest.Mocked<ILogger>;
 
   beforeEach(() => {
+    mockLogger = { info: jest.fn(), error: jest.fn(), warn: jest.fn(), debug: jest.fn() } as jest.Mocked<ILogger>;
     // Mock the AccountService constructor and its methods
-    mockService = new AccountService(null as any) as jest.Mocked<AccountService>;
+    mockService = new AccountService(null as any, null as any) as jest.Mocked<AccountService>; // Updated to match new constructor
     mockService.getAccounts = jest.fn();
     mockService.getCustomers = jest.fn();
     mockService.getAgents = jest.fn();
@@ -26,9 +28,8 @@ describe('AccountController', () => {
     mockService.getAccountById = jest.fn();
     mockService.getCustomerByGST = jest.fn();
     mockService.getAgentByIdWithCustomers = jest.fn();
-    mockService.initialize = jest.fn().mockResolvedValue(undefined);
 
-    controller = new AccountController(mockService);
+    controller = new AccountController(mockService, mockLogger);
 
     mockRequest = {
       query: {},

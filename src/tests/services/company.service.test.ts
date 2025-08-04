@@ -1,9 +1,11 @@
 // src/tests/services/company.service.test.ts
 import { CompanyService } from '../../services/company.service';
 import { CompanyProvider } from '../../providers/company.provider';
-import { AppDataSource } from '../../providers/data-source.provider';
 import { CompMst } from '../../entity/anushreeDb/company.entity';
 import { Filters, EqualFilter } from '../../types/filter.types';
+import { DataSourceManager } from '../../services/dataSourceManager.service';
+import { ILogger } from '../../interface/logger.interface';
+import { DataSource } from 'typeorm';
 
 // Mock CompanyProvider
 jest.mock('../../providers/company.provider');
@@ -11,19 +13,24 @@ jest.mock('../../providers/company.provider');
 describe('CompanyService', () => {
   let service: CompanyService;
   let mockCompanyProvider: jest.Mocked<CompanyProvider>;
-  let mockDataSource: jest.Mocked<AppDataSource>;
+  let mockDataSourceManager: jest.Mocked<DataSourceManager>;
+  let mockLogger: jest.Mocked<ILogger>;
+  let mockDataSource: jest.Mocked<DataSource>;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockDataSource = {} as jest.Mocked<AppDataSource>; // Mock AppDataSource
-    mockCompanyProvider = new CompanyProvider(mockDataSource) as jest.Mocked<CompanyProvider>;
-    mockCompanyProvider.initializeRepository = jest.fn().mockResolvedValue(undefined);
+
+    mockDataSource = { getRepository: jest.fn() } as unknown as jest.Mocked<DataSource>;
+    mockLogger = { info: jest.fn(), error: jest.fn(), warn: jest.fn(), debug: jest.fn() } as jest.Mocked<ILogger>;
+    mockDataSourceManager = { mainDataSource: mockDataSource, phoenixDataSource: mockDataSource, initializeDataSources: jest.fn(), closeDataSources: jest.fn() } as jest.Mocked<DataSourceManager>;
+
+    mockCompanyProvider = new CompanyProvider(mockDataSource, mockLogger) as jest.Mocked<CompanyProvider>;
     mockCompanyProvider.getAllCompanies = jest.fn();
     mockCompanyProvider.getCompanyById = jest.fn();
     mockCompanyProvider.getAllCompaniesWithFilters = jest.fn();
 
-    service = new CompanyService(mockDataSource);
-    // Manually inject the mocked provider
+    service = new CompanyService(mockDataSourceManager, mockLogger);
+    // Manually inject the mocked provider, as it's now created within the service
     (service as any).companyProvider = mockCompanyProvider;
   });
 
@@ -31,12 +38,6 @@ describe('CompanyService', () => {
     expect(service).toBeDefined();
   });
 
-  describe('initialize', () => {
-    it('should initialize the company provider repository', async () => {
-      await service.initialize();
-      expect(mockCompanyProvider.initializeRepository).toHaveBeenCalled();
-    });
-  });
 
   describe('getCompaniesWithFilters', () => {
     it('should call getAllCompaniesWithFilters on the provider', async () => {

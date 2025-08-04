@@ -5,16 +5,21 @@ import { KotakCMSProvider } from "../providers/KotakCMS.provider";
 // import { Filters } from "../types/filter.types"; // No longer directly used in service method signature
 
 import { inject, injectable } from "tsyringe";
+import { ILogger } from "../interface/logger.interface";
+import { WINSTON_LOGGER } from "../utils/logger";
+import { DataSourceManager } from "./dataSourceManager.service";
+
 
 @injectable()
 export class KotakCMSService {
     private kotakCMSProvider: KotakCMSProvider;
 
     constructor(
-        @inject(KotakCMSProvider) kotakCMSProvider: KotakCMSProvider
+        @inject(DataSourceManager) dataSourceManager: DataSourceManager,
+        @inject(WINSTON_LOGGER) logger: ILogger
     ) {
-        this.kotakCMSProvider = kotakCMSProvider;
-        }
+        this.kotakCMSProvider = new KotakCMSProvider(dataSourceManager.mainDataSource, logger);
+    }
 
     // This method is now responsible for the complex query and its specific parameters
     async getKotakCMSData( // Renamed from getKotakCMSWithFilters to match provider method

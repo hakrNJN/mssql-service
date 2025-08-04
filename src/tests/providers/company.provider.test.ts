@@ -1,36 +1,47 @@
 // src/tests/providers/company.provider.test.ts
 import { CompanyProvider } from '../../providers/company.provider';
-import { AppDataSource } from '../../providers/data-source.provider';
-import { CompMst } from '../../entity/anushreeDb/company.entity';
+import { CompMst } '../../entity/anushreeDb/company.entity';
 import { applyFilters } from '../../utils/query-utils';
+import { ILogger } from '../../interface/logger.interface';
+import { DataSource, Repository } from 'typeorm';
 
 // Mock query-utils
 jest.mock('../../utils/query-utils', () => ({
   applyFilters: jest.fn(),
 }));
 
+// Mock the logger
+const mockLogger: jest.Mocked<ILogger> = {
+  info: jest.fn(),
+  error: jest.fn(),
+  warn: jest.fn(),
+  debug: jest.fn(),
+} as jest.Mocked<ILogger>;
+
 // Mock TypeORM repository
-const mockRepository = {
+const mockRepository: jest.Mocked<Repository<CompMst>> = {
   find: jest.fn(),
   findOneBy: jest.fn(),
   createQueryBuilder: jest.fn().mockReturnValue({
     getMany: jest.fn(),
   }),
-};
-
-// Mock AppDataSource
-const mockDataSource = {
-  init: jest.fn().mockResolvedValue({ getRepository: () => mockRepository }),
-};
+} as jest.Mocked<Repository<CompMst>>;
 
 describe('CompanyProvider', () => {
   let provider: CompanyProvider;
+  let mockDataSource: jest.Mocked<DataSource>;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     jest.clearAllMocks();
-    const mockDataSourceInstance = mockDataSource as unknown as AppDataSource;
-    provider = new CompanyProvider(mockDataSourceInstance);
-    await provider.initializeRepository();
+
+    mockDataSource = {
+      getRepository: jest.fn().mockReturnValue(mockRepository),
+      initialize: jest.fn(),
+      destroy: jest.fn(),
+      isInitialized: true,
+    } as unknown as jest.Mocked<DataSource>;
+
+    provider = new CompanyProvider(mockDataSource, mockLogger);
   });
 
   it('should be defined', () => {

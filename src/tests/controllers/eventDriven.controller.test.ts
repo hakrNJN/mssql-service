@@ -85,13 +85,7 @@ describe('EventDrivenController', () => {
     expect(controller).toBeDefined();
   });
 
-  describe('initialize', () => {
-    it('should initialize services', async () => {
-      await controller.initialize();
-      expect(mockRabbitMQClient.init).toHaveBeenCalled();
-      expect(mockFeaturesService.initialize).toHaveBeenCalled();
-    });
-  });
+  
 
   describe('startEventListeners', () => {
     it('should start listeners based on feature flags', async () => {

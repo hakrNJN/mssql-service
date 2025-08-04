@@ -1,10 +1,5 @@
 // src/tests/controllers/company.controller.test.ts
-import { Request, Response } from 'express';
-import { CompanyController } from '../../controllers/company.controller';
-import { CompanyService } from '../../services/company.service';
-import { ApiResponse } from '../../utils/api-response';
-import { HttpException } from '../../exceptions/httpException';
-import { CompMst } from '../../entity/anushreeDb/company.entity';
+import { ILogger } from '../../interface/logger.interface';
 
 // Mock CompanyService and ApiResponse
 jest.mock('../../services/company.service');
@@ -15,10 +10,12 @@ describe('CompanyController', () => {
   let mockService: jest.Mocked<CompanyService>;
   let mockRequest: Partial<Request>;
   let mockResponse: Partial<Response>;
+  let mockLogger: jest.Mocked<ILogger>;
 
   beforeEach(() => {
-    mockService = new CompanyService(null as any) as jest.Mocked<CompanyService>;
-    controller = new CompanyController(mockService);
+    mockLogger = { info: jest.fn(), error: jest.fn(), warn: jest.fn(), debug: jest.fn() } as jest.Mocked<ILogger>;
+    mockService = new CompanyService(null as any, null as any) as jest.Mocked<CompanyService>; // Updated to match new constructor
+    controller = new CompanyController(mockService, mockLogger);
     mockRequest = {
       query: {},
       params: {},

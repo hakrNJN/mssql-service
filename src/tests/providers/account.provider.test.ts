@@ -8,63 +8,12 @@ import { WINSTON_LOGGER } from '../../utils/logger';
 import { applyFilters } from '../../utils/query-utils';
 
 // Mock the logger
-jest.mock('winston', () => ({
-  createLogger: jest.fn().mockReturnValue({
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
-    debug: jest.fn(),
-    log: jest.fn(),
-    verbose: jest.fn(),
-    http: jest.fn(),
-    silly: jest.fn(),
-    add: jest.fn(),
-    remove: jest.fn(),
-    clear: jest.fn(),
-    exceptions: jest.fn(),
-    rejections: jest.fn(),
-    profile: jest.fn(),
-    startTimer: jest.fn(),
-    transports: [],
-    exitOnError: jest.fn(),
-    format: jest.fn(),
-    levels: jest.fn(),
-    level: 'debug',
-    silent: jest.fn(),
-    configure: jest.fn(),
-    defaultMeta: {},
-    child: jest.fn(),
-    is  : jest.fn(),
-  }),
-  format: {
-    combine: jest.fn(),
-    timestamp: jest.fn(),
-    json: jest.fn(),
-    colorize: jest.fn(),
-    simple: jest.fn(),
-  },
-  transports: {
-    Console: jest.fn(),
-  },
-}));
-
-const mockLogger = require('winston').createLogger();
-container.register<winston.Logger>(WINSTON_LOGGER, { useValue: mockLogger });
-
-
-
-// Mock AppDataSource
-jest.mock('../../providers/data-source.provider', () => {
-  const mockGetRepository = jest.fn();
-  return {
-    AppDataSource: jest.fn().mockImplementation(() => ({
-      init: jest.fn().mockResolvedValue({
-        getRepository: mockGetRepository,
-      }),
-      getRepository: mockGetRepository,
-    })),
-  };
-});
+const mockLogger: jest.Mocked<ILogger> = {
+  info: jest.fn(),
+  error: jest.fn(),
+  warn: jest.fn(),
+  debug: jest.fn(),
+} as jest.Mocked<ILogger>;
 
 // Mock query-utils
 jest.mock('../../utils/query-utils', () => ({

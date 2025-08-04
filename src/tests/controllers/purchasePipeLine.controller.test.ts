@@ -1,14 +1,8 @@
 // src/tests/controllers/purchasePipeLine.controller.test.ts
-import { Request, Response } from 'express';
-import { PurchasePipeLineController } from '../../controllers/purchasePipeLine.controller';
-import { SpTblFinishInWardOutWard } from '../../entity/anushreeDb/spTblFinishInWardOutWard.entity';
-import { PurchasePipeLine } from '../../entity/phoenixDb/purchasePipeLine.entity';
-import { HttpException } from '../../exceptions/httpException';
-import { PurchaseParcelStatusService } from '../../services/purchaseInwardOutWard.service';
-import { ApiResponse } from '../../utils/api-response';
+import { ILogger } from '../../interface/logger.interface';
 
 // Mock PurchaseParcelStatusService and ApiResponse
-jest.mock('../../services/purchaseInwardOutward.service');
+jest.mock('../../services/purchaseInwardOutWard.service');
 jest.mock('../../utils/api-response');
 
 describe('PurchasePipeLineController', () => {
@@ -16,10 +10,17 @@ describe('PurchasePipeLineController', () => {
   let mockService: jest.Mocked<PurchaseParcelStatusService>;
   let mockRequest: Partial<Request>;
   let mockResponse: Partial<Response>;
+  let mockLogger: jest.Mocked<ILogger>;
 
   beforeEach(() => {
-    mockService = new PurchaseParcelStatusService(null as any) as jest.Mocked<PurchaseParcelStatusService>;
-    controller = new PurchasePipeLineController(mockService);
+    mockLogger = { info: jest.fn(), error: jest.fn(), warn: jest.fn(), debug: jest.fn() } as jest.Mocked<ILogger>;
+    mockService = new PurchaseParcelStatusService(null as any, null as any) as jest.Mocked<PurchaseParcelStatusService>; // Updated to match new constructor
+    mockService.getEntriesByFilter = jest.fn();
+    mockService.GetEntrybyId = jest.fn();
+    mockService.InsetEntry = jest.fn();
+    mockService.UpdateEntry = jest.fn();
+
+    controller = new PurchasePipeLineController(mockService, mockLogger);
     mockRequest = {
       query: {},
       params: {},

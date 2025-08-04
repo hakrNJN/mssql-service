@@ -1,118 +1,127 @@
-// src/tests/services/dataSource.service.test.ts
-import { DataSourceService } from '../../services/dataSource.service';
-import { AppDataSource } from '../../providers/data-source.provider';
-import { PhoenixDataSource } from '../../providers/phoenix.data-source.provider';
-import winston from 'winston'; // Import winston for Logger type
+import { DataSourceManager } from '../../services/dataSourceManager.service';
+import { ILogger } from '../../interface/logger.interface';
+import { DataSource } from 'typeorm';
 
-// Mock the logger to match winston.Logger interface
-const mockLogger: jest.Mocked<winston.Logger> = {
-  log: jest.fn(),
+// Mock the logger
+const mockLogger: jest.Mocked<ILogger> = {
+  info: jest.fn(),
   error: jest.fn(),
   warn: jest.fn(),
-  info: jest.fn(),
   debug: jest.fn(),
-  verbose: jest.fn(),
-  http: jest.fn(),
-  silly: jest.fn(),
-  // Add other methods if they are used in the service and need mocking
-  silent: jest.fn(),
-  format: jest.fn(),
-  levels: jest.fn(),
-  level: 'info',
-  add: jest.fn(),
-  remove: jest.fn(),
-  clear: jest.fn(),
-  exceptions: jest.fn(),
-  rejections: jest.fn(),
-  profile: jest.fn(),
-  startTimer: jest.fn(),
-  unhandleExceptions: jest.fn(),
-  unhandleRejections: jest.fn(),
-  child: jest.fn(),
-  configure: jest.fn(),
-  defaultMeta: {}, // Add defaultMeta property
-  exitOnError: true, // Add exitOnError property
-  transports: [], // Add transports property
-} as any; // Cast to any to bypass strict type checking for now
+} as jest.Mocked<ILogger>;
 
-// Mock AppDataSource and PhoenixDataSource
-jest.mock('../../providers/data-source.provider', () => {
-  return {
-    AppDataSource: jest.fn().mockImplementation(() => {
-      return {
-        init: jest.fn().mockResolvedValue(undefined),
-      };
-    }),
-  };
-});
-jest.mock('../../providers/phoenix.data-source.provider', () => {
-  return {
-    PhoenixDataSource: jest.fn().mockImplementation(() => {
-      return {
-        init: jest.fn().mockResolvedValue(undefined),
-      };
-    }),
-  };
-});
-
-describe('DataSourceService', () => {
-  let service: DataSourceService;
-  let mockAppDataSource: jest.Mocked<AppDataSource>;
-  let mockPhoenixDataSource: jest.Mocked<PhoenixDataSource>;
+describe('DataSourceManager', () => {
+  let dataSourceManager: DataSourceManager;
+  let mockMainDataSource: jest.Mocked<DataSource>;
+  let mockPhoenixDataSource: jest.Mocked<DataSource>;
 
   beforeEach(() => {
     jest.clearAllMocks();
 
-    // Create new instances of the mocked classes for each test
-    mockAppDataSource = new AppDataSource(mockLogger) as jest.Mocked<AppDataSource>;
-    mockPhoenixDataSource = new PhoenixDataSource(mockLogger) as jest.Mocked<PhoenixDataSource>;
+    // Mock the DataSource instances
+    mockMainDataSource = {
+      initialize: jest.fn().mockResolvedValue(undefined),
+      destroy: jest.fn().mockResolvedValue(undefined),
+      isInitialized: true, // Assume initialized for testing closeDataSources
+      getRepository: jest.fn(),
+    } as unknown as jest.Mocked<DataSource>;
 
-    // Manually inject mocks since tsyringe is not used in tests directly
-    service = new DataSourceService(mockAppDataSource, mockPhoenixDataSource, mockLogger);
+    mockPhoenixDataSource = {
+      initialize: jest.fn().mockResolvedValue(undefined),
+      destroy: jest.fn().mockResolvedValue(undefined),
+      isInitialized: true, // Assume initialized for testing closeDataSources
+      getRepository: jest.fn(),
+    } as unknown as jest.Mocked<DataSource>;
+
+    // Mock the createDataSource factory function
+    jest.mock('../../providers/data-source.factory', () => ({
+      createDataSource: jest.fn((dbName: string) => {
+        if (dbName === 'anushree2223') {
+          return mockMainDataSource;
+        } else if (dbName === 'pheonixDB') {
+          return mockPhoenixDataSource;
+        }
+        return {} as DataSource; // Fallback
+      }),
+    }));
+
+    // Re-import DataSourceManager after mocking its internal dependency
+    const { DataSourceManager: MockedDataSourceManager } = require('../../services/dataSourceManager.service');
+    dataSourceManager = new MockedDataSourceManager(mockLogger);
   });
 
   it('should be defined', () => {
-    expect(service).toBeDefined();
+    expect(dataSourceManager).toBeDefined();
   });
 
   describe('initializeDataSources', () => {
     it('should initialize both data sources', async () => {
-      await service.initializeDataSources();
-      expect(mockAppDataSource.init).toHaveBeenCalledTimes(1);
-      expect(mockPhoenixDataSource.init).toHaveBeenCalledTimes(1);
-      expect(mockLogger.info).toHaveBeenCalledWith("DataSources initialized!");
+      await dataSourceManager.initializeDataSources();
+      expect(mockMainDataSource.initialize).toHaveBeenCalledTimes(1);
+      expect(mockPhoenixDataSource.initialize).toHaveBeenCalledTimes(1);
+      expect(mockLogger.info).toHaveBeenCalledWith("Initializing all data sources...");
+      expect(mockLogger.info).toHaveBeenCalledWith("All data sources have been initialized successfully!");
     });
 
-    it('should handle errors during appDataSource initialization', async () => {
-      const mockError = new Error('AppDataSource init failed');
-      mockAppDataSource.init.mockRejectedValueOnce(mockError);
+    it('should handle errors during mainDataSource initialization', async () => {
+      const mockError = new Error('MainDataSource init failed');
+      mockMainDataSource.initialize.mockRejectedValueOnce(mockError);
 
-      await expect(service.initializeDataSources()).rejects.toThrow(mockError);
-      expect(mockAppDataSource.init).toHaveBeenCalledTimes(1);
-      expect(mockPhoenixDataSource.init).not.toHaveBeenCalled(); // Phoenix init should not be called if App init fails
-      expect(mockLogger.info).not.toHaveBeenCalled();
+      await expect(dataSourceManager.initializeDataSources()).rejects.toThrow(mockError);
+      expect(mockMainDataSource.initialize).toHaveBeenCalledTimes(1);
+      expect(mockPhoenixDataSource.initialize).not.toHaveBeenCalled(); // Phoenix init should not be called if Main init fails
+      expect(mockLogger.error).toHaveBeenCalledWith('Error initializing data sources:', mockError);
     });
 
     it('should handle errors during phoenixDataSource initialization', async () => {
       const mockError = new Error('PhoenixDataSource init failed');
-      mockPhoenixDataSource.init.mockRejectedValueOnce(mockError);
+      mockPhoenixDataSource.initialize.mockRejectedValueOnce(mockError);
 
-      await expect(service.initializeDataSources()).rejects.toThrow(mockError);
-      expect(mockAppDataSource.init).toHaveBeenCalledTimes(1);
-      expect(mockPhoenixDataSource.init).toHaveBeenCalledTimes(1);
-      expect(mockLogger.info).not.toHaveBeenCalled();
+      await expect(dataSourceManager.initializeDataSources()).rejects.toThrow(mockError);
+      expect(mockMainDataSource.initialize).toHaveBeenCalledTimes(1);
+      expect(mockPhoenixDataSource.initialize).toHaveBeenCalledTimes(1);
+      expect(mockLogger.error).toHaveBeenCalledWith('Error initializing data sources:', mockError);
     });
   });
 
-  describe('getAppDataSource', () => {
-    it('should return the appDataSource instance', () => {
-      expect(service.getAppDataSource()).toBe(mockAppDataSource);
+  describe('closeDataSources', () => {
+    it('should close both data sources', async () => {
+      await dataSourceManager.closeDataSources();
+      expect(mockMainDataSource.destroy).toHaveBeenCalledTimes(1);
+      expect(mockPhoenixDataSource.destroy).toHaveBeenCalledTimes(1);
+      expect(mockLogger.info).toHaveBeenCalledWith("Closing all data sources...");
+      expect(mockLogger.info).toHaveBeenCalledWith("All data sources have been closed.");
+    });
+
+    it('should not destroy uninitialized data sources', async () => {
+      mockMainDataSource.isInitialized = false;
+      mockPhoenixDataSource.isInitialized = false;
+
+      await dataSourceManager.closeDataSources();
+      expect(mockMainDataSource.destroy).not.toHaveBeenCalled();
+      expect(mockPhoenixDataSource.destroy).not.toHaveBeenCalled();
+    });
+
+    it('should handle errors during mainDataSource destruction', async () => {
+      const mockError = new Error('MainDataSource destroy failed');
+      mockMainDataSource.destroy.mockRejectedValueOnce(mockError);
+
+      await expect(dataSourceManager.closeDataSources()).rejects.toThrow(mockError);
+      expect(mockMainDataSource.destroy).toHaveBeenCalledTimes(1);
+      expect(mockPhoenixDataSource.destroy).toHaveBeenCalledTimes(1); // Still attempts to destroy other sources
+      expect(mockLogger.error).toHaveBeenCalledWith('Error closing data sources:', mockError);
     });
   });
 
-  describe('getPhoenixDataSource', () => {
+  describe('mainDataSource', () => {
+    it('should return the mainDataSource instance', () => {
+      expect(dataSourceManager.mainDataSource).toBe(mockMainDataSource);
+    });
+  });
+
+  describe('phoenixDataSource', () => {
     it('should return the phoenixDataSource instance', () => {
-      expect(service.getPhoenixDataSource()).toBe(mockPhoenixDataSource);
+      expect(dataSourceManager.phoenixDataSource).toBe(mockPhoenixDataSource);
     });
   });
 });

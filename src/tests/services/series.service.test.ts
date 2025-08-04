@@ -1,9 +1,11 @@
 // src/tests/services/series.service.test.ts
 import { SeriesService } from '../../services/series.service';
 import { SeriesProvider } from '../../providers/series.provider';
-import { AppDataSource } from '../../providers/data-source.provider';
 import { SerMst } from '../../entity/anushreeDb/series.entity';
 import { Filters, EqualFilter } from '../../types/filter.types';
+import { DataSourceManager } from '../../services/dataSourceManager.service';
+import { ILogger } from '../../interface/logger.interface';
+import { DataSource } from 'typeorm';
 
 // Mock SeriesProvider
 jest.mock('../../providers/series.provider');

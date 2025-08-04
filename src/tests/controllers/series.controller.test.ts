@@ -1,9 +1,5 @@
 // src/tests/controllers/series.controller.test.ts
-import { Request, Response } from 'express';
-import { SeriesController } from '../../controllers/series.controller';
-import { HttpException } from '../../exceptions/httpException';
-import { SeriesService } from '../../services/series.service';
-import { ApiResponse } from '../../utils/api-response';
+import { ILogger } from '../../interface/logger.interface';
 
 // Mock SeriesService and ApiResponse
 jest.mock('../../services/series.service');
@@ -14,18 +10,19 @@ describe('SeriesController', () => {
   let mockService: jest.Mocked<SeriesService>;
   let mockRequest: Partial<Request>;
   let mockResponse: Partial<Response>;
+  let mockLogger: jest.Mocked<ILogger>;
 
   beforeEach(() => {
-    mockService = new SeriesService(null as any) as jest.Mocked<SeriesService>;
-    mockService.initialize = jest.fn().mockResolvedValue(undefined);
-    controller = new SeriesController(mockService);
+    mockLogger = { info: jest.fn(), error: jest.fn(), warn: jest.fn(), debug: jest.fn() } as jest.Mocked<ILogger>;
+    mockService = new SeriesService(null as any, null as any) as jest.Mocked<SeriesService>; // Updated to match new constructor
+    mockService.getAllSeries = jest.fn();
+    mockService.getSeriesbyId = jest.fn();
+    mockService.getSeriesWithFilters = jest.fn();
+
+    controller = new SeriesController(mockService, mockLogger);
     mockRequest = {
       query: {},
       params: {},
-    };
-    mockResponse = {
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn(),
     };
   });
 
