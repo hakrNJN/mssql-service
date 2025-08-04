@@ -4,7 +4,7 @@ import { Vwkotakcmsonline } from "../entity/anushreeDb/kotakCMS.entity";
 import { KotakCMSProvider } from "../providers/KotakCMS.provider";
 // import { Filters } from "../types/filter.types"; // No longer directly used in service method signature
 
-import { inject, injectable } from "tsyringe";
+import { inject, injectable, container } from "tsyringe";
 import { ILogger } from "../interface/logger.interface";
 import { WINSTON_LOGGER } from "../utils/logger";
 import { DataSourceManager } from "./dataSourceManager.service";
@@ -15,9 +15,9 @@ export class KotakCMSService {
     private kotakCMSProvider: KotakCMSProvider;
 
     constructor(
-        @inject(DataSourceManager) dataSourceManager: DataSourceManager,
-        @inject(WINSTON_LOGGER) logger: ILogger
+        @inject(DataSourceManager) dataSourceManager: DataSourceManager
     ) {
+        const logger = container.resolve<ILogger>(WINSTON_LOGGER);
         this.kotakCMSProvider = new KotakCMSProvider(dataSourceManager.mainDataSource, logger);
     }
 
