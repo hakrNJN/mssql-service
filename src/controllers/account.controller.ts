@@ -1,12 +1,12 @@
 //src/controllers/series.controller.ts
 
-import { Request, Response } from 'express'
+import { Request, Response } from 'express';
 import { inject, injectable } from "tsyringe";
-import { stringDecorators } from '../decorators/stringDecorators'
-import { HttpException } from '../exceptions/httpException'
-import { AccountService } from '../services/account.service'
-import { ApiResponse } from '../utils/api-response'
-import { getPaginationParams } from '../utils/pagination'
+import { stringDecorators } from '../decorators/stringDecorators';
+import { HttpException } from '../exceptions/httpException';
+import { AccountService } from '../services/account.service';
+import { ApiResponse } from '../utils/api-response';
+import { getPaginationParams } from '../utils/pagination';
 
 // Declaration merging to inform TypeScript about the added method
 export interface AccountController {
@@ -48,6 +48,7 @@ export class AccountController {
         const { startIndex, endIndex, paginationMetadata } = getPaginationParams(req);
         try {
             const result = await this.accountService.getCustomers(startIndex, endIndex)
+            console.log(`request received at controller level`)
             if (result) {
                 ApiResponse.success({
                     res,

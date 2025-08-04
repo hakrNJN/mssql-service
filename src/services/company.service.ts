@@ -4,6 +4,9 @@
 import { inject, injectable } from 'tsyringe';
 import { CompMst } from "../entity/anushreeDb/company.entity";
 import { CompanyProvider } from "../providers/company.provider";
+import { DataSourceManager } from "./dataSourceManager.service";
+import { ILogger } from "../interface/logger.interface";
+import { WINSTON_LOGGER } from "../utils/logger";
 
 import { Filters } from "../types/filter.types";
 
@@ -12,9 +15,10 @@ export class CompanyService {
     private companyProvider: CompanyProvider;
 
     constructor(
-        @inject(CompanyProvider) companyProvider: CompanyProvider
+        @inject(DataSourceManager) dataSourceManager: DataSourceManager,
+        @inject(WINSTON_LOGGER) logger: ILogger
     ) {
-        this.companyProvider = companyProvider;
+        this.companyProvider = new CompanyProvider(dataSourceManager.mainDataSource, logger);
         }
 
     async getCompaniesWithFilters(filters?: Filters<CompMst>): Promise<CompMst[]> {

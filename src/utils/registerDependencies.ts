@@ -1,23 +1,16 @@
 // src/utils/registerDependencies.ts
+// src/utils/registerDependencies.ts
 import { container } from "tsyringe";
 import { AppConfig } from '../config/config';
 import EventDrivenController from "../controllers/eventDriven.controller";
 import { KotakCMSController } from '../controllers/KotakCMS.controller';
 import { PurchasePipeLineController } from '../controllers/purchasePipeLine.controller';
 import { ILogger } from '../interface/logger.interface';
-import { AccountProvider } from '../providers/account.provider';
-import { CompanyProvider } from '../providers/company.provider';
-import FileService from "../providers/fileService.provider";
-
-import { SeriesProvider } from '../providers/series.provider';
 import { AccountService } from "../services/account.service";
 import { CompanyService } from '../services/company.service';
 
-import {
-  DataSourceManager,
-  MAIN_DATA_SOURCE,
-  PHOENIX_DATA_SOURCE
-} from "../services/dataSourceManager.service";
+import { DataSourceManager } from "../services/dataSourceManager.service";
+import { MAIN_DATA_SOURCE, PHOENIX_DATA_SOURCE } from "../types/symbols";
 import FeaturesService from "../services/feature.service";
 import { KotakCMSService } from '../services/KotakCMS.Service';
 import { NoOpPublisherRabbitMQService } from "../services/noOpPublisherRabbitMQ.service";
@@ -27,6 +20,7 @@ import { PurchaseParcelStatusService } from '../services/PurchaseInwardOutWard.s
 import RabbitMQClientService from "../services/rabbitMQ.service";
 import { SeriesService } from '../services/series.service';
 import { Logger, WINSTON_LOGGER } from "./logger";
+import FileService from "../providers/fileService.provider";
 
 export const RABBITMQ_CLIENT_SERVICE = Symbol('RabbitMQClientService');
 export const PUBLISHER_RABBITMQ_SERVICE = Symbol('PublisherRabbitMQService');
@@ -55,9 +49,6 @@ export async function registerDependencies(): Promise<void> {
   // 3. Register the actual DataSource instances for injection elsewhere.
   container.register(MAIN_DATA_SOURCE, { useValue: dataSourceManager.mainDataSource });
   container.register(PHOENIX_DATA_SOURCE, { useValue: dataSourceManager.phoenixDataSource });
-
-  // Register AccountProvider
-  container.register(AccountProvider, { useClass: AccountProvider });
 
   // Register FileService and its dependencies first, as FeaturesService depends on it.
   container.register<string>(FEATURE_CONFIG_PATH, { useValue: AppConfig.FEATURE_CONFIG_FILE_PATH });
@@ -98,11 +89,9 @@ export async function registerDependencies(): Promise<void> {
   container.register(AccountService, { useClass: AccountService });
 
   // Register CompanyProvider and CompanyService
-  container.register(CompanyProvider, { useClass: CompanyProvider });
   container.register(CompanyService, { useClass: CompanyService });
 
   // Register SeriesProvider and SeriesService
-  container.register(SeriesProvider, { useClass: SeriesProvider });
   container.register(SeriesService, { useClass: SeriesService });
 
   // Register Event Controller

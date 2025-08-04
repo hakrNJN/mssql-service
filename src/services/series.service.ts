@@ -2,6 +2,9 @@ import { inject, injectable } from 'tsyringe';
 import { SerMst } from "../entity/anushreeDb/series.entity";
 
 import { SeriesProvider } from "../providers/series.provider";
+import { DataSourceManager } from "./dataSourceManager.service";
+import { ILogger } from "../interface/logger.interface";
+import { WINSTON_LOGGER } from "../utils/logger";
 import { Filters } from "../types/filter.types";
 
 @injectable()
@@ -9,9 +12,10 @@ export class SeriesService {
     private seriesProvider: SeriesProvider;
 
     constructor(
-        @inject(SeriesProvider) seriesProvider: SeriesProvider
+        @inject(DataSourceManager) dataSourceManager: DataSourceManager,
+        @inject(WINSTON_LOGGER) logger: ILogger
     ) {
-        this.seriesProvider = seriesProvider;
+        this.seriesProvider = new SeriesProvider(dataSourceManager.mainDataSource, logger);
         }
 
     async getAllSeries(): Promise<SerMst[]> {

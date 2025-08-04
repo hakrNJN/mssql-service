@@ -57,7 +57,6 @@ class App {
 
   public async init(): Promise<void> { // in init()
     await this.featuresService.initialize(); // Initialize FeaturesService FIRST in init()
-    await this.dataSourceManager.initializeDataSources();
     this.initializeRoutes(); // THEN initialize routes - now it's guaranteed featuresService is ready
   }
 

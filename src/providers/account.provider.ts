@@ -1,28 +1,24 @@
 // src/providers/account.provider.ts
-import { inject, injectable } from "tsyringe";
 import { DataSource, FindManyOptions, Repository, SelectQueryBuilder } from "typeorm";
 import { objectDecorators } from "../decorators/objectDecorators";
 import { Mast } from "../entity/anushreeDb/accounts.entity";
 import { BaseProviderInterface } from "../interface/base.provider";
 import { ILogger } from "../interface/logger.interface";
-import { MAIN_DATA_SOURCE } from "../services/dataSourceManager.service";
 import { Filters } from "../types/filter.types";
-import { WINSTON_LOGGER } from "../utils/logger";
 import { applyFilters } from "../utils/query-utils";
 export interface AccountProvider extends BaseProviderInterface<Mast, Filters<Mast>> {
     trimWhitespace<T>(obj: T): T;
 }
 
 @objectDecorators
-@injectable()
 export class AccountProvider {
     private accountRepository: Repository<Mast> | null = null;
     private readonly logger: ILogger;
     private readonly mainDataSource: DataSource;
 
     constructor(
-        @inject(MAIN_DATA_SOURCE) mainDataSource: DataSource,
-        @inject(WINSTON_LOGGER) logger: ILogger
+        mainDataSource: DataSource,
+        logger: ILogger
     ) {
         this.mainDataSource = mainDataSource;
         this.logger = logger;
@@ -36,9 +32,11 @@ export class AccountProvider {
         return this.accountRepository;
     }
 
-    
+
 
     async getAllAccountWithFilters(filters?: Filters<Mast>, offset?: number, limit?: number): Promise<Mast[]> {
+        console.log(`logger in provider`, this.logger)
+        console.log(`mainDataSource in provider`, this.mainDataSource)
         try {
             const queryBuilder = this._getRepository().createQueryBuilder('account');
             const filteredQueryBuilder: SelectQueryBuilder<Mast> = applyFilters(queryBuilder, filters, 'account'); // Call the imported utility function

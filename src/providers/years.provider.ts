@@ -1,26 +1,22 @@
 // src/providers/year.provider.ts
-import { inject, injectable } from "tsyringe";
 import { Repository } from "typeorm";
 import { YearMst } from "../entity/anushreeDb/years.entity";
 import { BaseProviderInterface } from "../interface/base.provider";
 import { ILogger } from "../interface/logger.interface";
 import { Filters } from "../types/filter.types";
-import { WINSTON_LOGGER } from "../utils/logger";
 import { applyFilters } from "../utils/query-utils";
 import { DataSource } from "typeorm";
-import { MAIN_DATA_SOURCE } from "../services/dataSourceManager.service";
 
 export interface YearsProvider extends BaseProviderInterface<YearMst, Filters<YearMst>> { }
 
-@injectable()
 export class YearsProvider implements YearsProvider { // Export the class
     private yearRepository: Repository<YearMst> | null = null;
     private readonly logger: ILogger;
     private readonly mainDataSource: DataSource;
 
     constructor(
-        @inject(MAIN_DATA_SOURCE) mainDataSource: DataSource,
-        @inject(WINSTON_LOGGER) logger: ILogger
+        mainDataSource: DataSource,
+        logger: ILogger
     ) {
         this.mainDataSource = mainDataSource;
         this.logger = logger;

@@ -4,10 +4,7 @@ import { AppConfig } from "../config/config";
 import { ILogger } from "../interface/logger.interface";
 import { createDataSource } from "../providers/data-source.factory"; // Your factory
 import { WINSTON_LOGGER } from "../utils/logger";
-
-// Define tokens for tsyringe to identify which DataSource we want.
-export const MAIN_DATA_SOURCE = Symbol('MainDataSource');
-export const PHOENIX_DATA_SOURCE = Symbol('PhoenixDataSource');
+import { MAIN_DATA_SOURCE, PHOENIX_DATA_SOURCE } from "../types/symbols";
 
 @singleton()
 export class DataSourceManager {
