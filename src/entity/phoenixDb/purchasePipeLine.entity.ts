@@ -49,11 +49,11 @@ export class PurchasePipeLine {
     OpenDate!: Date | null;
 
     @Column({ type: 'datetime' })
-    Entrydate!: Date;
+        Entrydate!: Date | null;
 
     @Column({ type: 'datetime' })
-    UpdDate!: Date;
+        UpdDate!: string | null;
 
     @OneToMany(() => SpTblFinishInWardOutWard, finishInWard => finishInWard.purchasePipeline)
-    finishInWards!: SpTblFinishInWardOutWard[];
+    finishInWards?: SpTblFinishInWardOutWard[];
 }

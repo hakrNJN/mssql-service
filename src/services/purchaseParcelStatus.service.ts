@@ -1,10 +1,10 @@
 // src/services/purchaseParcelStatus.service.ts
 import { inject, injectable } from "tsyringe";
+import { PurchasePipeLine as PurchasePipeLineEntity } from "../entity/phoenixDb/purchasePipeLine.entity";
+import { ILogger } from "../interface/logger.interface";
 import { InWardOutWardProvider } from "../providers/inwardOutward.provider";
 import { PurchasePileLine as PurchasePipeLineProvider } from "../providers/purchasePipeLine.provider";
-import { ILogger } from "../interface/logger.interface";
 import { WINSTON_LOGGER } from "../utils/logger";
-import { PurchasePipeLine as PurchasePipeLineEntity } from "../entity/phoenixDb/purchasePipeLine.entity";
 
 export interface IGetPurchaseParcelStatusParams {
     conum: string;
@@ -27,7 +27,7 @@ export class PurchaseParcelStatusService implements IPurchaseParcelStatusService
         @inject(WINSTON_LOGGER) private logger: ILogger,
         @inject("InWardOutWardProvider") private inwardOutwardProvider: InWardOutWardProvider,
         @inject("PurchasePileLine") private purchasePipeLineProvider: PurchasePipeLineProvider
-    ) {}
+    ) { }
 
     private buildWhereCondition(params: IGetPurchaseParcelStatusParams): string {
         let condition = `T.conum = '${params.conum}'`;
@@ -59,32 +59,66 @@ export class PurchaseParcelStatusService implements IPurchaseParcelStatusService
             offset,
             limit
         );
+        console.log("Inward Outward Entries:", inwardOutwardEntries); // ADDED LINE
 
         // Extract unique Purtrnid and Type combinations from inwardOutwardEntries
         const uniqueKeys = inwardOutwardEntries.map(entry => ({ Purtrnid: entry.Purtrnid, Type: entry.Type }));
+        console.log("Unique Keys for Purchase Pipeline Query:", uniqueKeys); // ADDED LINE
 
         // Fetch corresponding PurchasePipeLine data
         const purchasePipeLineEntries = await this.purchasePipeLineProvider.getAllWithFilters({
-            Purtrnid: { "$in": uniqueKeys.map(key => key.Purtrnid) },
-            Type: { "$in": uniqueKeys.map(key => key.Type) }
+            Purtrnid: { in: uniqueKeys.map(key => key.Purtrnid) },
+            Type: { in: uniqueKeys.map(key => key.Type) }
         });
+        console.log("Purchase Pipeline Entries:", purchasePipeLineEntries); // ADDED LINE
 
-        // Perform the join in the application layer
+        // Perform the join in the application layer and map to desired output format
         const joinedData = inwardOutwardEntries.map(inwardEntry => {
             const matchingPurchaseEntry = purchasePipeLineEntries.find(
                 purchaseEntry =>
                     purchaseEntry.Purtrnid === inwardEntry.Purtrnid &&
                     purchaseEntry.Type === inwardEntry.Type
             );
-
+            console.log("Matching Purchase Entry:", purchasePipeLineEntries);
             return {
-                ...inwardEntry,
+                Purtrnid: inwardEntry.Purtrnid,
+                Type: inwardEntry.Type,
+                Vno: inwardEntry.Vno,
+                Dat: inwardEntry.Dat, // Already formatted in provider
+                BillNo: inwardEntry.BillNo,
+                Pcs: inwardEntry.Pcs,
+                Customer: inwardEntry.Customer,
+                City: inwardEntry.City,
+                GroupName: inwardEntry.GroupName,
+                AgentName: inwardEntry.AgentName,
+                BillAmt: inwardEntry.BillAmt,
                 LrNo: matchingPurchaseEntry?.LRNo || inwardEntry.LRNo,
-                Lrdat: matchingPurchaseEntry?.Lrdat,
-                RecDat: matchingPurchaseEntry?.ReceiveDate,
-                OpnDat: matchingPurchaseEntry?.OpenDate,
+                Lrdat: matchingPurchaseEntry?.Lrdat || null,
+                RecDat: matchingPurchaseEntry?.ReceiveDate || null,
+                OpnDat: matchingPurchaseEntry?.OpenDate || null,
+                Company: inwardEntry.Company,
             };
         });
+
+        // Apply filters to the joined data
+        if (params.filters && params.filters.length > 0) {
+            return joinedData.filter(entry => {
+                return params.filters?.every(filter => {
+                    switch (filter) {
+                        case 'opened':
+                            return entry.Lrdat && entry.RecDat && entry.OpnDat;
+                        case 'lrpending':
+                            return !entry.Lrdat;
+                        case 'recpending':
+                            return !entry.RecDat;
+                        case 'opnpending':
+                            return !entry.OpnDat;
+                        default:
+                            return true;
+                    }
+                });
+            });
+        }
 
         return joinedData;
     }

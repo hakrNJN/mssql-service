@@ -49,6 +49,7 @@ function generateWhereClauseAndParams<T extends ObjectLiteral>(
                 } else if ((filter as { in: any[] }).in !== undefined) {
                     const paramName = `${columnName}_in`;
                     whereClauses.push(`${entityAlias}.${columnName} IN (:...${paramName})`);
+                    // whereClauses.push(`${entityAlias}.${columnName} IN (:${paramName})`);
                     params[paramName] = (filter as { in: any[] }).in;
                 } else if ((filter as { equalNull: boolean }).equalNull === true) {
                     whereClauses.push(`${entityAlias}.${columnName} IS NULL`);

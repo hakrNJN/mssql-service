@@ -1,16 +1,15 @@
 import "reflect-metadata";
 //src/providers/purchasePileLine.provider.ts
 import { inject } from "tsyringe";
-import { DeleteResult, Repository, SelectQueryBuilder, UpdateResult } from "typeorm"; // Import UpdateResult, DeleteResult
+import { DataSource, DeleteResult, Repository, SelectQueryBuilder, UpdateResult } from "typeorm"; // Import UpdateResult, DeleteResult
 import { objectDecorators } from "../decorators/objectDecorators";
 import { PurchasePipeLine as PurchasePipeLineEntity } from "../entity/phoenixDb/purchasePipeLine.entity"; // Alias the entity
 import { BaseProviderInterface } from "../interface/base.provider";
 import { ILogger } from "../interface/logger.interface";
 import { Filters } from "../types/filter.types";
+import { PHOENIX_DATA_SOURCE } from "../types/symbols";
 import { WINSTON_LOGGER } from "../utils/logger";
 import { applyFilters } from "../utils/query-utils";
-import { DataSource } from "typeorm";
-import { PHOENIX_DATA_SOURCE } from "../types/symbols";
 
 // Renamed the interface to avoid conflict with the entity class
 export interface PurchasePileLineInterface extends BaseProviderInterface<PurchasePipeLineEntity, Filters<PurchasePipeLineEntity>> {
@@ -98,7 +97,47 @@ export class PurchasePileLine implements PurchasePileLineInterface {
 
             filteredQueryBuilder.orderBy('purchasePipeline.Purtrnid', 'ASC');
 
-            const records = await filteredQueryBuilder.getMany();
+            const records = (await filteredQueryBuilder.getRawMany()).map(raw => ({
+                Purtrnid: raw.purchasePipeline_Purtrnid,
+                Type: raw.purchasePipeline_Type,
+                Vno: raw.purchasePipeline_Vno,
+                Dat: raw.purchasePipeline_Dat || null,
+                BillNo: raw.purchasePipeline_BillNo,
+                Customer: raw.purchasePipeline_Customer,
+                City: raw.purchasePipeline_City,
+                GroupName: raw.purchasePipeline_GroupName,
+                AgentName: raw.purchasePipeline_AgentName,
+                BillAmt: raw.purchasePipeline_BillAmt,
+                Comapny: raw.purchasePipeline_Comapny,
+                LRNo: raw.purchasePipeline_LRNo,
+                Lrdat: raw.purchasePipeline_Lrdat || null,
+                ReceiveDate: raw.purchasePipeline_ReceiveDate || null,
+                OpenDate: raw.purchasePipeline_OpenDate || null,
+                Entrydate: raw.purchasePipeline_Entrydate || null,
+                UpdDate: raw.purchasePipeline_UpdDate || null,
+            }));
+            // filteredQueryBuilder
+            //     .select([
+            //         'purchasePipeline.Purtrnid AS Purtrnid',
+            //         'purchasePipeline.Type AS Type',
+            //         'purchasePipeline.Vno AS Vno',
+            //         'purchasePipeline.Dat AS Dat',
+            //         'purchasePipeline.BillNo AS BillNo',
+            //         'purchasePipeline.Customer AS Customer',
+            //         'purchasePipeline.City AS City',
+            //         'purchasePipeline.GroupName AS GroupName',
+            //         'purchasePipeline.AgentName AS AgentName',
+            //         'purchasePipeline.BillAmt AS BillAmt',
+            //         'purchasePipeline.Comapny AS Comapny',
+            //         'purchasePipeline.LRNo AS LRNo',
+            //         'purchasePipeline.Lrdat AS Lrdat',
+            //         'purchasePipeline.ReceiveDate AS ReceiveDate',
+            //         'purchasePipeline.OpenDate AS OpenDate',
+            //         'purchasePipeline.Entrydate AS Entrydate',
+            //         'purchasePipeline.UpdDate AS UpdDate'
+            //     ]);
+
+            // const records = await filteredQueryBuilder.getRawMany();
             return this.trimWhitespace(records);
         } catch (error) {
             this.logger.error("Error fetching Purchase Pipe Line with Filter", error);
@@ -152,7 +191,7 @@ export class PurchasePileLine implements PurchasePileLineInterface {
     // Assuming BaseProviderInterface's update takes a single ID for update
     async update(purtrnid: number, data: Partial<PurchasePipeLineEntity>): Promise<PurchasePipeLineEntity | null> {
         try {
-            const updateData = { ...data, UpdDate: new Date() }; // Add current date for UpdDate
+            const updateData = { ...data, UpdDate: new Date().toISOString().slice(0, 10).replace(/-/g, '') }; // Add current date for UpdDate
             const updateResult: UpdateResult = await this._getRepository().update(
                 { Purtrnid: purtrnid }, // Update by the entity's primary key 'Purtrnid'
                 updateData

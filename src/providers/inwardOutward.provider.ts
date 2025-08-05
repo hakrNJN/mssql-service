@@ -162,24 +162,23 @@ export class InWardOutWardProvider implements InWardOutWardProvider { // Ensure 
             await this._executePurchaseInwardOutwardSp(queryRunner, conum, fdat, tdat, accountId);
 
             // 2. Query the temporary table/view data within the same transaction/session
-            // Use queryRunner.manager.getRepository() to ensure the repository operates within the same queryRunner connection
             const queryBuilder = queryRunner.manager.getRepository(SpTblFinishInWardOutWard).createQueryBuilder('T');
 
             queryBuilder
                 .select([
-                    'T.Purtrnid',
-                    'T.Type',
-                    'T.Vno',
-                    'T.Dat',
-                    'T.BillNo',
-                    'T.Pcs',
-                    'T.Customer',
-                    'T.City',
+                    'T.Purtrnid AS Purtrnid',
+                    'T.Type AS Type',
+                    'T.Vno AS Vno',
+                    'FORMAT(T.Dat, \'yyyyMMdd\') AS Dat',
+                    'T.BillNo AS BillNo',
+                    'T.Pcs AS Pcs',
+                    'T.Customer AS Customer',
+                    'T.City AS City',
                     'T.GRPName AS GroupName',
-                    'T.AgentName',
-                    'T.BillAmt AS BillAmount',
-                    'T.LRNo',
-                    'T.Company'
+                    'T.AgentName AS AgentName',
+                    'T.BillAmt',
+                    'T.LRNo AS LRNo',
+                    'T.Company AS Company'
                 ]);
 
             queryBuilder.where("T.TrnOrigin = :trnOrigin", { trnOrigin: 'frmFinPurchEntry' });
@@ -226,8 +225,8 @@ export class InWardOutWardProvider implements InWardOutWardProvider { // Ensure 
         }
         const queryRunner = dataSource.createQueryRunner();
 
-        await queryRunner.connect();
-        await queryRunner.startTransaction();
+        await queryRunner.connect(); // Connect to the database
+        await queryRunner.startTransaction(); // Start a transaction for consistency
 
         try {
             await this._executePurchaseInwardOutwardSp(queryRunner, conum, fdat, tdat, accountId);
