@@ -4,7 +4,6 @@ import { AppConfig } from "../config/config";
 import { ILogger } from "../interface/logger.interface";
 import { createDataSource } from "../providers/data-source.factory"; // Your factory
 import { WINSTON_LOGGER } from "../utils/logger";
-import { MAIN_DATA_SOURCE, PHOENIX_DATA_SOURCE } from "../types/symbols";
 
 @singleton()
 export class DataSourceManager {

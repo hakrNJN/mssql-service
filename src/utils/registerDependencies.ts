@@ -18,9 +18,11 @@ import { NoOpRabbitMQClientService } from "../services/noOpRabbitMQ.service";
 import PublisherRabbitMQService from "../services/publisher.RabbitMQ.service";
 import { PurchaseParcelStatusService } from '../services/PurchaseInwardOutWard.service';
 import RabbitMQClientService from "../services/rabbitMQ.service";
+import { SaleTransactionService } from "../services/saleTransaction.service";
 import { SeriesService } from '../services/series.service';
 import { Logger, WINSTON_LOGGER } from "./logger";
 import FileService from "../providers/fileService.provider";
+import { SaleTransactionProvider } from "../providers/saleTransaction.provider";
 
 export const RABBITMQ_CLIENT_SERVICE = Symbol('RabbitMQClientService');
 export const PUBLISHER_RABBITMQ_SERVICE = Symbol('PublisherRabbitMQService');
@@ -108,4 +110,8 @@ export async function registerDependencies(): Promise<void> {
 
   // Register KotakCMSController
   container.register(KotakCMSController, { useClass: KotakCMSController });
+
+  // Register SaleTransactionProvider and SaleTransactionService
+  container.register(SaleTransactionProvider, {useClass: SaleTransactionProvider})
+  container.register(SaleTransactionService, { useClass: SaleTransactionService });
 }

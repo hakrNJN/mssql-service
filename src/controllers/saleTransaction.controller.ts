@@ -19,7 +19,7 @@ export class SaleTransactionController {
     public getTransactionById = async (req: Request, res: Response): Promise<void> => {
 
         const SalTrnId = parseInt(req.params.id as string)
-        console.log(SalTrnId, "SalTrnId from request params");
+        console.log(SalTrnId, "SalTrnId from request params and request recieved in Controller Level");
         try {
             const result = await this.saleTransactionService.getTransactionById(SalTrnId)
             if (result) {

@@ -1,15 +1,11 @@
 //src/providers/saleTransaction.provider.ts
 
-import { inject } from "tsyringe";
-import { Repository } from "typeorm"; // Changed ViewEntity to Repository
+import { DataSource, Repository } from "typeorm"; // Changed ViewEntity to Repository
 import { objectDecorators } from "../decorators/objectDecorators";
 import { SaleTransaction } from '../entity/phoenixDb/saleTransaction.entity';
 import { BaseProviderInterface } from "../interface/base.provider";
 import { ILogger } from "../interface/logger.interface";
 import { Filters } from "../types/filter.types";
-import { WINSTON_LOGGER } from "../utils/logger";
-import { DataSource } from "typeorm";
-import { PHOENIX_DATA_SOURCE } from "../types/symbols";
 
 export interface SaleTransactionProvider extends BaseProviderInterface<SaleTransaction, Filters<SaleTransaction>> {
     trimWhitespace<T>(obj: T): T;
@@ -22,12 +18,12 @@ export class SaleTransactionProvider {
     private readonly phoenixDataSource: DataSource;
 
     constructor(
-        @inject(PHOENIX_DATA_SOURCE) phoenixDataSource: DataSource,
-        @inject(WINSTON_LOGGER) logger: ILogger
+        phoenixDataSource: DataSource,
+        logger: ILogger
     ) {
         this.phoenixDataSource = phoenixDataSource;
         this.logger = logger;
-        
+
     }
 
     private _getRepository(): Repository<SaleTransaction> {
@@ -44,6 +40,9 @@ export class SaleTransactionProvider {
     }
 
     async getTransactionById(id: number): Promise<SaleTransaction | null> {
+        console.log(id, "SalTrnId from argument id and request recieved in provider Level");
+        // console.log(`logger in provider`, this.logger)
+        // console.log(`mainDataSource in provider`, this.phoenixDataSource)
         try {
             const transaction = await this._getRepository().findOne({
                 where: { SalTrnId: id },
@@ -51,6 +50,7 @@ export class SaleTransactionProvider {
             });
             return transaction ? this.trimWhitespace(transaction) : null; // Trimming is applied here
         } catch (error) {
+            console.log(`Error fetching transaction by ID: ${id}`, error);
             this.logger.error("Error fetching sale transaction:", error);
             return null; // or throw error
         }
