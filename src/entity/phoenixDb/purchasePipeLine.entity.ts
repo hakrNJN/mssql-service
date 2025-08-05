@@ -1,12 +1,9 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryColumn } from "typeorm";
 import { SpTblFinishInWardOutWard } from "../anushreeDb/spTblFinishInWardOutWard.entity";
 
 @Entity('PurchasePipeLine')
 export class PurchasePipeLine {
-    @PrimaryGeneratedColumn()
-    id!: number;
-
-    @Column()
+    @PrimaryColumn()
     Purtrnid!: number;
 
     @Column()

@@ -17,6 +17,6 @@ export interface BaseProviderInterface<Entity extends ObjectLiteral, FilterType 
 
     //Other common CRUD methods signatures here if needed in the interface
     create(data: Partial<Entity>): Promise<Entity>;
-    update(id: number, data: Partial<Entity>): Promise<Entity | null>;
-    delete(id: number): Promise<boolean>;
+    update(purtrnid: number, data: Partial<Entity>): Promise<Entity | null>;
+    delete(purtrnid: number): Promise<boolean>;
 }

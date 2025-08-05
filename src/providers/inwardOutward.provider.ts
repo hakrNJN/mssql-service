@@ -1,15 +1,14 @@
 //src/providers/inwardOutward.provider.ts
 import { inject } from "tsyringe";
-import { QueryRunner, Repository } from "typeorm"; // Import QueryRunner
+import { DataSource, QueryRunner, Repository } from "typeorm"; // Import QueryRunner
 import { objectDecorators } from "../decorators/objectDecorators";
 import { SpTblFinishInWardOutWard } from "../entity/anushreeDb/spTblFinishInWardOutWard.entity";
 import { HttpException } from "../exceptions/httpException";
 import { BaseProviderInterface } from "../interface/base.provider";
 import { ILogger } from "../interface/logger.interface";
 import { Filters } from "../types/filter.types";
-import { WINSTON_LOGGER } from "../utils/logger";
-import { DataSource } from "typeorm";
 import { MAIN_DATA_SOURCE } from "../types/symbols";
+import { WINSTON_LOGGER } from "../utils/logger";
 
 // Defining a specific interface for the InWardOutWardProvider that includes the SP parameters
 export interface InWardOutWardProvider extends BaseProviderInterface<SpTblFinishInWardOutWard, Filters<SpTblFinishInWardOutWard>> { // BaseProviderInterface expects one generic T
@@ -21,7 +20,7 @@ export interface InWardOutWardProvider extends BaseProviderInterface<SpTblFinish
         fdat: string, // YYYYMMDD format
         tdat: string, // YYYYMMDD format
         accountId: string,
-        filters?: Filters<SpTblFinishInWardOutWard>,
+        whereCondition: string, // Changed to accept a raw SQL WHERE condition string
         offset?: number,
         limit?: number
     ): Promise<any[]>; // Returns custom shape, so `any[]` or a defined DTO
@@ -74,11 +73,11 @@ export class InWardOutWardProvider implements InWardOutWardProvider { // Ensure 
         accountId: string
     ): Promise<void> {
         try {
-            const spName = 'YOUR_STORED_PROCEDURE_NAME_HERE'; // *** IMPORTANT: Replace with your actual SP name ***
+            const spName = 'Finishinwardoutward'; // *** IMPORTANT: Replace with your actual SP name ***
             const params = [
                 `@Conum = N'${conum}'`,
-                `@Fdat = ${fdat}`, // Dates without quotes if they are numbers (like 20240401)
-                `@Tdat = ${tdat}`,
+                `@FromDat = ${fdat}`, // Dates without quotes if they are numbers (like 20240401)
+                `@UpToDat = ${tdat}`,
                 `@accountid = N'${accountId}'`
             ].join(', ');
 
@@ -145,7 +144,7 @@ export class InWardOutWardProvider implements InWardOutWardProvider { // Ensure 
         fdat: string,
         tdat: string,
         accountId: string,
-        filters?: Filters<SpTblFinishInWardOutWard>,
+        whereCondition: string, // Changed to accept a raw SQL WHERE condition string
         offset?: number,
         limit?: number
     ): Promise<any[]> {
@@ -166,38 +165,6 @@ export class InWardOutWardProvider implements InWardOutWardProvider { // Ensure 
             // Use queryRunner.manager.getRepository() to ensure the repository operates within the same queryRunner connection
             const queryBuilder = queryRunner.manager.getRepository(SpTblFinishInWardOutWard).createQueryBuilder('T');
 
-            // Existing logic for joining (assuming PurchasePipeLine is available in the same context)
-            // You mentioned the SP creates `sptblpurchaseInwrdOutward` and *then* we retrieve from it.
-            // If the SP replaces/updates the data in `SpTblFinishInWardOutWard` directly, then no `LEFT JOIN` needed here.
-            // If the SP creates a *temporary table*, and `SpTblFinishInWardOutWard` refers to the *permanent* table,
-            // then you'd need raw SQL `SELECT * FROM #sptblpurchaseInwrdOutward` from the queryRunner.
-            //
-            // Assuming the SP *populates* the data that `SpTblFinishInWardOutWard` (the entity) then reads.
-            // And that the JOIN to PurchasePipeLine (D) is still needed *after* `SpTblFinishInWardOutWard` is populated.
-            // This is complex. Let's assume the previous complex SELECT statement IS the desired output after SP runs.
-            // The `SpTblFinishInWardOutWard` entity is mapped to the view.
-            // If your view `SpTblFinishInWardOutWard` uses `LEFT JOIN pheonixDB.dbo.PurchasePipeLine D`,
-            // then the JOIN is already part of the VIEW definition in the database.
-            // So, you just query the `SpTblFinishInWardOutWard` entity directly.
-            // The previous `LEFT JOIN(PurchasePipeLine, 'D', ...)` in this provider would be redundant or incorrect
-            // if `SpTblFinishInWardOutWard` is already a joined view.
-            // Let's simplify based on `Vwkotakcmsonline` pattern where entity is view.
-
-            // Simplify: If SpTblFinishInWardOutWard is a VIEW that already does the join,
-            // then you just query SpTblFinishInWardOutWard directly.
-            // If not, then the SP populates SpTblFinishInWardOutWard, and you *still* need to join.
-            // Given the original SQL provided, it seems `SpTblFinishInWardOutWard` is one part,
-            // and `PurchasePipeLine` is another, requiring a join.
-
-            // Let's stick to the previous `getEntriesByFilter` logic, assuming `SpTblFinishInWardOutWard` is a base table/view,
-            // and `PurchasePipeLine` is another, requiring a join.
-
-            // Re-adding the join logic from the previous solution for `getEntriesByFilter`
-            // and ensuring it uses `queryRunner.manager.getRepository`
-            const PurchasePipeLine = (await import("../entity/phoenixDb/purchasePipeLine.entity")).PurchasePipeLine; // Dynamic import to avoid circular dependency if this is in a common module.
-
-            queryBuilder.leftJoin(PurchasePipeLine, 'D', 'T.Purtrnid = D.Purtrnid AND T.Type = D.Type');
-
             queryBuilder
                 .select([
                     'T.Purtrnid',
@@ -210,41 +177,17 @@ export class InWardOutWardProvider implements InWardOutWardProvider { // Ensure 
                     'T.City',
                     'T.GRPName AS GroupName',
                     'T.AgentName',
-                    'T.BillAmount AS BillAmt',
-                    'COALESCE(D.LrNo, T.LRNo) AS LrNo',
-                    'D.Lrdat AS LrDat',
-                    'D.ReceiveDate AS RecDat',
-                    'D.OpenDate AS OpnDat',
+                    'T.BillAmt AS BillAmount',
+                    'T.LRNo',
                     'T.Company'
                 ]);
 
             queryBuilder.where("T.TrnOrigin = :trnOrigin", { trnOrigin: 'frmFinPurchEntry' });
             queryBuilder.andWhere("T.Dat >= :startDate", { startDate: '2021-08-01' });
 
-            if (filters) {
-                for (const key in filters) {
-                    if (Object.prototype.hasOwnProperty.call(filters, key)) {
-                        const filterValue = (filters as any)[key];
-                        // This logic needs to know if the filter is for T or D alias.
-                        // For simplicity, assuming filters are primarily for T (SpTblFinishInWardOutWard)
-                        // If you have filters for D, you'll need to specify `D.${key}`
-                        if (filterValue) {
-                            if (filterValue.equal !== undefined) {
-                                queryBuilder.andWhere(`T.${key} = :${key}_equal`, { [`${key}_equal`]: filterValue.equal });
-                            } else if (filterValue.like !== undefined) {
-                                queryBuilder.andWhere(`T.${key} LIKE :${key}_like`, { [`${key}_like`]: `%${filterValue.like}%` });
-                            } else if (filterValue.in !== undefined) {
-                                queryBuilder.andWhere(`T.${key} IN (:...${key}_in)`, { [`${key}_in`]: filterValue.in });
-                            } else if (filterValue.betweenDate !== undefined) {
-                                queryBuilder.andWhere(`T.${key} BETWEEN :${key}_from AND :${key}_to`, {
-                                    [`${key}_from`]: filterValue.betweenDate[0],
-                                    [`${key}_to`]: filterValue.betweenDate[1]
-                                });
-                            }
-                            // Add other filter types as needed
-                        }
-                    }
-                }
+            // Apply the dynamic whereCondition
+            if (whereCondition) {
+                queryBuilder.andWhere(whereCondition);
             }
 
             if (offset !== undefined) {
@@ -256,11 +199,11 @@ export class InWardOutWardProvider implements InWardOutWardProvider { // Ensure 
 
             queryBuilder.orderBy('T.Vno', 'ASC').addOrderBy('T.Dat', 'ASC');
 
-            const result = await queryBuilder.getRawMany(); // Use getRawMany as before
-            await queryRunner.commitTransaction(); // Commit the transaction
+            const result = await queryBuilder.getRawMany();
+            await queryRunner.commitTransaction();
             return this.trimWhitespace(result);
         } catch (error) {
-            await queryRunner.rollbackTransaction(); // Rollback on error
+            await queryRunner.rollbackTransaction();
             this.logger.error("Error fetching Inward Outward entries with custom filter and SP execution", error);
             throw new Error(error instanceof Error ? error.message : String(error));
         } finally {

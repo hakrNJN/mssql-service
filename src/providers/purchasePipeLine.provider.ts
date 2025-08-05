@@ -107,14 +107,14 @@ export class PurchasePileLine implements PurchasePileLineInterface {
     }
 
     // Implementation of BaseProviderInterface's getById, using the entity's actual primary key 'id'
-    async getById(id: number): Promise<PurchasePipeLineEntity | null> {
+    async getById(purtrnid: number): Promise<PurchasePipeLineEntity | null> {
         try {
             const record = await this._getRepository().findOne({
-                where: { Purtrnid: id } // Assuming 'id' is the primary generated column
+                where: { Purtrnid: purtrnid } // Assuming 'Purtrnid' is the primary generated column
             });
             return record ? this.trimWhitespace(record) : null;
         } catch (error) {
-            this.logger.error(`Error fetching Purchase Pipe Line by id ${id}`, error);
+            this.logger.error(`Error fetching Purchase Pipe Line by Purtrnid ${purtrnid}`, error);
             throw new Error(error as string);
         }
     }
@@ -150,19 +150,19 @@ export class PurchasePileLine implements PurchasePileLineInterface {
 
     // Implementation of BaseProviderInterface's update
     // Assuming BaseProviderInterface's update takes a single ID for update
-    async update(id: number, data: Partial<PurchasePipeLineEntity>): Promise<PurchasePipeLineEntity | null> {
+    async update(purtrnid: number, data: Partial<PurchasePipeLineEntity>): Promise<PurchasePipeLineEntity | null> {
         try {
             const updateData = { ...data, UpdDate: new Date() }; // Add current date for UpdDate
             const updateResult: UpdateResult = await this._getRepository().update(
-                { id: id }, // Update by the entity's primary key 'id'
+                { Purtrnid: purtrnid }, // Update by the entity's primary key 'Purtrnid'
                 updateData
             );
             if ((updateResult.affected ?? 0) > 0) {
-                return await this.getById(id); // Return the updated entity
+                return await this.getById(purtrnid); // Return the updated entity
             }
             return null; // Explicitly return null if not updated
         } catch (error) {
-            this.logger.error(`Error updating Purchase Pipe Line with id ${id}`, error);
+            this.logger.error(`Error updating Purchase Pipe Line with Purtrnid ${purtrnid}`, error);
             throw new Error(error as string);
         }
     }
@@ -184,12 +184,12 @@ export class PurchasePileLine implements PurchasePileLineInterface {
 
 
     // Implementation of BaseProviderInterface's delete
-    async delete(id: number): Promise<boolean> {
+    async delete(purtrnid: number): Promise<boolean> {
         try {
-            const deleteResult: DeleteResult = await this._getRepository().delete(id);
+            const deleteResult: DeleteResult = await this._getRepository().delete(purtrnid);
             return (deleteResult.affected ?? 0) > 0; // Fix: Use nullish coalescing
         } catch (error) {
-            this.logger.error(`Error deleting Purchase Pipe Line with id ${id}`, error);
+            this.logger.error(`Error deleting Purchase Pipe Line with Purtrnid ${purtrnid}`, error);
             throw new Error(error as string);
         }
     }

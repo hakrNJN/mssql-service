@@ -20,7 +20,7 @@ import { registerDependencies } from "./utils/registerDependencies";
 
   try {
     AppConfig.validateConfig(); // Validate configuration at startup
-    await dataSourceManager.initializeDataSources(); // Initialize data sources here
+    
     await app.init(); // Call app.init() to handle async initialization - This is crucial and correct
 
     server = app.listen(AppConfig.APP.PORT, () => {

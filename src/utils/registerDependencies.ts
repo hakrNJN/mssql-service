@@ -16,13 +16,15 @@ import { KotakCMSService } from '../services/kotakCMS.service';
 import { NoOpPublisherRabbitMQService } from "../services/noOpPublisherRabbitMQ.service";
 import { NoOpRabbitMQClientService } from "../services/noOpRabbitMQ.service";
 import PublisherRabbitMQService from "../services/publisher.RabbitMQ.service";
-import { PurchaseParcelStatusService } from '../services/PurchaseInwardOutWard.service';
+import { PurchaseParcelStatusService } from '../services/purchaseParcelStatus.service';
 import RabbitMQClientService from "../services/rabbitMQ.service";
 import { SaleTransactionService } from "../services/saleTransaction.service";
 import { SeriesService } from '../services/series.service';
 import { Logger, WINSTON_LOGGER } from "./logger";
 import FileService from "../providers/fileService.provider";
 import { SaleTransactionProvider } from "../providers/saleTransaction.provider";
+import { InWardOutWardProvider } from "../providers/inwardOutward.provider";
+import { PurchasePileLine } from "../providers/purchasePipeLine.provider";
 
 export const RABBITMQ_CLIENT_SERVICE = Symbol('RabbitMQClientService');
 export const PUBLISHER_RABBITMQ_SERVICE = Symbol('PublisherRabbitMQService');
@@ -31,24 +33,18 @@ export const FEATURE_CONFIG_PATH = Symbol('FeatureConfigPath');
 export async function registerDependencies(): Promise<void> {
 
   // Register Winston Logger
-  container.register<ILogger>(WINSTON_LOGGER, {
-    useFactory: () => {
-      const loggerInstance = Logger.createLogger();
-      return loggerInstance;
-    }
-  });
+  const loggerInstance = Logger.createLogger();
+  container.register<ILogger>(WINSTON_LOGGER, { useValue: loggerInstance });
 
   // Register DataSourceService
   
 
   // 1. Register the manager as a singleton. It will be created once.
   container.registerSingleton(DataSourceManager);
-
-  // 2. Resolve the manager to get the DataSource instances.
   const dataSourceManager = container.resolve(DataSourceManager);
-  
+  await dataSourceManager.initializeDataSources();
 
-  // 3. Register the actual DataSource instances for injection elsewhere.
+  // 2. Register the actual DataSource instances for injection elsewhere.
   container.register(MAIN_DATA_SOURCE, { useValue: dataSourceManager.mainDataSource });
   container.register(PHOENIX_DATA_SOURCE, { useValue: dataSourceManager.phoenixDataSource });
 
@@ -99,7 +95,19 @@ export async function registerDependencies(): Promise<void> {
   // Register Event Controller
   container.register(EventDrivenController, { useClass: EventDrivenController });
 
-  container.register(PurchaseParcelStatusService, { useClass: PurchaseParcelStatusService });
+  container.register("InWardOutWardProvider", {
+    useFactory: (c) => new InWardOutWardProvider(
+      c.resolve(MAIN_DATA_SOURCE),
+      c.resolve(WINSTON_LOGGER)
+    )
+  });
+  container.register("PurchasePileLine", {
+    useFactory: (c) => new PurchasePileLine(
+      c.resolve(PHOENIX_DATA_SOURCE),
+      c.resolve(WINSTON_LOGGER)
+    )
+  });
+  container.register("PurchaseParcelStatusService", { useClass: PurchaseParcelStatusService });
 
   container.register(PurchasePipeLineController, { useClass: PurchasePipeLineController });
 
