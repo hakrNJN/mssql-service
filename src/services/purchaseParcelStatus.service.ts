@@ -76,8 +76,8 @@ export class PurchaseParcelStatusService implements IPurchaseParcelStatusService
         const joinedData = inwardOutwardEntries.map(inwardEntry => {
             const matchingPurchaseEntry = purchasePipeLineEntries.find(
                 purchaseEntry =>
-                    purchaseEntry.Purtrnid === inwardEntry.Purtrnid &&
-                    purchaseEntry.Type === inwardEntry.Type
+                    purchaseEntry.Purtrnid == inwardEntry.Purtrnid &&
+                    purchaseEntry.Type == inwardEntry.Type
             );
             console.log("Matching Purchase Entry:", purchasePipeLineEntries);
             return {

@@ -8,6 +8,10 @@ function deepTrimWhitespace<T>(obj: T): T {
     }
 
     if (obj && typeof obj === 'object') {
+        if (obj instanceof Date) {
+            return obj; // Return Date objects as is
+        }
+
         if (Array.isArray(obj)) {
             return obj.map(item => deepTrimWhitespace(item)) as T; // More direct type assertion
         }
