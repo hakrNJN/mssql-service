@@ -17,7 +17,7 @@ export function createDataSource(dbName: string, entities: string[], logger: ILo
         entities: entities,
         subscribers: [],
         migrations: [],
-        connectionTimeout: 1500000,
+        connectionTimeout: 15000000,
         options: {
             encrypt: false,
         },

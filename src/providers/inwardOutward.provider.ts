@@ -1,6 +1,6 @@
 //src/providers/inwardOutward.provider.ts
 import { inject } from "tsyringe";
-import { DataSource, QueryRunner, Repository } from "typeorm"; // Import QueryRunner
+import { DataSource, ObjectLiteral, QueryRunner, Repository } from "typeorm"; // Import QueryRunner
 import { objectDecorators } from "../decorators/objectDecorators";
 import { SpTblFinishInWardOutWard } from "../entity/anushreeDb/spTblFinishInWardOutWard.entity";
 import { HttpException } from "../exceptions/httpException";
@@ -21,6 +21,7 @@ export interface InWardOutWardProvider extends BaseProviderInterface<SpTblFinish
         tdat: string, // YYYYMMDD format
         accountId: string,
         whereCondition: string, // Changed to accept a raw SQL WHERE condition string
+        params: ObjectLiteral,
         offset?: number,
         limit?: number
     ): Promise<any[]>; // Returns custom shape, so `any[]` or a defined DTO
@@ -145,6 +146,7 @@ export class InWardOutWardProvider implements InWardOutWardProvider { // Ensure 
         tdat: string,
         accountId: string,
         whereCondition: string, // Changed to accept a raw SQL WHERE condition string
+        params: ObjectLiteral,
         offset?: number,
         limit?: number
     ): Promise<any[]> {
@@ -166,19 +168,19 @@ export class InWardOutWardProvider implements InWardOutWardProvider { // Ensure 
 
             queryBuilder
                 .select([
-                    'T.Purtrnid AS Purtrnid',
-                    'T.Type AS Type',
-                    'T.Vno AS Vno',
-                    'FORMAT(T.Dat, \'yyyyMMdd\') AS Dat',
-                    'T.BillNo AS BillNo',
-                    'T.Pcs AS Pcs',
-                    'T.Customer AS Customer',
-                    'T.City AS City',
-                    'T.GRPName AS GroupName',
-                    'T.AgentName AS AgentName',
+                    'T.PurtrnId',
+                    'T.Type',
+                    'T.Vno',
+                    'T.Dat',
+                    'T.BillNo',
+                    'T.Pcs',
+                    'T.Customer',
+                    'T.City',
+                    'T.GRPName',
+                    'T.AgentName',
                     'T.BillAmt',
-                    'T.LRNo AS LRNo',
-                    'T.Company AS Company'
+                    'T.LRNo',
+                    'T.Company'
                 ]);
 
             queryBuilder.where("T.TrnOrigin = :trnOrigin", { trnOrigin: 'frmFinPurchEntry' });
@@ -186,7 +188,7 @@ export class InWardOutWardProvider implements InWardOutWardProvider { // Ensure 
 
             // Apply the dynamic whereCondition
             if (whereCondition) {
-                queryBuilder.andWhere(whereCondition);
+                queryBuilder.andWhere(whereCondition, params);
             }
 
             if (offset !== undefined) {
@@ -198,7 +200,7 @@ export class InWardOutWardProvider implements InWardOutWardProvider { // Ensure 
 
             queryBuilder.orderBy('T.Vno', 'ASC').addOrderBy('T.Dat', 'ASC');
 
-            const result = await queryBuilder.getRawMany();
+            const result = await queryBuilder.getMany();
             await queryRunner.commitTransaction();
             return this.trimWhitespace(result);
         } catch (error) {

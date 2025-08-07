@@ -2,7 +2,7 @@
 import { ObjectLiteral, SelectQueryBuilder } from "typeorm"; // Import ObjectLiteral from typeorm
 import { Filter, Filters, LikeFilter, NotLikeFilter } from "../types/filter.types"; // Import your filter types
 
-function generateWhereClauseAndParams<T extends ObjectLiteral>(
+export function generateWhereClauseAndParams<T extends ObjectLiteral>(
     filters: Filters<T>,
     entityAlias: string,
     existingParams: Record<string, any> = {}

@@ -98,7 +98,7 @@ export class PurchasePileLine implements PurchasePileLineInterface {
             filteredQueryBuilder.orderBy('purchasePipeline.Purtrnid', 'ASC');
 
             const records = (await filteredQueryBuilder.getRawMany()).map(raw => ({
-                Purtrnid: raw.purchasePipeline_Purtrnid,
+                PurtrnId: raw.purchasePipeline_PurtrnId,
                 Type: raw.purchasePipeline_Type,
                 Vno: raw.purchasePipeline_Vno,
                 Dat: raw.purchasePipeline_Dat || null,
@@ -149,7 +149,7 @@ export class PurchasePileLine implements PurchasePileLineInterface {
     async getById(purtrnid: number): Promise<PurchasePipeLineEntity | null> {
         try {
             const record = await this._getRepository().findOne({
-                where: { Purtrnid: purtrnid } // Assuming 'Purtrnid' is the primary generated column
+                where: { PurtrnId: purtrnid } // Assuming 'Purtrnid' is the primary generated column
             });
             return record ? this.trimWhitespace(record) : null;
         } catch (error) {
@@ -193,7 +193,7 @@ export class PurchasePileLine implements PurchasePileLineInterface {
         try {
             const updateData = { ...data, UpdDate: new Date().toISOString().slice(0, 10).replace(/-/g, '') }; // Add current date for UpdDate
             const updateResult: UpdateResult = await this._getRepository().update(
-                { Purtrnid: purtrnid }, // Update by the entity's primary key 'Purtrnid'
+                { PurtrnId: purtrnid }, // Update by the entity's primary key 'Purtrnid'
                 updateData
             );
             if ((updateResult.affected ?? 0) > 0) {

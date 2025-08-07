@@ -150,7 +150,7 @@ export class SpTblFinishInWardOutWard {
 
     @ManyToOne(() => PurchasePipeLine, purchasePipeline => purchasePipeline.finishInWards) // Add inverse relation
     @JoinColumn([
-        { name: "Purtrnid", referencedColumnName: "Purtrnid" }, // Join on Purtrnid
+        { name: "PurtrnId", referencedColumnName: "PurtrnId" }, // Join on Purtrnid
         { name: "Type", referencedColumnName: "Type" }       // Join on Type
     ])
     purchasePipeline!: PurchasePipeLine;

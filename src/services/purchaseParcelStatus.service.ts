@@ -56,32 +56,35 @@ export class PurchaseParcelStatusService implements IPurchaseParcelStatusService
             params.tdat,
             params.accountId,
             whereCondition,
+            {},
             offset,
             limit
         );
-        console.log("Inward Outward Entries:", inwardOutwardEntries); // ADDED LINE
+        // console.log("Inward Outward Entries (before parsing uniqueKeys):", inwardOutwardEntries);
 
         // Extract unique Purtrnid and Type combinations from inwardOutwardEntries
-        const uniqueKeys = inwardOutwardEntries.map(entry => ({ Purtrnid: entry.Purtrnid, Type: entry.Type }));
-        console.log("Unique Keys for Purchase Pipeline Query:", uniqueKeys); // ADDED LINE
+        const uniqueKeys = inwardOutwardEntries.map(entry => ({
+            PurtrnId: parseInt(entry.PurtrnId, 10),
+            Type: parseInt(entry.Type, 10)
+        })).filter(key => !isNaN(key.PurtrnId) && !isNaN(key.Type));
+        // console.log("Unique Keys (after parsing and filtering):", uniqueKeys);
 
         // Fetch corresponding PurchasePipeLine data
         const purchasePipeLineEntries = await this.purchasePipeLineProvider.getAllWithFilters({
-            Purtrnid: { in: uniqueKeys.map(key => key.Purtrnid) },
+            PurtrnId: { in: uniqueKeys.map(key => key.PurtrnId) },
             Type: { in: uniqueKeys.map(key => key.Type) }
         });
-        console.log("Purchase Pipeline Entries:", purchasePipeLineEntries); // ADDED LINE
-
-        // Perform the join in the application layer and map to desired output format
         const joinedData = inwardOutwardEntries.map(inwardEntry => {
             const matchingPurchaseEntry = purchasePipeLineEntries.find(
-                purchaseEntry =>
-                    purchaseEntry.Purtrnid == inwardEntry.Purtrnid &&
-                    purchaseEntry.Type == inwardEntry.Type
+                purchaseEntry => {
+                    return purchaseEntry.PurtrnId === Number(inwardEntry.PurtrnId) &&
+                        purchaseEntry.Type === Number(inwardEntry.Type);
+                }
             );
-            console.log("Matching Purchase Entry:", purchasePipeLineEntries);
+            // console.log("Matching Purchase Entry:", matchingPurchaseEntry)
+
             return {
-                Purtrnid: inwardEntry.Purtrnid,
+                PurtrnId: inwardEntry.PurtrnId,
                 Type: inwardEntry.Type,
                 Vno: inwardEntry.Vno,
                 Dat: inwardEntry.Dat, // Already formatted in provider

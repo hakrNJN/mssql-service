@@ -4,7 +4,7 @@ import { SpTblFinishInWardOutWard } from "../anushreeDb/spTblFinishInWardOutWard
 @Entity('PurchasePipeLine')
 export class PurchasePipeLine {
     @PrimaryColumn()
-    Purtrnid!: number;
+    PurtrnId!: number;
 
     @Column()
     Type!: number;
@@ -49,10 +49,10 @@ export class PurchasePipeLine {
     OpenDate!: Date | null;
 
     @Column({ type: 'datetime' })
-        Entrydate!: Date | null;
+    Entrydate!: Date | null;
 
     @Column({ type: 'datetime' })
-        UpdDate!: string | null;
+    UpdDate!: string | null;
 
     @OneToMany(() => SpTblFinishInWardOutWard, finishInWard => finishInWard.purchasePipeline)
     finishInWards?: SpTblFinishInWardOutWard[];

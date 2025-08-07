@@ -5,6 +5,7 @@ import { PurchasePipeLine } from "../entity/phoenixDb/purchasePipeLine.entity";
 import { InWardOutWardProvider } from "../providers/inwardOutward.provider"; // This provider now handles the SP
 import { PurchasePileLine as PurchasePileLineProvider } from "../providers/purchasePipeLine.provider";
 import { Filters } from "../types/filter.types";
+import { generateWhereClauseAndParams } from "../utils/query-utils";
 
 import { inject, injectable } from "tsyringe";
 
@@ -31,7 +32,8 @@ export class PurchaseParcelStatusService {
         offset?: number,
         limit?: number
     ): Promise<any[]> {
-        return this.inwardOutWardProvider.getEntriesByFilter(conum, fdat, tdat, accountId, filters, offset, limit);
+        const { whereClause, params } = generateWhereClauseAndParams(filters || {}, 'T');
+        return this.inwardOutWardProvider.getEntriesByFilter(conum, fdat, tdat, accountId, whereClause, params, offset, limit);
     }
 
     // Updated method to get a single entry from the SP-generated data
